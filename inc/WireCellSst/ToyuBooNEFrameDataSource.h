@@ -18,7 +18,7 @@ namespace WireCellSst {
 	WireCellSst::RootEvent event;
 
       public:
-	ToyuBooNEFrameDataSource(TTree& tree, const WireCell::GeomDataSource& gds,int bins_per_frame = 9600);
+	ToyuBooNEFrameDataSource(TTree& tree, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
 	virtual ~ToyuBooNEFrameDataSource();
 
 	void Save();
@@ -35,9 +35,7 @@ namespace WireCellSst {
 
 	TH1F **hu;
 	TH1F **hv;
-	TH1F **hw;
-	
-	int bins_per_frame;
+	TH1F **hw;	
     };
 
 }

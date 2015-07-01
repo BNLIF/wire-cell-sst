@@ -7,13 +7,13 @@
 
 using namespace WireCell;
 
-WireCellSst::ToyuBooNEFrameDataSource::ToyuBooNEFrameDataSource(TTree& ttree, const WireCell::GeomDataSource& gds,int bins_per_frame)
+WireCellSst::ToyuBooNEFrameDataSource::ToyuBooNEFrameDataSource(TTree& ttree, const WireCell::GeomDataSource& gds,int bins_per_frame1)
     : WireCell::FrameDataSource()
     , tree(&ttree)
     , gds(gds)
-    , bins_per_frame(bins_per_frame)
     , event()
 {
+  bins_per_frame = bins_per_frame1;
     // sigh, we can't do things this simply because the ttree does not
     // have a single branch.  
     // tree->SetBranchAddress(name, &event);
