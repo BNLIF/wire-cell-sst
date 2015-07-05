@@ -15,7 +15,7 @@ namespace WireCellSst {
     public:
 
       ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, float th);
-      ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w);
+      ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, float th_u, float th_v, float th_w,  float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w);
       
 
       virtual ~ToyuBooNESliceDataSource();
@@ -51,6 +51,10 @@ namespace WireCellSst {
       float threshold_u;
       float threshold_v;
       float threshold_w;
+
+      float threshold_ug;
+      float threshold_vg;
+      float threshold_wg;
       
       
       virtual void update_slices_bounds() const;

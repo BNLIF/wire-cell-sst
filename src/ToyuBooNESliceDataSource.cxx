@@ -15,7 +15,7 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     update_slices_bounds();
 }
 
-WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w)
+WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w)
     : _fds(fds)
     , _fds1(fds1)
     , _frame_index(-1)
@@ -25,6 +25,9 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , threshold_u(th_u)
     , threshold_v(th_v)
     , threshold_w(th_w)
+    , threshold_ug(th_ug)
+    , threshold_vg(th_vg)
+    , threshold_wg(th_wg)
     , flag(1)
     , nwire_u(nwire_u)
     , nwire_v(nwire_v)
@@ -153,18 +156,45 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	
 	// Save association of a channel ID and its charge.
 	int q = trace.charge[slice_tbin];
+	int q_next, q_prev;
 	int q1 = trace1.charge[slice_tbin];
+	// int q1_next, q1_prev;
 	
+	if (slice_tbin == tbin){
+	  q_next  = trace.charge[slice_tbin +1];
+	  q_prev  = trace.charge[slice_tbin +1];
+	  // q1_next = trace1.charge[slice_tbin +1];
+	  // q1_prev = trace1.charge[slice_tbin +1];
+	}else if (slice_tbin == tbin + nbins -1){
+	  q_next  = trace.charge[slice_tbin -1];
+	  q_prev  = trace.charge[slice_tbin -1];
+	  // q1_next = trace1.charge[slice_tbin -1];
+	  // q1_prev = trace1.charge[slice_tbin -1];
+	}else{
+	  q_next  = trace.charge[slice_tbin +1];
+	  q_prev  = trace.charge[slice_tbin -1];
+	  // q1_next = trace1.charge[slice_tbin +1];
+	  // q1_prev = trace1.charge[slice_tbin -1];
+	}
+
+	float threshold_g;
 	if (trace.chid < nwire_u){
 	  threshold =threshold_u;
+	  threshold_g = threshold_ug;
 	}else if (trace.chid < nwire_u + nwire_v){
 	  threshold = threshold_v;
+	  threshold_g = threshold_vg;
 	}else if (trace.chid < nwire_u + nwire_v + nwire_w){
 	  threshold = threshold_w;
+	  threshold_g = threshold_wg;
 	}
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
+	}else if (q_next > threshold || q_prev > threshold){
+	  if (q1 > threshold_g){
+	    slice_group.push_back(Channel::Charge(trace.chid, q1));
+	  }
 	}
 	
       }
