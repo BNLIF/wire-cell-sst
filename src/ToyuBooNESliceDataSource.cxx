@@ -4,14 +4,35 @@ using namespace WireCell;
 
 WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, float th)
     : _fds(fds)
+    , _fds1(fds)
     , _frame_index(-1)
     , _slice_index(-1)
     , _slices_begin(-1)
     , _slices_end(-1)
     , threshold(th)
+    , flag(0)
 {
     update_slices_bounds();
 }
+
+WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w)
+    : _fds(fds)
+    , _fds1(fds1)
+    , _frame_index(-1)
+    , _slice_index(-1)
+    , _slices_begin(-1)
+    , _slices_end(-1)
+    , threshold_u(th_u)
+    , threshold_v(th_v)
+    , threshold_w(th_w)
+    , flag(1)
+    , nwire_u(nwire_u)
+    , nwire_v(nwire_v)
+    , nwire_w(nwire_w)
+{
+    update_slices_bounds();
+}
+
 
 WireCellSst::ToyuBooNESliceDataSource::~ToyuBooNESliceDataSource()
 {
@@ -90,28 +111,65 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
     
     //int sum = 0;
 
-	
-    const Frame& frame = _fds.get();
-    size_t ntraces = frame.traces.size();
-    for (size_t ind=0; ind<ntraces; ++ind) {
+    if (flag==0){
+      const Frame& frame = _fds.get();
+      size_t ntraces = frame.traces.size();
+      for (size_t ind=0; ind<ntraces; ++ind) {
 	const Trace& trace = frame.traces[ind];
 	int tbin = trace.tbin;
 	int nbins = trace.charge.size();
-
+	
 	if (slice_tbin < tbin) {
-	    continue;
+	  continue;
 	}
 	if (slice_tbin >= tbin+nbins) {
-	    continue;
+	  continue;
 	}
-
+	
 	// Save association of a channel ID and its charge.
 	int q = trace.charge[slice_tbin];
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q));
-	  //  sum += q;
 	}
+      }
+    }else{
+      // may need to update to take into account that the two frames may not be synced ... 
+      const Frame& frame = _fds.get();
+      const Frame& frame1 = _fds1.get();
+      size_t ntraces = frame.traces.size();
+      for (size_t ind=0; ind<ntraces; ++ind) {
+	const Trace& trace = frame.traces[ind];
+	const Trace& trace1 = frame1.traces[ind];
+	
+	int tbin = trace.tbin;
+	int nbins = trace.charge.size();
+	
+	if (slice_tbin < tbin) {
+	  continue;
+	}
+	if (slice_tbin >= tbin+nbins) {
+	  continue;
+	}
+	
+	// Save association of a channel ID and its charge.
+	int q = trace.charge[slice_tbin];
+	int q1 = trace1.charge[slice_tbin];
+	
+	if (trace.chid < nwire_u){
+	  threshold =threshold_u;
+	}else if (trace.chid < nwire_u + nwire_v){
+	  threshold = threshold_v;
+	}else if (trace.chid < nwire_u + nwire_v + nwire_w){
+	  threshold = threshold_w;
+	}
+
+	if (q>threshold){
+	  slice_group.push_back(Channel::Charge(trace.chid, q1));
+	}
+	
+      }
     }
+    
     _slice.reset(slice_tbin, slice_group);
     //std::cout << sum << std::endl;
     return index;
