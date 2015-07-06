@@ -191,11 +191,11 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
-	}else if (q_next > threshold || q_prev > threshold){
-	  if (q1 > threshold_g){
-	    slice_group.push_back(Channel::Charge(trace.chid, q1));
-	  }
-	}
+	}// else if (q_next > threshold || q_prev > threshold){
+	//   if (q1 > threshold_g){
+	//     slice_group.push_back(Channel::Charge(trace.chid, q1));
+	//   }
+	// }
 	
       }
     }
