@@ -22,9 +22,13 @@ WireCellSst::ToyuBooNEFrameDataSource::ToyuBooNEFrameDataSource(TTree& ttree, co
     tree->SetBranchAddress("runNo"   , &event.run);
     tree->SetBranchAddress("subRunNo", &event.subrun);
 
-    tree->SetBranchAddress("calib_nChannel", &event.nchannels);
-    tree->SetBranchAddress("calib_channelId", &event.channelid);
-    tree->SetBranchAddress("calib_wf", &event.signal);
+    // tree->SetBranchAddress("calib_nChannel", &event.nchannels);
+    // tree->SetBranchAddress("calib_channelId", &event.channelid);
+    // tree->SetBranchAddress("calib_wf", &event.signal);
+
+    tree->SetBranchAddress("raw_nChannel", &event.nchannels);
+    tree->SetBranchAddress("raw_channelId", &event.channelid);
+    tree->SetBranchAddress("raw_wf", &event.signal);
 
     GeomWireSelection wires_u = gds.wires_in_plane(WirePlaneType_t(0));
     GeomWireSelection wires_v = gds.wires_in_plane(WirePlaneType_t(1));
@@ -133,6 +137,7 @@ int WireCellSst::ToyuBooNEFrameDataSource::jump(int frame_number)
 	trace.chid = event.channelid->at(ind);
 
 	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+	trace.charge.resize(bins_per_frame, 0.0);
 	// for (int ibin=1; ibin <= signal->GetNbinsX()/4.; ++ibin) {
 	//   trace.charge.push_back(signal->GetBinContent(4*(ibin-1)+1)+
 	// 			 signal->GetBinContent(4*(ibin-1)+2)+
@@ -143,18 +148,27 @@ int WireCellSst::ToyuBooNEFrameDataSource::jump(int frame_number)
 	//std::cout << signal->GetNbinsX() << std::endl;
 
 	TH1F *htemp;
+	float threshold;
 	if (trace.chid < nwire_u){
 	  htemp = hu[trace.chid];
+	  threshold = 2048;
 	}else if (trace.chid < nwire_u + nwire_v){
 	  htemp = hv[trace.chid - nwire_u];
+	  threshold = 2048;
 	}else{
 	  htemp = hw[trace.chid - nwire_u - nwire_v];
+	  threshold = 400;
 	}
 	
-	for (int ibin=0; ibin != signal->GetNbinsX(); ++ibin) {
-	  trace.charge.push_back(signal->GetBinContent(ibin+1)*200);
-	  htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)*200);
+	//std::cout << signal->GetNbinsX() << std::endl;
+	
+
+	for (int ibin=0; ibin != signal->GetNbinsX()-1; ibin++) {
+	  trace.charge.at(ibin)=(signal->GetBinContent(ibin+1)-threshold);
+	  htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
 	}
+	htemp->SetBinContent(signal->GetNbinsX()-1,trace.charge.at(signal->GetNbinsX()-2));
+	trace.charge.at(signal->GetNbinsX()-1) = trace.charge.at(signal->GetNbinsX()-2);
 
 	frame.traces.push_back(trace);
     }
