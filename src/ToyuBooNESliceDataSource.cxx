@@ -196,6 +196,8 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	//     slice_group.push_back(Channel::Charge(trace.chid, q1));
 	//   }
 	// }
+
+	//std::cout << trace.chid << " " << q/threshold << " " << q1 << std::endl;
 	
       }
     }
