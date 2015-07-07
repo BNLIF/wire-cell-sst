@@ -16,5 +16,6 @@ WireCellSst::RootEvent::RootEvent()
 WireCellSst::RootEvent::~RootEvent()
 {
     delete channelid;
+    signal->Delete();
     delete signal;
 }

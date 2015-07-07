@@ -31,6 +31,7 @@ WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree)
 
 WireCellSst::FrameDataSource::~FrameDataSource()
 {
+  frame.clear();
 }
 
 int WireCellSst::FrameDataSource::size() const

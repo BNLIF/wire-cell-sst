@@ -12,10 +12,13 @@ WireCellSst::FrameDataSource* WireCellSst::make_fds(const char* filename, const 
     if (!tfile) {
 	return 0;
     }
+    return make_fds(*tfile, tpath);
+}
 
-    TTree* sst = dynamic_cast<TTree*>(tfile->Get(tpath));
+WireCellSst::FrameDataSource* WireCellSst::make_fds(TFile& tfile, const char* tpath)
+{
+    TTree* sst = dynamic_cast<TTree*>(tfile.Get(tpath));
     if (!sst) {
-	delete tfile; tfile = 0;
 	return 0;
     }
 
@@ -23,7 +26,7 @@ WireCellSst::FrameDataSource* WireCellSst::make_fds(const char* filename, const 
 
     // now try to handle file schema version
 
-    TObject* obj = tfile->Get("version");
+    TObject* obj = tfile.Get("version");
     if (!obj) {
 	return fds;
     }
