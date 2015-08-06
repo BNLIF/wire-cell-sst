@@ -22,6 +22,8 @@ WireCellSst::FrameDataSource* WireCellSst::make_fds(TFile& tfile, const char* tp
 	return 0;
     }
 
+    //sst->SetDirectory(0);
+
     WireCellSst::FrameDataSource* fds = new WireCellSst::FrameDataSource(*sst);
 
     // now try to handle file schema version
@@ -48,3 +50,5 @@ WireCellSst::FrameDataSource* WireCellSst::make_fds(TFile& tfile, const char* tp
     fds->set_sim_tree(*sst);	// SST uses same tree for both types of data
     return fds;
 }
+
+

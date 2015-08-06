@@ -31,6 +31,10 @@ WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree)
 
 WireCellSst::FrameDataSource::~FrameDataSource()
 {
+  // event_tree->SetDirectory(0);
+  // sim_tree->SetDirectory(0);
+  // delete event_tree;
+  // delete sim_tree;
   frame.clear();
 }
 
