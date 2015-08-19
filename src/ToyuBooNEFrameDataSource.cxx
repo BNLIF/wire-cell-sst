@@ -93,7 +93,7 @@ void WireCellSst::ToyuBooNEFrameDataSource::Save(){
 
 int WireCellSst::ToyuBooNEFrameDataSource::jump(int frame_number)
 {
-
+ 
 
 
     if (frame.index == frame_number) {
@@ -162,13 +162,20 @@ int WireCellSst::ToyuBooNEFrameDataSource::jump(int frame_number)
 	
 	//std::cout << signal->GetNbinsX() << std::endl;
 	
-
-	for (int ibin=0; ibin != signal->GetNbinsX()-1; ibin++) {
-	  trace.charge.at(ibin)=(signal->GetBinContent(ibin+1)-threshold);
-	  htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
+	if (bins_per_frame == 9600){
+	  for (int ibin=0; ibin != signal->GetNbinsX()-1; ibin++) {
+	    trace.charge.at(ibin)=(signal->GetBinContent(ibin+1)-threshold);
+	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
+	  }
+	  htemp->SetBinContent(signal->GetNbinsX()-1,trace.charge.at(signal->GetNbinsX()-2));
+	  trace.charge.at(signal->GetNbinsX()-1) = trace.charge.at(signal->GetNbinsX()-2);
+	}else{
+	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	    trace.charge.at(ibin)=(signal->GetBinContent(ibin+1)-threshold);
+	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
+	  }	
 	}
-	htemp->SetBinContent(signal->GetNbinsX()-1,trace.charge.at(signal->GetNbinsX()-2));
-	trace.charge.at(signal->GetNbinsX()-1) = trace.charge.at(signal->GetNbinsX()-2);
+
 
 	frame.traces.push_back(trace);
     }
