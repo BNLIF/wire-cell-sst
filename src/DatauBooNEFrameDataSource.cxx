@@ -394,12 +394,12 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       //      std::cout << i << " " << nbin << " " << mean << " " << rms << std::endl;
     }
     
-    WireCellSst::WireSelectionV uplane_all;
-    WireCellSst::WireMap uplane_map;
+    WireSelectionV uplane_all;
+   
     
     
     for (int i=0;i!=nu;i++){
-      WireCellSst::WireSelection uplane;
+      WireSelection uplane;
       if (used_num.at(i)==0 && bad_num.at(i)==0){
 	//std::cout << i << std::endl;
 	used_num.at(i)=1;
@@ -448,12 +448,12 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       //  cout << rms << endl;
     }
     
-    WireCellSst::WireSelectionV vplane_all;
-    WireCellSst::WireMap vplane_map;
+    WireSelectionV vplane_all;
+    
     
     
     for (int i=0;i!=nv;i++){
-      WireCellSst::WireSelection vplane;
+      WireSelection vplane;
       if (used_num.at(i)==0 && bad_num.at(i)==0){
 	//std::cout << i << std::endl;
 	used_num.at(i)=1;
@@ -503,12 +503,12 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       //  cout << rms << endl;
     }
     
-    WireCellSst::WireSelectionV wplane_all;
-    WireCellSst::WireMap wplane_map;
+    WireSelectionV wplane_all;
+    
     
     
     for (int i=0;i!=nw;i++){
-      WireCellSst::WireSelection wplane;
+      WireSelection wplane;
       if (used_num.at(i)==0 && bad_num.at(i)==0){
 	//std::cout << i << std::endl;
 	used_num.at(i)=1;
@@ -685,7 +685,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	//crazy stuff
 	//flag = 1
 	for (int ibin=0; ibin != bins_per_frame; ibin++) {
-	  trace.charge.at(ibin) = 123456.;//signal->GetBinContent(ibin+1);
+	  trace.charge.at(ibin) = 0.;//signal->GetBinContent(ibin+1);
 	}
       }
       
@@ -735,7 +735,7 @@ double WireCellSst::DatauBooNEFrameDataSource::correlation1(TH1F *h1, TH1F *h2){
   Double_t mean2 = h2->GetSum()/h2->GetNbinsX();
   
 
-  for (int i=0;i!=9594;i++){
+  for (int i=0;i!=h1->GetNbinsX();i++){
     if (fabs(h1->GetBinContent(i+1)-mean1)<30 &&
 	fabs(h2->GetBinContent(i+1)-mean2)<30){
       sxx += pow(h1->GetBinContent(i+1),2) - pow(mean1,2);

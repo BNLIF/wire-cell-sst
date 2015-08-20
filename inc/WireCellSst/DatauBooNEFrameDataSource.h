@@ -4,11 +4,14 @@
 #include "WireCellNav/FrameDataSource.h"
 #include "WireCellSst/RootEvent.h"
 #include "WireCellNav/GeomDataSource.h"
+#include "WireCellData/GeomWire.h"
 
 #include "TTree.h"
 #include "TH1F.h"
 
 namespace WireCellSst {
+
+ 
 
     /**
        
@@ -32,20 +35,24 @@ namespace WireCellSst {
 	bool chirp_check(double rms, int plane, int channel);
 	double correlation1(TH1F *h1, TH1F *h2);
 	
-
+	WireCell::WireMap& get_u_map(){return uplane_map;};
+	WireCell::WireMap& get_v_map(){return vplane_map;};
+	WireCell::WireMap& get_w_map(){return wplane_map;};
 
     private:
 	const WireCell::GeomDataSource& gds;
 	int nwire_u, nwire_v, nwire_w;
 
+	 WireCell::WireMap uplane_map;
+	 WireCell::WireMap vplane_map;
+	 WireCell::WireMap wplane_map;
+	 
 	TH1F **hu;
 	TH1F **hv;
 	TH1F **hw;	
     };
 
-    typedef std::vector<int> WireSelection;
-    typedef std::vector<WireSelection> WireSelectionV;
-    typedef std::map<int,WireSelection> WireMap;
+    
 
 }
 
