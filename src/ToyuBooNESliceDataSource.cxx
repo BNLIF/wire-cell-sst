@@ -137,25 +137,26 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	int q = trace.charge[slice_tbin];
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q));
-	}else{
-	  if (umap!=0&&vmap!=0&&wmap!=0){
-	    // hack for now for data
-	    int nwire_u = 2400;
-	    int nwire_v = 2400;
-	    int nwire_w = 3456;
-	    if (trace.chid < nwire_u){
-	      if (umap->find(trace.chid) == umap->end())
-		slice_group.push_back(Channel::Charge(trace.chid, q));
-	    }else if (trace.chid < nwire_u + nwire_v){
-	      if (vmap->find(trace.chid-nwire_u) == vmap->end())
-		slice_group.push_back(Channel::Charge(trace.chid, q));
-	    }else{
-	      if (wmap->find(trace.chid-nwire_u-nwire_v) == wmap->end())
-		slice_group.push_back(Channel::Charge(trace.chid, q));
-	    }
-	  }
-	  // hack for now
 	}
+	// else{
+	//   if (umap!=0&&vmap!=0&&wmap!=0){
+	//     // hack for now for data
+	//     int nwire_u = 2400;
+	//     int nwire_v = 2400;
+	//     int nwire_w = 3456;
+	//     if (trace.chid < nwire_u){
+	//       if (umap->find(trace.chid) == umap->end())
+	//   	slice_group.push_back(Channel::Charge(trace.chid, q));
+	//     }else if (trace.chid < nwire_u + nwire_v){
+	//       if (vmap->find(trace.chid-nwire_u) == vmap->end())
+	//   	slice_group.push_back(Channel::Charge(trace.chid, q));
+	//     }else{
+	//       if (wmap->find(trace.chid-nwire_u-nwire_v) == wmap->end())
+	//   	slice_group.push_back(Channel::Charge(trace.chid, q));
+	//     }
+	//   }
+	  // hack for now
+	//	}
 
       }
     }else{
@@ -214,7 +215,28 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
-	}// else if (q_next > threshold || q_prev > threshold){
+	}else{
+	  if (umap!=0&&vmap!=0&&wmap!=0){
+	    // hack for now for data
+	    int nwire_u = 2400;
+	    int nwire_v = 2400;
+	    int nwire_w = 3456;
+	    if (trace.chid < nwire_u){
+	      if (umap->find(trace.chid) == umap->end())
+	  	slice_group.push_back(Channel::Charge(trace.chid, 0));
+	    }else if (trace.chid < nwire_u + nwire_v){
+	      if (vmap->find(trace.chid-nwire_u) == vmap->end())
+	  	slice_group.push_back(Channel::Charge(trace.chid, 0));
+	    }else{
+	      if (wmap->find(trace.chid-nwire_u-nwire_v) == wmap->end())
+	  	slice_group.push_back(Channel::Charge(trace.chid, 0));
+	    }
+	  }
+	    //hack for now 
+	}
+
+
+// else if (q_next > threshold || q_prev > threshold){
 	//   if (q1 > threshold_g){
 	//     slice_group.push_back(Channel::Charge(trace.chid, q1));
 	//   }
