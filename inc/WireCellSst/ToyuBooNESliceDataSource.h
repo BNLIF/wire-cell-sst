@@ -16,9 +16,8 @@ namespace WireCellSst {
     public:
 
       ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, float th);
-      ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, float th_u, float th_v, float th_w,  float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w);
-      /* ,  */
-      /* 		WireCell::WireMap *umap = 0, WireCell::WireMap *vmap = 0, WireCell::WireMap *wmap = 0); */
+      ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, float th_u, float th_v, float th_w,  float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms = 0, std::vector<float>* vplane_rms = 0, std::vector<float>* wplane_rms = 0);
+      
       
 
       virtual ~ToyuBooNESliceDataSource();
@@ -59,9 +58,9 @@ namespace WireCellSst {
       float threshold_vg;
       float threshold_wg;
 
-      /* WireCell::WireMap *umap; */
-      /* WireCell::WireMap *vmap; */
-      /* WireCell::WireMap *wmap; */
+      std::vector<float>* uplane_rms;
+      std::vector<float>* vplane_rms;
+      std::vector<float>* wplane_rms;
       
       
       virtual void update_slices_bounds() const;

@@ -15,7 +15,7 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     update_slices_bounds();
 }
 
-WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w)
+WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
     : _fds(fds)
     , _fds1(fds1)
     , _frame_index(-1)
@@ -32,6 +32,9 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , nwire_u(nwire_u)
     , nwire_v(nwire_v)
     , nwire_w(nwire_w)
+  , uplane_rms(uplane_rms)
+  , vplane_rms(vplane_rms)
+  , wplane_rms(wplane_rms)
 {
     update_slices_bounds();
 }
@@ -198,15 +201,32 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	}
 
 	float threshold_g;
-	if (trace.chid < nwire_u){
-	  threshold =threshold_u;
-	  threshold_g = threshold_ug;
-	}else if (trace.chid < nwire_u + nwire_v){
-	  threshold = threshold_v;
-	  threshold_g = threshold_vg;
-	}else if (trace.chid < nwire_u + nwire_v + nwire_w){
-	  threshold = threshold_w;
-	  threshold_g = threshold_wg;
+
+	if (uplane_rms ==0 && vplane_rms ==0 && wplane_rms == 0 ){
+	  if (trace.chid < nwire_u){
+	    threshold =threshold_u;
+	    threshold_g = threshold_ug;
+	  }else if (trace.chid < nwire_u + nwire_v){
+	    threshold = threshold_v;
+	    threshold_g = threshold_vg;
+	  }else if (trace.chid < nwire_u + nwire_v + nwire_w){
+	    threshold = threshold_w;
+	    threshold_g = threshold_wg;
+	  }
+	}else{
+	  if (trace.chid < nwire_u){
+	    threshold = 4 * (*uplane_rms).at(trace.chid);
+	    threshold_g = threshold_ug;
+	    if (threshold == 0 ) threshold = threshold_u;
+	  }else if (trace.chid < nwire_u + nwire_v){
+	    threshold = 4 * (*vplane_rms).at(trace.chid - nwire_u);
+	    threshold_g = threshold_vg;
+	    if (threshold == 0 ) threshold = threshold_v;
+	  }else if (trace.chid < nwire_u + nwire_v + nwire_w){
+	    threshold = 4 * (*wplane_rms).at(trace.chid - nwire_u - nwire_v);
+	    threshold_g = threshold_wg;
+	    if (threshold == 0 ) threshold = threshold_w;
+	  }
 	}
 
 	if (q>threshold){
