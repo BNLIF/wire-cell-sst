@@ -15,8 +15,7 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     update_slices_bounds();
 }
 
-WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, 
-		WireCell::WireMap *umap, WireCell::WireMap *vmap , WireCell::WireMap *wmap)
+WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w)
     : _fds(fds)
     , _fds1(fds1)
     , _frame_index(-1)
@@ -33,9 +32,6 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , nwire_u(nwire_u)
     , nwire_v(nwire_v)
     , nwire_w(nwire_w)
-  , umap(umap)
-  , vmap(vmap)
-  , wmap(wmap)
 {
     update_slices_bounds();
 }
@@ -216,23 +212,23 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
 	}else{
-	  if (umap!=0&&vmap!=0&&wmap!=0){
-	    // hack for now for data
-	    int nwire_u = 2400;
-	    int nwire_v = 2400;
-	    int nwire_w = 3456;
-	    if (trace.chid < nwire_u){
-	      if (umap->find(trace.chid) == umap->end())
-	  	slice_group.push_back(Channel::Charge(trace.chid, 0));
-	    }else if (trace.chid < nwire_u + nwire_v){
-	      if (vmap->find(trace.chid-nwire_u) == vmap->end())
-	  	slice_group.push_back(Channel::Charge(trace.chid, 0));
-	    }else{
-	      if (wmap->find(trace.chid-nwire_u-nwire_v) == wmap->end())
-	  	slice_group.push_back(Channel::Charge(trace.chid, 0));
-	    }
-	  }
-	    //hack for now 
+	  // if (umap!=0&&vmap!=0&&wmap!=0){
+	  //   // hack for now for data
+	  //   int nwire_u = 2400;
+	  //   int nwire_v = 2400;
+	  //   int nwire_w = 3456;
+	  //   if (trace.chid < nwire_u){
+	  //     if (umap->find(trace.chid) == umap->end())
+	  // 	slice_group.push_back(Channel::Charge(trace.chid, 0));
+	  //   }else if (trace.chid < nwire_u + nwire_v){
+	  //     if (vmap->find(trace.chid-nwire_u) == vmap->end())
+	  // 	slice_group.push_back(Channel::Charge(trace.chid, 0));
+	  //   }else{
+	  //     if (wmap->find(trace.chid-nwire_u-nwire_v) == wmap->end())
+	  // 	slice_group.push_back(Channel::Charge(trace.chid, 0));
+	  //   }
+	  // }
+	  //   //hack for now 
 	}
 
 

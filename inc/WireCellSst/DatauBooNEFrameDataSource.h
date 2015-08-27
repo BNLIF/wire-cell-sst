@@ -43,10 +43,10 @@ namespace WireCellSst {
 	const WireCell::GeomDataSource& gds;
 	int nwire_u, nwire_v, nwire_w;
 
-	 WireCell::WireMap uplane_map;
-	 WireCell::WireMap vplane_map;
-	 WireCell::WireMap wplane_map;
-	 
+	WireCell::WireMap uplane_map;
+	WireCell::WireMap vplane_map;
+	WireCell::WireMap wplane_map;
+	
 	TH1F **hu;
 	TH1F **hv;
 	TH1F **hw;	
