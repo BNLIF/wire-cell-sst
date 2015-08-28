@@ -215,15 +215,15 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	  }
 	}else{
 	  if (trace.chid < nwire_u){
-	    threshold = 4 * (*uplane_rms).at(trace.chid);
+	    threshold = 3 * (*uplane_rms).at(trace.chid);
 	    threshold_g = threshold_ug;
 	    if (threshold == 0 ) threshold = threshold_u;
 	  }else if (trace.chid < nwire_u + nwire_v){
-	    threshold = 4 * (*vplane_rms).at(trace.chid - nwire_u);
+	    threshold = 3 * (*vplane_rms).at(trace.chid - nwire_u);
 	    threshold_g = threshold_vg;
 	    if (threshold == 0 ) threshold = threshold_v;
 	  }else if (trace.chid < nwire_u + nwire_v + nwire_w){
-	    threshold = 4 * (*wplane_rms).at(trace.chid - nwire_u - nwire_v);
+	    threshold = 3 * (*wplane_rms).at(trace.chid - nwire_u - nwire_v);
 	    threshold_g = threshold_wg;
 	    if (threshold == 0 ) threshold = threshold_w;
 	  }
