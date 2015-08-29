@@ -395,30 +395,45 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     }
     
     WireSelectionV uplane_all;
-   
-    
-    
-    for (int i=0;i!=nu;i++){
+
+    for (int i=0;i!=53;i++){
       WireSelection uplane;
-      if (used_num.at(i)==0 && bad_num.at(i)==0){
-	//std::cout << i << std::endl;
-	used_num.at(i)=1;
-	uplane.push_back(i);
-	for (int j=i;j!=nu;j++){
-	  if (used_num.at(j)==0 && bad_num.at(j)==0){
-	    double corr = correlation1(hu[i],hu[j]);
-	    if (corr > 0.2) {
-	      used_num.at(j)=1;
-	      uplane.push_back(j);
-	    }
-	  }
+      for (int j=0;j!=46;j++){
+	int num = i*46+j;
+	if (num < nu){
+	  if (bad_num.at(num)==0)
+	    uplane.push_back(num);
 	}
+      }
+      if (uplane.size() !=0) {
 	uplane_all.push_back(uplane);
 	for (int j=0;j!=uplane.size();j++){
 	  uplane_map[uplane.at(j)] = uplane;
 	}
       }
     }
+
+    // for (int i=0;i!=nu;i++){
+    //   
+    //   if (used_num.at(i)==0 && bad_num.at(i)==0){
+    // 	//std::cout << i << std::endl;
+    // 	used_num.at(i)=1;
+    // 	uplane.push_back(i);
+    // 	for (int j=i;j!=nu;j++){
+    // 	  if (used_num.at(j)==0 && bad_num.at(j)==0){
+    // 	    double corr = correlation1(hu[i],hu[j]);
+    // 	    if (corr > 0.2) {
+    // 	      used_num.at(j)=1;
+    // 	      uplane.push_back(j);
+    // 	    }
+    // 	  }
+    // 	}
+    // 	uplane_all.push_back(uplane);
+    // 	for (int j=0;j!=uplane.size();j++){
+    // 	  uplane_map[uplane.at(j)] = uplane;
+    // 	}
+    //   }
+    // }
 
 
 
@@ -449,32 +464,45 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     }
     
     WireSelectionV vplane_all;
-    
-    
-    
-    for (int i=0;i!=nv;i++){
+        
+    for (int i=0;i!=53;i++){
       WireSelection vplane;
-      if (used_num.at(i)==0 && bad_num.at(i)==0){
-	//std::cout << i << std::endl;
-	used_num.at(i)=1;
-	vplane.push_back(i);
-	for (int j=i;j!=nv;j++){
-	  if (used_num.at(j)==0 && bad_num.at(j)==0){
-	    double corr = correlation1(hv[i],hv[j]);
-	    if (corr > 0.2) {
-	      used_num.at(j)=1;
-	      vplane.push_back(j);
-	    }
-	  }
+      for (int j=0;j!=46;j++){
+	int num = i*46+j;
+	if (num < nv){
+	  if (bad_num.at(num)==0)
+	    vplane.push_back(num);
 	}
+      }
+      if (vplane.size() !=0) {
 	vplane_all.push_back(vplane);
 	for (int j=0;j!=vplane.size();j++){
 	  vplane_map[vplane.at(j)] = vplane;
 	}
       }
-      
-      
     }
+
+    // for (int i=0;i!=nv;i++){
+    //   WireSelection vplane;
+    //   if (used_num.at(i)==0 && bad_num.at(i)==0){
+    // 	//std::cout << i << std::endl;
+    // 	used_num.at(i)=1;
+    // 	vplane.push_back(i);
+    // 	for (int j=i;j!=nv;j++){
+    // 	  if (used_num.at(j)==0 && bad_num.at(j)==0){
+    // 	    double corr = correlation1(hv[i],hv[j]);
+    // 	    if (corr > 0.2) {
+    // 	      used_num.at(j)=1;
+    // 	      vplane.push_back(j);
+    // 	    }
+    // 	  }
+    // 	}
+    // 	vplane_all.push_back(vplane);
+    // 	for (int j=0;j!=vplane.size();j++){
+    // 	  vplane_map[vplane.at(j)] = vplane;
+    // 	}
+    //   }
+    // }
     
 
     //deal with w plane first
@@ -506,30 +534,45 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     WireSelectionV wplane_all;
     
     
-    
-    for (int i=0;i!=nw;i++){
+    for (int i=0;i!=76;i++){
       WireSelection wplane;
-      if (used_num.at(i)==0 && bad_num.at(i)==0){
-	//std::cout << i << std::endl;
-	used_num.at(i)=1;
-	wplane.push_back(i);
-	for (int j=i;j!=nw;j++){
-	  if (used_num.at(j)==0 && bad_num.at(j)==0){
-	    double corr = correlation1(hw[i],hw[j]);
-	    if (corr > 0.2) {
-	      used_num.at(j)=1;
-	      wplane.push_back(j);
-	    }
-	  }
+      for (int j=0;j!=46;j++){
+	int num = i*46+j;
+	if (num < nw){
+	  if (bad_num.at(num)==0)
+	    wplane.push_back(num);
 	}
+      }
+      if (wplane.size() !=0) {
 	wplane_all.push_back(wplane);
 	for (int j=0;j!=wplane.size();j++){
 	  wplane_map[wplane.at(j)] = wplane;
 	}
       }
-      
-      
     }
+    // for (int i=0;i!=nw;i++){
+    //   WireSelection wplane;
+    //   if (used_num.at(i)==0 && bad_num.at(i)==0){
+    // 	//std::cout << i << std::endl;
+    // 	used_num.at(i)=1;
+    // 	wplane.push_back(i);
+    // 	for (int j=i;j!=nw;j++){
+    // 	  if (used_num.at(j)==0 && bad_num.at(j)==0){
+    // 	    double corr = correlation1(hw[i],hw[j]);
+    // 	    if (corr > 0.2) {
+    // 	      used_num.at(j)=1;
+    // 	      wplane.push_back(j);
+    // 	    }
+    // 	  }
+    // 	}
+    // 	wplane_all.push_back(wplane);
+    // 	for (int j=0;j!=wplane.size();j++){
+    // 	  wplane_map[wplane.at(j)] = wplane;
+    // 	}
+    //   }
+      
+      
+    // }
 
 
     // int test = 0;
@@ -543,7 +586,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=uplane_all.size();i++){
       std::cout << "U " << i << " " << uplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (uplane_all.at(i).size()>30){
+      if (uplane_all.at(i).size()>15){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=uplane_all.at(i).size();k++){
@@ -580,7 +623,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=vplane_all.size();i++){
       std::cout << "V " << i << " " << vplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (vplane_all.at(i).size()>30){
+      if (vplane_all.at(i).size()>15){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=vplane_all.at(i).size();k++){
@@ -618,7 +661,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=wplane_all.size();i++){
       std::cout << "W " << i << " " << wplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (wplane_all.at(i).size()>30){
+      if (wplane_all.at(i).size()>15){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=wplane_all.at(i).size();k++){
