@@ -586,7 +586,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=uplane_all.size();i++){
       std::cout << "U " << i << " " << uplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (uplane_all.at(i).size()>15){
+      if (uplane_all.at(i).size()>10){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=uplane_all.at(i).size();k++){
@@ -605,7 +605,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   par[1] = h3->GetMean();
 	  // }
 	  
-	  if (h3->GetSum()>10){
+	  if (h3->GetSum()>6){
 	    Double_t xq = 0.5;
 	    h3->GetQuantiles(1,&par[1],&xq);
 	  }else{
@@ -623,7 +623,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=vplane_all.size();i++){
       std::cout << "V " << i << " " << vplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (vplane_all.at(i).size()>15){
+      if (vplane_all.at(i).size()>10){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=vplane_all.at(i).size();k++){
@@ -642,7 +642,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   par[1] = h3->GetMean();
 	  // }
 	  
-	  if (h3->GetSum()>10){
+	  if (h3->GetSum()>6){
 	    Double_t xq = 0.5;
 	    h3->GetQuantiles(1,&par[1],&xq);
 	  }else{
@@ -661,7 +661,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=wplane_all.size();i++){
       std::cout << "W " << i << " " << wplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (wplane_all.at(i).size()>15){
+      if (wplane_all.at(i).size()>10){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=wplane_all.at(i).size();k++){
@@ -680,7 +680,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   par[1] = h3->GetMean();
 	  // }
 	  
-	  if (h3->GetSum()>10){
+	  if (h3->GetSum()>6){
 	    Double_t xq = 0.5;
 	    h3->GetQuantiles(1,&par[1],&xq);
 	  }else{
@@ -749,7 +749,7 @@ bool WireCellSst::DatauBooNEFrameDataSource::chirp_check(double rms, int plane, 
       if (rms > 2 && rms < 10)
 	return false;
     }else if (channel >= 2000 && channel < 2400){
-      if (rms >1.5&& rms < 5) 
+      if (rms >0.65&& rms < 5) 
 	return false;
     }
   }else if (plane == 1){
