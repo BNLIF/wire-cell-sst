@@ -218,8 +218,15 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       for (int j=0;j!=nbin;j++){
 	h2.Fill(h1->GetBinContent(j+1));
       }
+
+
       h2.Fit(f1,"Q0","");
       f1->GetParameters(par);
+
+
+      // Double_t xq = 0.5;
+      // h2.GetQuantiles(1,&par[1],&xq);
+
 
       for (int j=0;j!=nbin;j++){
 	h1->SetBinContent(j+1,h1->GetBinContent(j+1)-par[1]);
@@ -284,6 +291,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       }
       h2.Fit(f1,"Q0","");
       f1->GetParameters(par);
+
+      // Double_t xq = 0.5;
+      // h2.GetQuantiles(1,&par[1],&xq);
 
       for (int j=0;j!=nbin;j++){
 	h1->SetBinContent(j+1,h1->GetBinContent(j+1)-par[1]);
@@ -350,6 +360,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       h2.Fit(f1,"Q0","");
       f1->GetParameters(par);
 
+      // Double_t xq = 0.5;
+      // h2.GetQuantiles(1,&par[1],&xq);
+
       for (int j=0;j!=nbin;j++){
 	h1->SetBinContent(j+1,h1->GetBinContent(j+1)-par[1]);
       }
@@ -398,8 +411,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
     for (int i=0;i!=53;i++){
       WireSelection uplane;
-      for (int j=0;j!=46;j++){
-	int num = i*46+j;
+      for (int j=0;j!=48;j++){
+	int num = i*48+j;
 	if (num < nu){
 	  if (bad_num.at(num)==0)
 	    uplane.push_back(num);
@@ -467,8 +480,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
         
     for (int i=0;i!=53;i++){
       WireSelection vplane;
-      for (int j=0;j!=46;j++){
-	int num = i*46+j;
+      for (int j=0;j!=48;j++){
+	int num = i*48+j;
 	if (num < nv){
 	  if (bad_num.at(num)==0)
 	    vplane.push_back(num);
@@ -536,8 +549,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     
     for (int i=0;i!=76;i++){
       WireSelection wplane;
-      for (int j=0;j!=46;j++){
-	int num = i*46+j;
+      for (int j=0;j!=48;j++){
+	int num = i*48+j;
 	if (num < nw){
 	  if (bad_num.at(num)==0)
 	    wplane.push_back(num);
@@ -586,7 +599,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=uplane_all.size();i++){
       std::cout << "U " << i << " " << uplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (uplane_all.at(i).size()>10){
+      if (uplane_all.at(i).size()>0){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=uplane_all.at(i).size();k++){
@@ -605,7 +618,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   par[1] = h3->GetMean();
 	  // }
 	  
-	  if (h3->GetSum()>6){
+	  if (h3->GetSum()>0){
 	    Double_t xq = 0.5;
 	    h3->GetQuantiles(1,&par[1],&xq);
 	  }else{
@@ -623,7 +636,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=vplane_all.size();i++){
       std::cout << "V " << i << " " << vplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (vplane_all.at(i).size()>10){
+      if (vplane_all.at(i).size()>0){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=vplane_all.at(i).size();k++){
@@ -642,7 +655,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   par[1] = h3->GetMean();
 	  // }
 	  
-	  if (h3->GetSum()>6){
+	  if (h3->GetSum()>0){
 	    Double_t xq = 0.5;
 	    h3->GetQuantiles(1,&par[1],&xq);
 	  }else{
@@ -653,15 +666,31 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
 	  }
 	}
+      }else{
+	// for (int j=0;j!=nbin;j++){
+	//   for (int k=0;k!=vplane_all.at(i).size();k++){
+	//     hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,0);
+	//   }
+	// }
       }
       delete h3;
     }
+
+
+    // for (int i=0;i!=vplane_all.size();i++){
+    //   std::cout << i << " " << vplane_all.size() << " ";
+    //   for (int j=0;j!=vplane_all.at(i).size();j++){
+    // 	std::cout << vplane_all.at(i).at(j) << " ";
+    //   }
+    //   std::cout << std::endl;
+    // }
+
     
     
     for (int i=0;i!=wplane_all.size();i++){
       std::cout << "W " << i << " " << wplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
-      if (wplane_all.at(i).size()>10){
+      if (wplane_all.at(i).size()>0){
 	for (int j=0;j!=nbin;j++){
 	  h3->Reset();
 	  for (int k=0;k!=wplane_all.at(i).size();k++){
@@ -680,7 +709,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   par[1] = h3->GetMean();
 	  // }
 	  
-	  if (h3->GetSum()>6){
+	  if (h3->GetSum()>0){
 	    Double_t xq = 0.5;
 	    h3->GetQuantiles(1,&par[1],&xq);
 	  }else{
