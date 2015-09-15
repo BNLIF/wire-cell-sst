@@ -96,7 +96,7 @@ void WireCellSst::DatauBooNEFrameDataSource::Save(){
 int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 {
  
-
+  // return frame_number;
 
     if (frame.index == frame_number) {
 	return frame_number;
@@ -127,6 +127,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       hw[i]->Reset();
     }
 
+    
+
+
+
     // load into frame
     int nchannels = event.channelid->size();
     for (size_t ind=0; ind < nchannels; ++ind) {
@@ -138,8 +142,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	WireCell::Trace trace;
 	trace.chid = event.channelid->at(ind);
 
-	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
-	trace.charge.resize(bins_per_frame, 0.0);
+	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+	//trace.charge.resize(bins_per_frame, 0.0);
 
 	TH1F *htemp;
 	float threshold;
