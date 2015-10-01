@@ -47,6 +47,11 @@ namespace WireCellSst {
 	WireCell::WireMap& get_v_map(){return vplane_map;};
 	WireCell::WireMap& get_w_map(){return wplane_map;};
 
+	WireCell::ChirpMap& get_u_cmap(){return uchirp_map;};
+	WireCell::ChirpMap& get_v_cmap(){return vchirp_map;};
+	WireCell::ChirpMap& get_w_cmap(){return wchirp_map;};
+
+
     private:
 	const WireCell::GeomDataSource& gds;
 	int nwire_u, nwire_v, nwire_w;

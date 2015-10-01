@@ -730,16 +730,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=53;i++){
       WireSelection uplane;
       for (int j=0;j!=48;j++){
-	int num = i*48+j;
-	if (num < nu){
-	  uplane.push_back(num);
-	}
+    	int num = i*48+j;
+    	if (num < nu){
+    	  uplane.push_back(num);
+    	}
       }
       if (uplane.size() !=0) {
-	uplane_all.push_back(uplane);
-	for (int j=0;j!=uplane.size();j++){
-	  uplane_map[uplane.at(j)] = uplane;
-	}
+    	uplane_all.push_back(uplane);
+    	for (int j=0;j!=uplane.size();j++){
+    	  uplane_map[uplane.at(j)] = uplane;
+    	}
       }
     }
     
@@ -748,16 +748,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=53;i++){
       WireSelection vplane;
       for (int j=0;j!=48;j++){
-	int num = i*48+j;
-	if (num < nv){
-	  vplane.push_back(num);
-	}
+    	int num = i*48+j;
+    	if (num < nv){
+    	  vplane.push_back(num);
+    	}
       }
       if (vplane.size() !=0) {
-	vplane_all.push_back(vplane);
-	for (int j=0;j!=vplane.size();j++){
-	  vplane_map[vplane.at(j)] = vplane;
-	}
+    	vplane_all.push_back(vplane);
+    	for (int j=0;j!=vplane.size();j++){
+    	  vplane_map[vplane.at(j)] = vplane;
+    	}
       }
     }
     
@@ -765,16 +765,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     for (int i=0;i!=76;i++){
       WireSelection wplane;
       for (int j=0;j!=48;j++){
-	int num = i*48+j;
-	if (num < nw){
-	  wplane.push_back(num);
-	}
+    	int num = i*48+j;
+    	if (num < nw){
+    	  wplane.push_back(num);
+    	}
       }
       if (wplane.size() !=0) {
-	wplane_all.push_back(wplane);
-	for (int j=0;j!=wplane.size();j++){
-	  wplane_map[wplane.at(j)] = wplane;
-	}
+    	wplane_all.push_back(wplane);
+    	for (int j=0;j!=wplane.size();j++){
+    	  wplane_map[wplane.at(j)] = wplane;
+    	}
       }
     }
     
@@ -784,25 +784,26 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       //std::cout << "U " << i << " " << uplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
       if (uplane_all.at(i).size()>0){
-	for (int j=0;j!=nbin;j++){
-	  h3->Reset();
-	  for (int k=0;k!=uplane_all.at(i).size();k++){
-	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
-		hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)!=0)
-	      h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
-	  }
+    	for (int j=0;j!=nbin;j++){
+    	  h3->Reset();
+    	  for (int k=0;k!=uplane_all.at(i).size();k++){
+    	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
+    		fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+    	      h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
+    	  }
 	  
-	  if (h3->GetSum()>0){
-	    double xq = 0.5;
-	    h3->GetQuantiles(1,&par[1],&xq);
-	  }else{
-	    par[1] = 0;
-	  }
+    	  if (h3->GetSum()>7){
+    	    double xq = 0.5;
+    	    h3->GetQuantiles(1,&par[1],&xq);
+    	  }else{
+    	    par[1] = 0;
+    	  }
 
-	  for (int k=0;k!=uplane_all.at(i).size();k++){
-	    hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-	  }
-	}
+    	  for (int k=0;k!=uplane_all.at(i).size();k++){
+	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+	      hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
+    	  }
+    	}
       }
       delete h3;
     }
@@ -811,25 +812,26 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       //std::cout << "V " << i << " " << vplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
       if (vplane_all.at(i).size()>0){
-	for (int j=0;j!=nbin;j++){
-	  h3->Reset();
-	  for (int k=0;k!=vplane_all.at(i).size();k++){
-	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
-		hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)!=0)
-	      h3->Fill(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1));
-	  }
+    	for (int j=0;j!=nbin;j++){
+    	  h3->Reset();
+    	  for (int k=0;k!=vplane_all.at(i).size();k++){
+    	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
+    		fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+    	      h3->Fill(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1));
+    	  }
 	  
-	  if (h3->GetSum()>0){
-	    double xq = 0.5;
-	    h3->GetQuantiles(1,&par[1],&xq);
-	  }else{
-	    par[1] = 0;
-	  }
+    	  if (h3->GetSum()>7){
+    	    double xq = 0.5;
+    	    h3->GetQuantiles(1,&par[1],&xq);
+    	  }else{
+    	    par[1] = 0;
+    	  }
 	  
-	  for (int k=0;k!=vplane_all.at(i).size();k++){
-	    hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-	  }
-	}
+    	  for (int k=0;k!=vplane_all.at(i).size();k++){
+	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+	      hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
+    	  }
+    	}
       }
       delete h3;
     }
@@ -838,25 +840,26 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       //std::cout << "W " << i << " " << wplane_all.size() << std::endl;
       TH1F *h3 = new TH1F("h3","h3",100,-50,50);
       if (wplane_all.at(i).size()>0){
-	for (int j=0;j!=nbin;j++){
-	  h3->Reset();
-	  for (int k=0;k!=wplane_all.at(i).size();k++){
-	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
-		hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)!=0)
-	      h3->Fill(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1));
-	  }
+    	for (int j=0;j!=nbin;j++){
+    	  h3->Reset();
+    	  for (int k=0;k!=wplane_all.at(i).size();k++){
+    	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
+    		fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+    	      h3->Fill(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1));
+    	  }
 	  
-	  if (h3->GetSum()>0){
-	    double xq = 0.5;
-	    h3->GetQuantiles(1,&par[1],&xq);
-	  }else{
-	    par[1] = 0;
-	  }
+    	  if (h3->GetSum()>7){
+    	    double xq = 0.5;
+    	    h3->GetQuantiles(1,&par[1],&xq);
+    	  }else{
+    	    par[1] = 0;
+    	  }
 	  
-	  for (int k=0;k!=wplane_all.at(i).size();k++){
-	    hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-	  }
-	}
+    	  for (int k=0;k!=wplane_all.at(i).size();k++){
+	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+	      hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
+    	  }
+    	}
       }
       delete h3;
     }
