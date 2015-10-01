@@ -35,6 +35,14 @@ namespace WireCellSst {
 	bool chirp_check(double rms, int plane, int channel);
 	double correlation1(TH1F *h1, TH1F *h2);
 	
+	void zigzag_removal(TH1F *h1);
+	void chirp_id(TH1F *h1, int plane, int channel_no);
+	void SignalFilter(TH1F *h1);
+	double CalcRMSWithFlags(TH1F *hist);
+	void RemoveFilterFlags(TH1F *hist);
+	void RawAdaptiveBaselineAlg(TH1F *hist);
+	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
+
 	WireCell::WireMap& get_u_map(){return uplane_map;};
 	WireCell::WireMap& get_v_map(){return vplane_map;};
 	WireCell::WireMap& get_w_map(){return wplane_map;};
@@ -46,6 +54,10 @@ namespace WireCellSst {
 	WireCell::WireMap uplane_map;
 	WireCell::WireMap vplane_map;
 	WireCell::WireMap wplane_map;
+
+	WireCell::ChirpMap uchirp_map;
+	WireCell::ChirpMap vchirp_map;
+	WireCell::ChirpMap wchirp_map;
 	
 	TH1F **hu;
 	TH1F **hv;
