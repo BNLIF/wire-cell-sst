@@ -541,9 +541,40 @@ void  WireCellSst::DatauBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F *filtH
 void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int planeNum, int channel_no)
 {
   double rmsVal = CalcRMSWithFlags(hist);
-  const double maxRMSCut[3] = {10.0,10.0,5.0};
+  // const double maxRMSCut[3] = {10.0,10.0,5.0};
+  double maxRMSCut[3] = {10.0,10.0,5.0};
+  double minRMSCut[3] = {2,2,2};
+
+  if (planeNum == 0){
+    if (channel_no < 100){
+      maxRMSCut[0] = 5;
+      minRMSCut[0] = 1;
+    }else if (channel_no >= 100 && channel_no<2000){
+      maxRMSCut[0] = 10;
+      minRMSCut[0] = 2;
+    }else if (channel_no >= 2000 && channel_no < 2400){
+      maxRMSCut[0] = 5;
+      minRMSCut[0] = 1;
+    }
+  }else if (planeNum == 1){
+    if (channel_no <290){
+      maxRMSCut[1] = 5;
+      minRMSCut[1] = 1;
+    }else if (channel_no>=290 && channel_no < 2200){
+      maxRMSCut[1] = 10;
+      minRMSCut[1] = 2;
+    }else if (channel_no >=2200){
+      maxRMSCut[1] = 5;
+      minRMSCut[1] = 1;
+    }
+  }else if (planeNum == 2){
+    maxRMSCut[2] = 8;
+    minRMSCut[2] = 2;
+  }
+  
+
    
-  if(rmsVal > maxRMSCut[planeNum])
+  if(rmsVal > maxRMSCut[planeNum] || rmsVal < minRMSCut[planeNum])
     {
       Int_t numBins = hist->GetNbinsX();
       for(Int_t i = 0; i < numBins; i++)
@@ -721,6 +752,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       vchirp_map.size() << " " << wchirp_map.size() << std::endl;
 
 
+    // for (auto it = uchirp_map.begin(); it!= uchirp_map.end();it++){
+    //   std::cout << "U: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+    // }
+    // for (auto it = vchirp_map.begin(); it!= vchirp_map.end();it++){
+    //   std::cout << "V: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+    // }
+    // for (auto it = wchirp_map.begin(); it!= wchirp_map.end();it++){
+    //   std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+    // }
+
     // deal with coherent noise removal 
     int n = bins_per_frame;
     int nbin = bins_per_frame;
@@ -788,11 +829,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     	  h3->Reset();
     	  for (int k=0;k!=uplane_all.at(i).size();k++){
     	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
-    		fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+    		fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
     	      h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
     	  }
 	  
-    	  if (h3->GetSum()>7){
+    	  if (h3->GetSum()>0){
     	    double xq = 0.5;
     	    h3->GetQuantiles(1,&par[1],&xq);
     	  }else{
@@ -816,11 +857,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     	  h3->Reset();
     	  for (int k=0;k!=vplane_all.at(i).size();k++){
     	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
-    		fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+    		fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
     	      h3->Fill(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1));
     	  }
 	  
-    	  if (h3->GetSum()>7){
+    	  if (h3->GetSum()>0){
     	    double xq = 0.5;
     	    h3->GetQuantiles(1,&par[1],&xq);
     	  }else{
@@ -844,11 +885,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     	  h3->Reset();
     	  for (int k=0;k!=wplane_all.at(i).size();k++){
     	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
-    		fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+    		fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
     	      h3->Fill(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1));
     	  }
 	  
-    	  if (h3->GetSum()>7){
+    	  if (h3->GetSum()>0){
     	    double xq = 0.5;
     	    h3->GetQuantiles(1,&par[1],&xq);
     	  }else{
