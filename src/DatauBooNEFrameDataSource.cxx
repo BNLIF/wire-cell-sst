@@ -95,7 +95,7 @@ void WireCellSst::DatauBooNEFrameDataSource::Save(){
 }
 
 
-void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1){
+void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no){
   TVirtualFFT *ifft;
   double value_re[9600],value_im[9600];
   
@@ -144,6 +144,17 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1){
     rms += pow(h1->GetBinContent(j+1)-mean,2);
   }
   rms = sqrt(rms/h1->GetNbinsX());
+  
+  //save rms for later use
+  if (plane == 0 ){
+    urms_map[channel_no] = rms;
+  }else if (plane == 1){
+    vrms_map[channel_no] = rms;
+  }else if (plane == 2){
+    wrms_map[channel_no] = rms;
+  }
+  // std::cout << plane << " " << channel_no << " " << rms << std::endl;
+
   TH1F h2("h2","h2",100,mean-10*rms,mean+10*rms);
   for (int j=0;j!=nbin;j++){
     h2.Fill(h1->GetBinContent(j+1));
@@ -572,9 +583,11 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
     minRMSCut[2] = 2;
   }
   
-
+  // std::cout << "Xin: " << planeNum << " " << channel_no << " " << rmsVal << std::endl;
    
   if(rmsVal > maxRMSCut[planeNum] || rmsVal < minRMSCut[planeNum])
+    //if(rmsVal > maxRMSCut[planeNum] )
+    //if( rmsVal < minRMSCut[planeNum])
     {
       Int_t numBins = hist->GetNbinsX();
       for(Int_t i = 0; i < numBins; i++)
@@ -690,13 +703,13 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     std::cout << "Remove ZigZag " << std::endl;
     //deal with the zig zag noise
     for (int i=0;i!=nu;i++){
-      zigzag_removal(hu[i]);
+      zigzag_removal(hu[i],0,i);
     }
     for (int i=0;i!=nv;i++){
-      zigzag_removal(hv[i]);
+      zigzag_removal(hv[i],1,i);
     }
     for (int i=0;i!=nw;i++){
-      zigzag_removal(hw[i]);
+      zigzag_removal(hw[i],2,i);
     }
 
     std::cout << "Identify Chirping" << std::endl;
@@ -711,6 +724,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       chirp_id(hw[i],2,i);
     }
 
+    
     std::cout << "Adaptive Baseline " << uchirp_map.size() << " " << 
       vchirp_map.size() << " " << wchirp_map.size() << std::endl;
     // do the adaptive baseline ... 
@@ -748,20 +762,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       RemoveFilterFlags(hw[i]);
     }
 
-    std::cout << "Final Count " << uchirp_map.size() << " " << 
-      vchirp_map.size() << " " << wchirp_map.size() << std::endl;
-
-
-    // for (auto it = uchirp_map.begin(); it!= uchirp_map.end();it++){
-    //   std::cout << "U: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-    // }
-    // for (auto it = vchirp_map.begin(); it!= vchirp_map.end();it++){
-    //   std::cout << "V: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-    // }
-    // for (auto it = wchirp_map.begin(); it!= wchirp_map.end();it++){
-    //   std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-    // }
-
+    
     // deal with coherent noise removal 
     int n = bins_per_frame;
     int nbin = bins_per_frame;
@@ -823,12 +824,21 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
     for (int i=0;i!=uplane_all.size();i++){
       //std::cout << "U " << i << " " << uplane_all.size() << std::endl;
-      TH1F *h3 = new TH1F("h3","h3",100,-50,50);
+      //calculate maximum_rms;
+      float max_rms = 0;
+      for (int j=0;j!=uplane_all.at(i).size();j++){
+	if (urms_map[uplane_all.at(i).at(j)] > max_rms) max_rms = urms_map[uplane_all.at(i).at(j)];
+      }
+      // if (max_rms<10) max_rms = 10;
+      // std::cout << i << " " << max_rms << std::endl;
+
+      
+      TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
       if (uplane_all.at(i).size()>0){
     	for (int j=0;j!=nbin;j++){
     	  h3->Reset();
     	  for (int k=0;k!=uplane_all.at(i).size();k++){
-    	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
+    	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
     		fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
     	      h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
     	  }
@@ -840,8 +850,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     	    par[1] = 0;
     	  }
 
+	  // if (j == 100) std::cout << par[1] << " " << h3->GetSum() << std::endl;
+	  
     	  for (int k=0;k!=uplane_all.at(i).size();k++){
-	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
 	      hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
     	  }
     	}
@@ -851,12 +863,19 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     
     for (int i=0;i!=vplane_all.size();i++){
       //std::cout << "V " << i << " " << vplane_all.size() << std::endl;
-      TH1F *h3 = new TH1F("h3","h3",100,-50,50);
+      float max_rms = 0;
+      for (int j=0;j!=vplane_all.at(i).size();j++){
+	if (vrms_map[vplane_all.at(i).at(j)] > max_rms) max_rms = vrms_map[vplane_all.at(i).at(j)];
+      }
+      // if (max_rms<10) max_rms = 10;
+       
+
+      TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
       if (vplane_all.at(i).size()>0){
     	for (int j=0;j!=nbin;j++){
     	  h3->Reset();
     	  for (int k=0;k!=vplane_all.at(i).size();k++){
-    	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
+    	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
     		fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
     	      h3->Fill(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1));
     	  }
@@ -869,7 +888,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     	  }
 	  
     	  for (int k=0;k!=vplane_all.at(i).size();k++){
-	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
 	      hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
     	  }
     	}
@@ -878,13 +897,19 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     }
 
     for (int i=0;i!=wplane_all.size();i++){
+      float max_rms = 0;
+      for (int j=0;j!=wplane_all.at(i).size();j++){
+	if (wrms_map[wplane_all.at(i).at(j)] > max_rms) max_rms = wrms_map[wplane_all.at(i).at(j)];
+      }
+      // if (max_rms<10) max_rms = 10;
+     
       //std::cout << "W " << i << " " << wplane_all.size() << std::endl;
-      TH1F *h3 = new TH1F("h3","h3",100,-50,50);
+      TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
       if (wplane_all.at(i).size()>0){
     	for (int j=0;j!=nbin;j++){
     	  h3->Reset();
     	  for (int k=0;k!=wplane_all.at(i).size();k++){
-    	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<50 && 
+    	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
     		fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
     	      h3->Fill(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1));
     	  }
@@ -897,13 +922,44 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     	  }
 	  
     	  for (int k=0;k!=wplane_all.at(i).size();k++){
-	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.1)
+	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
 	      hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
     	  }
     	}
       }
       delete h3;
     }
+
+
+
+    double sum_u = 0, sum_v = 0, sum_w = 0;
+    for (auto it = uchirp_map.begin(); it!= uchirp_map.end();it++){
+      sum_u += it->second.second - it->second.first  + 1;
+      //std::cout << "U: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+    }
+    for (auto it = vchirp_map.begin(); it!= vchirp_map.end();it++){
+      sum_v += it->second.second - it->second.first  + 1;
+      //std::cout << "V: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+    }
+    for (auto it = wchirp_map.begin(); it!= wchirp_map.end();it++){
+      sum_w += it->second.second - it->second.first  + 1;
+      //std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+    }
+    sum_u /= bins_per_frame * nwire_u;
+    sum_v /= bins_per_frame * nwire_v;
+    sum_w /= bins_per_frame * nwire_w;
+    
+    std::cout << "Final Count " << uchirp_map.size() << " " << sum_u << " " 
+	      << vchirp_map.size() << " " << sum_v << " " 
+	      << wchirp_map.size() << " " << sum_w << " " << std::endl;
+    double eff_3plane, eff_2plane;
+    eff_3plane = (1-sum_u)*(1-sum_v)*(1-sum_w);
+    eff_2plane = eff_3plane 
+      + (1-sum_u)*(1-sum_v) * sum_w
+      + (1-sum_v)*(1-sum_w) * sum_u
+      + (1-sum_w)*(1-sum_u) * sum_v;
+    std::cout << "Efficiency: " << eff_3plane << " " << eff_2plane << std::endl;
+
 
 
     
