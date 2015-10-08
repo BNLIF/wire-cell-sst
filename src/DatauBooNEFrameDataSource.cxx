@@ -10,88 +10,41 @@
 
 using namespace WireCell;
 
-WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(TTree& ttree, const WireCell::GeomDataSource& gds,int bins_per_frame1)
+WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1)
     : WireCell::FrameDataSource()
-    , tree(&ttree)
+    , root_file(root_file)
     , gds(gds)
-    , event()
 {
   bins_per_frame = bins_per_frame1;
-    // sigh, we can't do things this simply because the ttree does not
-    // have a single branch.  
-    // tree->SetBranchAddress(name, &event);
+  
+  nevents = 0;
+  
+  GeomWireSelection wires_u = gds.wires_in_plane(WirePlaneType_t(0));
+  GeomWireSelection wires_v = gds.wires_in_plane(WirePlaneType_t(1));
+  GeomWireSelection wires_w = gds.wires_in_plane(WirePlaneType_t(2));
+  
+  nwire_u = wires_u.size();
+  nwire_v = wires_v.size();
+  nwire_w = wires_w.size();
+  
+}
 
-    tree->SetBranchAddress("eventNo" , &event.number);
-    tree->SetBranchAddress("runNo"   , &event.run);
-    tree->SetBranchAddress("subRunNo", &event.subrun);
-
-    // tree->SetBranchAddress("calib_nChannel", &event.nchannels);
-    // tree->SetBranchAddress("calib_channelId", &event.channelid);
-    // tree->SetBranchAddress("calib_wf", &event.signal);
-
-    tree->SetBranchAddress("raw_nChannel", &event.nchannels);
-    tree->SetBranchAddress("raw_channelId", &event.channelid);
-    tree->SetBranchAddress("raw_wf", &event.signal);
-
-    GeomWireSelection wires_u = gds.wires_in_plane(WirePlaneType_t(0));
-    GeomWireSelection wires_v = gds.wires_in_plane(WirePlaneType_t(1));
-    GeomWireSelection wires_w = gds.wires_in_plane(WirePlaneType_t(2));
-    
-    nwire_u = wires_u.size();
-    nwire_v = wires_v.size();
-    nwire_w = wires_w.size();
-    
-    hu = new TH1F*[nwire_u];
-    hv = new TH1F*[nwire_v];
-    hw = new TH1F*[nwire_w];
-    
-    for (int i=0;i!=nwire_u;i++){
-      hu[i] = new TH1F(Form("U2_%d",i),Form("U2_%d",i),bins_per_frame,0,bins_per_frame);
-    }
-    for (int i=0;i!=nwire_v;i++){
-      hv[i] = new TH1F(Form("V2_%d",i),Form("V2_%d",i),bins_per_frame,0,bins_per_frame);
-    }
-    for (int i=0;i!=nwire_w;i++){
-      hw[i] = new TH1F(Form("W2_%d",i),Form("W2_%d",i),bins_per_frame,0,bins_per_frame);
-    }
-
+void WireCellSst::DatauBooNEFrameDataSource::Clear(){
+  frame.clear();
 }
 
 WireCellSst::DatauBooNEFrameDataSource::~DatauBooNEFrameDataSource()
 {
-  for (int i=0;i!=nwire_u;i++){
-    delete hu[i] ;
-  }
-  delete hu;
-  for (int i=0;i!=nwire_v;i++){
-    delete hv[i] ;
-  }
-  delete hv;
-  for (int i=0;i!=nwire_w;i++){
-    delete hw[i] ;
-  }
-  delete hw;
 }
 
 int WireCellSst::DatauBooNEFrameDataSource::size() const
 {
-    return tree->GetEntries();
+  //return tree->GetEntries();
+  return nevents;
 }
 
 void WireCellSst::DatauBooNEFrameDataSource::Save(){
-  TFile *file = new TFile("temp_data.root","RECREATE");
-  for (int i=0;i!=nwire_u;i++){
-    TH1F *huu = (TH1F*)hu[i]->Clone(Form("U1_%d",i));
-  }
-  for (int i=0;i!=nwire_v;i++){
-    TH1F *hvv = (TH1F*)hv[i]->Clone(Form("V1_%d",i));
-  }
-  for (int i=0;i!=nwire_w;i++){
-    TH1F *hww = (TH1F*)hw[i]->Clone(Form("W1_%d",i));
-  }
-  file->Write();
-  file->Close();
-  std::cout << "Saved file" << std::endl;
+
 }
 
 
@@ -630,7 +583,7 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
 
 int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 {
- 
+  
   // return frame_number;
 
     if (frame.index == frame_number) {
@@ -643,38 +596,79 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	return frame_number;
     }
 
-    int siz = tree->GetEntry(frame_number);
-    if (siz <= 0 ) {
-	return -1;
-    }
+    const char* tpath = "/Event/Sim";
+    TFile tfile(root_file,"read");
+    TTree* tree = dynamic_cast<TTree*>(tfile.Get(tpath));
 
-    if (frame_number >= siz) {
-	return -1;
-    }
-
-    for (int i=0;i!=nwire_u;i++){
-      hu[i]->Reset();
-    }
-    for (int i=0;i!=nwire_v;i++){
-      hv[i]->Reset();
-    }
-    for (int i=0;i!=nwire_w;i++){
-      hw[i]->Reset();
-    }
-
+    // sigh, we can't do things this simply because the ttree does not
+    // have a single branch.  
+    // tree->SetBranchAddress(name, &event);
     
-    std::cout << "Load Data " << std::endl;
-    // load into frame
-    int nchannels = event.channelid->size();
-    for (size_t ind=0; ind < nchannels; ++ind) {
-	TH1F* signal = dynamic_cast<TH1F*>(event.signal->At(ind));
-	if (!signal) {
-	    return -1;
-	}
-
+    tree->SetBranchStatus("*",0);
+    
+    tree->SetBranchStatus("eventNo",1);
+    tree->SetBranchAddress("eventNo" , &event_no);
+    tree->SetBranchStatus("runNo",1);
+    tree->SetBranchAddress("runNo"   , &run_no);
+    tree->SetBranchStatus("subRunNo",1);
+    tree->SetBranchAddress("subRunNo", &subrun_no);
+    
+    std::vector<int> *channelid = new std::vector<int>;
+    TClonesArray* esignal = new TClonesArray;
+          
+    tree->SetBranchStatus("raw_channelId",1);
+    tree->SetBranchAddress("raw_channelId", &channelid);
+    tree->SetBranchStatus("raw_wf",1);
+    tree->SetBranchAddress("raw_wf", &esignal);
+    
+    int siz = tree->GetEntry(frame_number);
+    
+    
+    if (siz > 0 && frame_number < siz) {
+      
+      TH1F **hu;
+      TH1F **hv;
+      TH1F **hw;
+      
+      hu = new TH1F*[nwire_u];
+      hv = new TH1F*[nwire_v];
+      hw = new TH1F*[nwire_w];
+      
+      for (int i=0;i!=nwire_u;i++){
+	hu[i] = new TH1F(Form("U2_%d",i),Form("U2_%d",i),bins_per_frame,0,bins_per_frame);
+      }
+      for (int i=0;i!=nwire_v;i++){
+	hv[i] = new TH1F(Form("V2_%d",i),Form("V2_%d",i),bins_per_frame,0,bins_per_frame);
+      }
+      for (int i=0;i!=nwire_w;i++){
+	hw[i] = new TH1F(Form("W2_%d",i),Form("W2_%d",i),bins_per_frame,0,bins_per_frame);
+      }
+      
+      
+      // for (int i=0;i!=nwire_u;i++){
+      //   hu[i]->Reset();
+      // }
+      // for (int i=0;i!=nwire_v;i++){
+      //   hv[i]->Reset();
+      // }
+      // for (int i=0;i!=nwire_w;i++){
+      //   hw[i]->Reset();
+      // }
+      
+      
+      std::cout << "Load Data " << std::endl;
+      // load into frame
+      int nchannels = channelid->size();
+      for (size_t ind=0; ind < nchannels; ++ind) {
+	TH1F* signal = dynamic_cast<TH1F*>(esignal->At(ind));
+	if (!signal) continue;
+	// {
+	//     return -1;
+	// }
+	
 	WireCell::Trace trace;
-	trace.chid = event.channelid->at(ind);
-
+	trace.chid = channelid->at(ind);
+	
 	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
 	//trace.charge.resize(bins_per_frame, 0.0);
 
@@ -694,316 +688,358 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	for (int ibin=0; ibin != bins_per_frame; ibin++) {
 	  htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
 	}	
-    }
-
-    int nu = 2400, nv = 2400, nw = 3456;
-    int ntotal = nu + nv + nw;
-
-
-    std::cout << "Remove ZigZag " << std::endl;
-    //deal with the zig zag noise
-    for (int i=0;i!=nu;i++){
-      zigzag_removal(hu[i],0,i);
-    }
-    for (int i=0;i!=nv;i++){
-      zigzag_removal(hv[i],1,i);
-    }
-    for (int i=0;i!=nw;i++){
-      zigzag_removal(hw[i],2,i);
-    }
-
-    std::cout << "Identify Chirping" << std::endl;
-    // deal with the chirping ... set chirping part > 10000
-    for (int i=0;i!=nu;i++){
-      chirp_id(hu[i],0,i);
-    }
-    for (int i=0;i!=nv;i++){
-      chirp_id(hv[i],1,i);
-    }
-    for (int i=0;i!=nw;i++){
-      chirp_id(hw[i],2,i);
-    }
-
-    
-    std::cout << "Adaptive Baseline " << uchirp_map.size() << " " << 
-      vchirp_map.size() << " " << wchirp_map.size() << std::endl;
-    // do the adaptive baseline ... 
-    for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
-      SignalFilter(hu[it->first]);
-      RawAdaptiveBaselineAlg(hu[it->first]);
-      RemoveFilterFlags(hu[it->first]);
-    }
-    for (auto it = vchirp_map.begin(); it!= vchirp_map.end(); it++){
-      SignalFilter(hv[it->first]);
-      RawAdaptiveBaselineAlg(hv[it->first]);
-      RemoveFilterFlags(hv[it->first]);
-    }
-    for (auto it = wchirp_map.begin(); it!= wchirp_map.end(); it++){
-      SignalFilter(hw[it->first]);
-      RawAdaptiveBaselineAlg(hw[it->first]);
-      RemoveFilterFlags(hw[it->first]);
-    }
-    
-    std::cout << "Noisy Channel " << std::endl;
-    // deal with the noisy signal, and put them into chirping map 
-    for (int i=0;i!=nu;i++){
-      SignalFilter(hu[i]);
-      NoisyFilterAlg(hu[i],0,i);
-      RemoveFilterFlags(hu[i]);
-    }
-    for (int i=0;i!=nv;i++){
-      SignalFilter(hv[i]);
-      NoisyFilterAlg(hv[i],1,i);
-      RemoveFilterFlags(hv[i]);
-    }
-    for (int i=0;i!=nw;i++){
-      SignalFilter(hw[i]);
-      NoisyFilterAlg(hw[i],2,i);
-      RemoveFilterFlags(hw[i]);
-    }
-
-    
-    // deal with coherent noise removal 
-    int n = bins_per_frame;
-    int nbin = bins_per_frame;
-    double par[3];
-    
-    WireSelectionV uplane_all;
-    for (int i=0;i!=53;i++){
-      WireSelection uplane;
-      for (int j=0;j!=48;j++){
-    	int num = i*48+j;
-    	if (num < nu){
-    	  uplane.push_back(num);
-    	}
       }
-      if (uplane.size() !=0) {
-    	uplane_all.push_back(uplane);
-    	for (int j=0;j!=uplane.size();j++){
-    	  uplane_map[uplane.at(j)] = uplane;
-    	}
-      }
-    }
-    
-    
-    WireSelectionV vplane_all;
-    for (int i=0;i!=53;i++){
-      WireSelection vplane;
-      for (int j=0;j!=48;j++){
-    	int num = i*48+j;
-    	if (num < nv){
-    	  vplane.push_back(num);
-    	}
-      }
-      if (vplane.size() !=0) {
-    	vplane_all.push_back(vplane);
-    	for (int j=0;j!=vplane.size();j++){
-    	  vplane_map[vplane.at(j)] = vplane;
-    	}
-      }
-    }
-    
-    WireSelectionV wplane_all;
-    for (int i=0;i!=76;i++){
-      WireSelection wplane;
-      for (int j=0;j!=48;j++){
-    	int num = i*48+j;
-    	if (num < nw){
-    	  wplane.push_back(num);
-    	}
-      }
-      if (wplane.size() !=0) {
-    	wplane_all.push_back(wplane);
-    	for (int j=0;j!=wplane.size();j++){
-    	  wplane_map[wplane.at(j)] = wplane;
-    	}
-      }
-    }
-    
-
-
-    for (int i=0;i!=uplane_all.size();i++){
-      //std::cout << "U " << i << " " << uplane_all.size() << std::endl;
-      //calculate maximum_rms;
-      float max_rms = 0;
-      for (int j=0;j!=uplane_all.at(i).size();j++){
-	if (urms_map[uplane_all.at(i).at(j)] > max_rms) max_rms = urms_map[uplane_all.at(i).at(j)];
-      }
-      // if (max_rms<10) max_rms = 10;
-      // std::cout << i << " " << max_rms << std::endl;
-
       
-      TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
-      if (uplane_all.at(i).size()>0){
-    	for (int j=0;j!=nbin;j++){
-    	  h3->Reset();
-    	  for (int k=0;k!=uplane_all.at(i).size();k++){
-    	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
-    		fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-    	      h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
-    	  }
-	  
-    	  if (h3->GetSum()>0){
-    	    double xq = 0.5;
-    	    h3->GetQuantiles(1,&par[1],&xq);
-    	  }else{
-    	    par[1] = 0;
-    	  }
-
-	  // if (j == 100) std::cout << par[1] << " " << h3->GetSum() << std::endl;
-	  
-    	  for (int k=0;k!=uplane_all.at(i).size();k++){
-	    if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-	      hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-    	  }
-    	}
+      int nu = 2400, nv = 2400, nw = 3456;
+      int ntotal = nu + nv + nw;
+      
+      
+      std::cout << "Remove ZigZag " << std::endl;
+      //deal with the zig zag noise
+      for (int i=0;i!=nu;i++){
+	zigzag_removal(hu[i],0,i);
       }
-      delete h3;
-    }
-    
-    for (int i=0;i!=vplane_all.size();i++){
-      //std::cout << "V " << i << " " << vplane_all.size() << std::endl;
-      float max_rms = 0;
-      for (int j=0;j!=vplane_all.at(i).size();j++){
-	if (vrms_map[vplane_all.at(i).at(j)] > max_rms) max_rms = vrms_map[vplane_all.at(i).at(j)];
+      for (int i=0;i!=nv;i++){
+	zigzag_removal(hv[i],1,i);
       }
-      // if (max_rms<10) max_rms = 10;
-       
-
-      TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
-      if (vplane_all.at(i).size()>0){
-    	for (int j=0;j!=nbin;j++){
-    	  h3->Reset();
-    	  for (int k=0;k!=vplane_all.at(i).size();k++){
-    	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
-    		fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-    	      h3->Fill(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1));
-    	  }
-	  
-    	  if (h3->GetSum()>0){
-    	    double xq = 0.5;
-    	    h3->GetQuantiles(1,&par[1],&xq);
-    	  }else{
-    	    par[1] = 0;
-    	  }
-	  
-    	  for (int k=0;k!=vplane_all.at(i).size();k++){
-	    if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-	      hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-    	  }
-    	}
+      for (int i=0;i!=nw;i++){
+	zigzag_removal(hw[i],2,i);
       }
-      delete h3;
-    }
-
-    for (int i=0;i!=wplane_all.size();i++){
-      float max_rms = 0;
-      for (int j=0;j!=wplane_all.at(i).size();j++){
-	if (wrms_map[wplane_all.at(i).at(j)] > max_rms) max_rms = wrms_map[wplane_all.at(i).at(j)];
+      
+      std::cout << "Identify Chirping" << std::endl;
+      // deal with the chirping ... set chirping part > 10000
+      for (int i=0;i!=nu;i++){
+	chirp_id(hu[i],0,i);
       }
-      // if (max_rms<10) max_rms = 10;
-     
-      //std::cout << "W " << i << " " << wplane_all.size() << std::endl;
-      TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
-      if (wplane_all.at(i).size()>0){
-    	for (int j=0;j!=nbin;j++){
-    	  h3->Reset();
-    	  for (int k=0;k!=wplane_all.at(i).size();k++){
-    	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
-    		fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-    	      h3->Fill(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1));
-    	  }
-	  
-    	  if (h3->GetSum()>0){
-    	    double xq = 0.5;
-    	    h3->GetQuantiles(1,&par[1],&xq);
-    	  }else{
-    	    par[1] = 0;
-    	  }
-	  
-    	  for (int k=0;k!=wplane_all.at(i).size();k++){
-	    if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-	      hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-    	  }
-    	}
+      for (int i=0;i!=nv;i++){
+	chirp_id(hv[i],1,i);
       }
-      delete h3;
-    }
-
-
-
-    double sum_u = 0, sum_v = 0, sum_w = 0;
-    for (auto it = uchirp_map.begin(); it!= uchirp_map.end();it++){
-      sum_u += it->second.second - it->second.first  + 1;
-      //std::cout << "U: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-    }
-    for (auto it = vchirp_map.begin(); it!= vchirp_map.end();it++){
-      sum_v += it->second.second - it->second.first  + 1;
-      //std::cout << "V: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-    }
-    for (auto it = wchirp_map.begin(); it!= wchirp_map.end();it++){
-      sum_w += it->second.second - it->second.first  + 1;
-      //std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-    }
-    sum_u /= bins_per_frame * nwire_u;
-    sum_v /= bins_per_frame * nwire_v;
-    sum_w /= bins_per_frame * nwire_w;
-    
-    std::cout << "Final Count " << uchirp_map.size() << " " << sum_u << " " 
-	      << vchirp_map.size() << " " << sum_v << " " 
-	      << wchirp_map.size() << " " << sum_w << " " << std::endl;
-    double eff_3plane, eff_2plane;
-    eff_3plane = (1-sum_u)*(1-sum_v)*(1-sum_w);
-    eff_2plane = eff_3plane 
-      + (1-sum_u)*(1-sum_v) * sum_w
-      + (1-sum_v)*(1-sum_w) * sum_u
-      + (1-sum_w)*(1-sum_u) * sum_v;
-    std::cout << "Efficiency: " << eff_3plane << " " << eff_2plane << std::endl;
-
-
-
-    
-    // load the stuff back to the frame ... 
-    
-    for (size_t ind=0; ind < nchannels; ++ind) {
-      TH1F* signal;
-      WireCell::Trace trace;
-      trace.chid = event.channelid->at(ind);
-
-      trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
-      trace.charge.resize(bins_per_frame, 0.0);
-
-      //int flag = 0;
-      if (trace.chid < nwire_u){
-	signal = hu[trace.chid];
-	//	if (uplane_map.find(trace.chid)==uplane_map.end()) flag = 1;
-      }else if (trace.chid < nwire_u + nwire_v){
-	signal = hv[trace.chid - nwire_u];
-	//if (vplane_map.find(trace.chid-nwire_u)==vplane_map.end()) flag = 1;
-      }else{
-	signal = hw[trace.chid - nwire_u - nwire_v];
-	//if (wplane_map.find(trace.chid-nwire_u-nwire_v)==wplane_map.end()) flag = 1;
+      for (int i=0;i!=nw;i++){
+	chirp_id(hw[i],2,i);
       }
       
       
-
-      //      if (flag ==0){
-      for (int ibin=0; ibin != bins_per_frame; ibin++) {
-	trace.charge.at(ibin) = signal->GetBinContent(ibin+1);
+      std::cout << "Adaptive Baseline " << uchirp_map.size() << " " << 
+	vchirp_map.size() << " " << wchirp_map.size() << std::endl;
+      // do the adaptive baseline ... 
+      for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
+	SignalFilter(hu[it->first]);
+	RawAdaptiveBaselineAlg(hu[it->first]);
+	RemoveFilterFlags(hu[it->first]);
       }
-      //}else{
+      for (auto it = vchirp_map.begin(); it!= vchirp_map.end(); it++){
+	SignalFilter(hv[it->first]);
+	RawAdaptiveBaselineAlg(hv[it->first]);
+	RemoveFilterFlags(hv[it->first]);
+      }
+      for (auto it = wchirp_map.begin(); it!= wchirp_map.end(); it++){
+	SignalFilter(hw[it->first]);
+	RawAdaptiveBaselineAlg(hw[it->first]);
+	RemoveFilterFlags(hw[it->first]);
+      }
+      
+      std::cout << "Noisy Channel " << std::endl;
+      // deal with the noisy signal, and put them into chirping map 
+      for (int i=0;i!=nu;i++){
+	SignalFilter(hu[i]);
+	NoisyFilterAlg(hu[i],0,i);
+	RemoveFilterFlags(hu[i]);
+      }
+      for (int i=0;i!=nv;i++){
+	SignalFilter(hv[i]);
+	NoisyFilterAlg(hv[i],1,i);
+	RemoveFilterFlags(hv[i]);
+      }
+      for (int i=0;i!=nw;i++){
+	SignalFilter(hw[i]);
+	NoisyFilterAlg(hw[i],2,i);
+	RemoveFilterFlags(hw[i]);
+      }
+      
+      
+      // deal with coherent noise removal 
+      int n = bins_per_frame;
+      int nbin = bins_per_frame;
+      double par[3];
+      
+      WireSelectionV uplane_all;
+      for (int i=0;i!=53;i++){
+	WireSelection uplane;
+	for (int j=0;j!=48;j++){
+	  int num = i*48+j;
+	  if (num < nu){
+	    uplane.push_back(num);
+	  }
+	}
+	if (uplane.size() !=0) {
+	  uplane_all.push_back(uplane);
+	  for (int j=0;j!=uplane.size();j++){
+	    uplane_map[uplane.at(j)] = uplane;
+	  }
+	}
+      }
+      
+      
+      WireSelectionV vplane_all;
+      for (int i=0;i!=53;i++){
+	WireSelection vplane;
+	for (int j=0;j!=48;j++){
+	  int num = i*48+j;
+	  if (num < nv){
+	    vplane.push_back(num);
+	  }
+	}
+	if (vplane.size() !=0) {
+	  vplane_all.push_back(vplane);
+	  for (int j=0;j!=vplane.size();j++){
+	    vplane_map[vplane.at(j)] = vplane;
+	  }
+	}
+      }
+      
+      WireSelectionV wplane_all;
+      for (int i=0;i!=76;i++){
+	WireSelection wplane;
+	for (int j=0;j!=48;j++){
+	  int num = i*48+j;
+	  if (num < nw){
+	    wplane.push_back(num);
+	  }
+	}
+	if (wplane.size() !=0) {
+	  wplane_all.push_back(wplane);
+	  for (int j=0;j!=wplane.size();j++){
+	    wplane_map[wplane.at(j)] = wplane;
+	  }
+	}
+      }
+      
+      
+      
+      for (int i=0;i!=uplane_all.size();i++){
+	//std::cout << "U " << i << " " << uplane_all.size() << std::endl;
+	//calculate maximum_rms;
+	float max_rms = 0;
+	for (int j=0;j!=uplane_all.at(i).size();j++){
+	  if (urms_map[uplane_all.at(i).at(j)] > max_rms) max_rms = urms_map[uplane_all.at(i).at(j)];
+	}
+	// if (max_rms<10) max_rms = 10;
+	// std::cout << i << " " << max_rms << std::endl;
+	
+	
+	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+	if (uplane_all.at(i).size()>0){
+	  for (int j=0;j!=nbin;j++){
+	    h3->Reset();
+	    for (int k=0;k!=uplane_all.at(i).size();k++){
+	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
+		  fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
+	    }
+	    
+	    if (h3->GetSum()>0){
+	      double xq = 0.5;
+	      h3->GetQuantiles(1,&par[1],&xq);
+	    }else{
+	      par[1] = 0;
+	    }
+	    
+	    // if (j == 100) std::cout << par[1] << " " << h3->GetSum() << std::endl;
+	    
+	    for (int k=0;k!=uplane_all.at(i).size();k++){
+	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
+	    }
+	  }
+	}
+	delete h3;
+      }
+      
+      for (int i=0;i!=vplane_all.size();i++){
+	//std::cout << "V " << i << " " << vplane_all.size() << std::endl;
+	float max_rms = 0;
+	for (int j=0;j!=vplane_all.at(i).size();j++){
+	  if (vrms_map[vplane_all.at(i).at(j)] > max_rms) max_rms = vrms_map[vplane_all.at(i).at(j)];
+	}
+	// if (max_rms<10) max_rms = 10;
+	
+	
+	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+	if (vplane_all.at(i).size()>0){
+	  for (int j=0;j!=nbin;j++){
+	    h3->Reset();
+	    for (int k=0;k!=vplane_all.at(i).size();k++){
+	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
+		  fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		h3->Fill(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1));
+	    }
+	    
+	    if (h3->GetSum()>0){
+	      double xq = 0.5;
+	      h3->GetQuantiles(1,&par[1],&xq);
+	    }else{
+	      par[1] = 0;
+	    }
+	    
+	    for (int k=0;k!=vplane_all.at(i).size();k++){
+	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
+	    }
+	  }
+	}
+	delete h3;
+      }
+      
+      for (int i=0;i!=wplane_all.size();i++){
+	float max_rms = 0;
+	for (int j=0;j!=wplane_all.at(i).size();j++){
+	  if (wrms_map[wplane_all.at(i).at(j)] > max_rms) max_rms = wrms_map[wplane_all.at(i).at(j)];
+	}
+	// if (max_rms<10) max_rms = 10;
+	
+	//std::cout << "W " << i << " " << wplane_all.size() << std::endl;
+	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+	if (wplane_all.at(i).size()>0){
+	  for (int j=0;j!=nbin;j++){
+	    h3->Reset();
+	    for (int k=0;k!=wplane_all.at(i).size();k++){
+	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
+		  fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		h3->Fill(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1));
+	    }
+	    
+	    if (h3->GetSum()>0){
+	      double xq = 0.5;
+	      h3->GetQuantiles(1,&par[1],&xq);
+	    }else{
+	      par[1] = 0;
+	    }
+	    
+	    for (int k=0;k!=wplane_all.at(i).size();k++){
+	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
+	    }
+	  }
+	}
+	delete h3;
+      }
+      
+      
+      
+      double sum_u = 0, sum_v = 0, sum_w = 0;
+      for (auto it = uchirp_map.begin(); it!= uchirp_map.end();it++){
+	sum_u += it->second.second - it->second.first  + 1;
+	//std::cout << "U: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+      }
+      for (auto it = vchirp_map.begin(); it!= vchirp_map.end();it++){
+	sum_v += it->second.second - it->second.first  + 1;
+	//std::cout << "V: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+      }
+      for (auto it = wchirp_map.begin(); it!= wchirp_map.end();it++){
+	sum_w += it->second.second - it->second.first  + 1;
+	//std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
+      }
+      sum_u /= bins_per_frame * nwire_u;
+      sum_v /= bins_per_frame * nwire_v;
+      sum_w /= bins_per_frame * nwire_w;
+      
+      std::cout << "Final Count " << uchirp_map.size() << " " << sum_u << " " 
+		<< vchirp_map.size() << " " << sum_v << " " 
+		<< wchirp_map.size() << " " << sum_w << " " << std::endl;
+      double eff_3plane, eff_2plane;
+      eff_3plane = (1-sum_u)*(1-sum_v)*(1-sum_w);
+      eff_2plane = eff_3plane 
+	+ (1-sum_u)*(1-sum_v) * sum_w
+	+ (1-sum_v)*(1-sum_w) * sum_u
+	+ (1-sum_w)*(1-sum_u) * sum_v;
+      std::cout << "Efficiency: " << eff_3plane << " " << eff_2plane << std::endl;
+      
+      
+      
+      
+      // load the stuff back to the frame ... 
+      
+      for (size_t ind=0; ind < nchannels; ++ind) {
+	TH1F* signal;
+	WireCell::Trace trace;
+	trace.chid = channelid->at(ind);
+	
+	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+	trace.charge.resize(bins_per_frame, 0.0);
+	
+	//int flag = 0;
+	if (trace.chid < nwire_u){
+	  signal = hu[trace.chid];
+	  //	if (uplane_map.find(trace.chid)==uplane_map.end()) flag = 1;
+	}else if (trace.chid < nwire_u + nwire_v){
+	  signal = hv[trace.chid - nwire_u];
+	  //if (vplane_map.find(trace.chid-nwire_u)==vplane_map.end()) flag = 1;
+	}else{
+	  signal = hw[trace.chid - nwire_u - nwire_v];
+	  //if (wplane_map.find(trace.chid-nwire_u-nwire_v)==wplane_map.end()) flag = 1;
+	}
+	
+	
+	
+	//      if (flag ==0){
+	for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	  trace.charge.at(ibin) = signal->GetBinContent(ibin+1);
+	}
+	//}else{
 	//crazy stuff
 	//flag = 1
-      //	for (int ibin=0; ibin != bins_per_frame; ibin++) {
-      //	  trace.charge.at(ibin) = 0.;//signal->GetBinContent(ibin+1);
-      //	}
-      //}
+	//	for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	//	  trace.charge.at(ibin) = 0.;//signal->GetBinContent(ibin+1);
+	//	}
+	//}
+	
+	frame.traces.push_back(trace);
+      }
       
-      frame.traces.push_back(trace);
-    }
+      // TFile *file = new TFile("temp_data.root","RECREATE");
+      // for (int i=0;i!=nwire_u;i++){
+      //   TH1F *huu = (TH1F*)hu[i]->Clone(Form("U1_%d",i));
+      // }
+      // for (int i=0;i!=nwire_v;i++){
+      //   TH1F *hvv = (TH1F*)hv[i]->Clone(Form("V1_%d",i));
+      // }
+      // for (int i=0;i!=nwire_w;i++){
+      //   TH1F *hww = (TH1F*)hw[i]->Clone(Form("W1_%d",i));
+      // }
+      // file->Write();
+      // file->Close();
+      // std::cout << "Saved file" << std::endl;
+      
+      for (int i=0;i!=nwire_u;i++){
+	delete hu[i] ;
+      }
+      delete [] hu;
+      for (int i=0;i!=nwire_v;i++){
+	delete hv[i] ;
+      }
+      delete [] hv;
+      for (int i=0;i!=nwire_w;i++){
+	delete hw[i] ;
+      }
+      delete [] hw;
+      
+      
+      tfile.Close();
+      esignal->Clear("D");
+      delete channelid;
+      delete esignal;
+      
+      frame.index = frame_number;
+      return frame.index;
+    }else{
+      
+      tfile.Close();
+      esignal->Clear("D");
+      delete channelid;
+      delete esignal;
 
-    frame.index = frame_number;
-    return frame.index;
+      return -1;
+    }
 }
 
 
