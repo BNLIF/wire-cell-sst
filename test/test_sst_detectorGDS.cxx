@@ -20,7 +20,7 @@ int main()
 
     for (short cryo = 0; cryo < det_gds.ncryos(); cryo++) {
       for (short apa = 1; apa < 2/*det_gds.napa(cryo)*/; apa++) {
-	  WrappedGDS *gds = det_gds.get_apaGDS(cryo, apa);
+	  const WrappedGDS *gds = det_gds.get_apaGDS(cryo, apa);
 	  for  (int iplane = 0; iplane < 3; ++iplane) {
 	      WirePlaneType_t plane = static_cast<WirePlaneType_t>(iplane);
 	      GeomWireSelection ws = gds->wires_in_plane(plane);
