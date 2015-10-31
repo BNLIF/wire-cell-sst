@@ -17,14 +17,15 @@ namespace WireCellSst {
        
      */
     class DatauBooNEFrameDataSource : public WireCell::FrameDataSource {
-	mutable TTree* tree;	// or TChain
-	WireCellSst::RootEvent event;
+      //mutable TTree* tree;	// or TChain
+      //WireCellSst::RootEvent event;
 
       public:
-	DatauBooNEFrameDataSource(TTree& tree, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
+	DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
 	virtual ~DatauBooNEFrameDataSource();
 
 	void Save();
+	void Clear();
 
 	/// Return the number of frames this data source knows about.  Return -1 if unlimited.
 	virtual int size() const;
@@ -35,21 +36,48 @@ namespace WireCellSst {
 	bool chirp_check(double rms, int plane, int channel);
 	double correlation1(TH1F *h1, TH1F *h2);
 	
+	void zigzag_removal(TH1F *h1, int plane, int channel_no);
+	void chirp_id(TH1F *h1, int plane, int channel_no);
+	void SignalFilter(TH1F *h1);
+	double CalcRMSWithFlags(TH1F *hist);
+	void RemoveFilterFlags(TH1F *hist);
+	void RawAdaptiveBaselineAlg(TH1F *hist);
+	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
+
+	int get_run_no(){return run_no;};
+	int get_subrun_no(){return subrun_no;};
+	int get_event_no(){return event_no;};
+
 	WireCell::WireMap& get_u_map(){return uplane_map;};
 	WireCell::WireMap& get_v_map(){return vplane_map;};
 	WireCell::WireMap& get_w_map(){return wplane_map;};
 
+	WireCell::ChirpMap& get_u_cmap(){return uchirp_map;};
+	WireCell::ChirpMap& get_v_cmap(){return vchirp_map;};
+	WireCell::ChirpMap& get_w_cmap(){return wchirp_map;};
+
+
     private:
 	const WireCell::GeomDataSource& gds;
+	const char* root_file;
 	int nwire_u, nwire_v, nwire_w;
+
+	int nevents;
+
+	int run_no, subrun_no, event_no;
 
 	WireCell::WireMap uplane_map;
 	WireCell::WireMap vplane_map;
 	WireCell::WireMap wplane_map;
+
+	WireCell::ChirpMap uchirp_map;
+	WireCell::ChirpMap vchirp_map;
+	WireCell::ChirpMap wchirp_map;
 	
-	TH1F **hu;
-	TH1F **hv;
-	TH1F **hw;	
+	std::map<int, float> urms_map;
+	std::map<int, float> vrms_map;
+	std::map<int, float> wrms_map;
+	
     };
 
     
