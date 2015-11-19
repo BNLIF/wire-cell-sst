@@ -3,6 +3,7 @@
 
 #include "WireCellNav/FrameDataSource.h"
 #include "WireCellNav/GeomDataSource.h"
+#include "WireCellNav/DetectorGDS.h"
 #include "WireCellData/Slice.h"
 #include "WireCellData/Frame.h"
 #include "WireCellData/GeomWire.h"
@@ -17,7 +18,7 @@ namespace WireCellSst {
 
       ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, float th);
       ToyuBooNESliceDataSource(WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, float th_u, float th_v, float th_w,  float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms = 0, std::vector<float>* vplane_rms = 0, std::vector<float>* wplane_rms = 0);
-      
+      ToyuBooNESliceDataSource(const WireCell::DetectorGDS& gds,WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, float th_u, float th_v, float th_w,  float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms = 0, std::vector<float>* vplane_rms = 0, std::vector<float>* wplane_rms = 0);
       
 
       virtual ~ToyuBooNESliceDataSource();
@@ -39,6 +40,8 @@ namespace WireCellSst {
       
       WireCell::FrameDataSource& _fds;
       WireCell::FrameDataSource& _fds1;
+      const WireCell::DetectorGDS* gds;
+      int gds_flag;
 
       int nwire_u, nwire_v, nwire_w;
       

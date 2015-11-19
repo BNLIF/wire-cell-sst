@@ -11,6 +11,8 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , _slices_end(-1)
     , threshold(th)
     , flag(0)
+    , gds_flag(0)
+    , gds(0)
 {
     update_slices_bounds();
 }
@@ -31,10 +33,39 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , flag(1)
     , nwire_u(nwire_u)
     , nwire_v(nwire_v)
-    , nwire_w(nwire_w)
+  , nwire_w(nwire_w)
   , uplane_rms(uplane_rms)
   , vplane_rms(vplane_rms)
   , wplane_rms(wplane_rms)
+  , gds_flag(0)
+  , gds(0)
+{
+    update_slices_bounds();
+}
+
+
+WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(const DetectorGDS& gds, FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
+    : _fds(fds)
+    , _fds1(fds1)
+    , _frame_index(-1)
+    , _slice_index(-1)
+    , _slices_begin(-1)
+    , _slices_end(-1)
+    , threshold_u(th_u)
+    , threshold_v(th_v)
+    , threshold_w(th_w)
+    , threshold_ug(th_ug)
+    , threshold_vg(th_vg)
+    , threshold_wg(th_wg)
+    , flag(1)
+    , nwire_u(nwire_u)
+    , nwire_v(nwire_v)
+  , nwire_w(nwire_w)
+  , uplane_rms(uplane_rms)
+  , vplane_rms(vplane_rms)
+  , wplane_rms(wplane_rms)
+  , gds_flag(1)
+  , gds(&gds)
 {
     update_slices_bounds();
 }
@@ -134,6 +165,8 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	
 	// Save association of a channel ID and its charge.
 	int q = trace.charge[slice_tbin];
+
+	
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q));
 	}
@@ -203,31 +236,64 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	float threshold_g;
 
 	if (uplane_rms ==0 && vplane_rms ==0 && wplane_rms == 0 ){
-	  if (trace.chid < nwire_u){
-	    threshold =threshold_u;
-	    threshold_g = threshold_ug;
-	  }else if (trace.chid < nwire_u + nwire_v){
-	    threshold = threshold_v;
-	    threshold_g = threshold_vg;
-	  }else if (trace.chid < nwire_u + nwire_v + nwire_w){
-	    threshold = threshold_w;
-	    threshold_g = threshold_wg;
+
+	  if (gds_flag == 0){
+	    if (trace.chid < nwire_u){
+	      threshold =threshold_u;
+	      threshold_g = threshold_ug;
+	    }else if (trace.chid < nwire_u + nwire_v){
+	      threshold = threshold_v;
+	      threshold_g = threshold_vg;
+	    }else if (trace.chid < nwire_u + nwire_v + nwire_w){
+	      threshold = threshold_w;
+	      threshold_g = threshold_wg;
+	    }
+	  }else{
+	    WirePlaneType_t plane = gds->channel_plane_conv(trace.chid);
+	    if (plane == WirePlaneType_t(0)){
+	      threshold =threshold_u;
+	      threshold_g = threshold_ug;
+	    }else if (plane == WirePlaneType_t(1)){
+	      threshold = threshold_v;
+	      threshold_g = threshold_vg;
+	    }else if (plane == WirePlaneType_t(2)){
+	      threshold = threshold_w;
+	      threshold_g = threshold_wg;
+	    }
 	  }
+
 	}else{
-	  if (trace.chid < nwire_u){
-	    threshold = 3 * (*uplane_rms).at(trace.chid);
-	    threshold_g = threshold_ug;
-	    if (threshold == 0 ) threshold = threshold_u;
-	  }else if (trace.chid < nwire_u + nwire_v){
-	    threshold = 3 * (*vplane_rms).at(trace.chid - nwire_u);
-	    threshold_g = threshold_vg;
-	    if (threshold == 0 ) threshold = threshold_v;
-	  }else if (trace.chid < nwire_u + nwire_v + nwire_w){
-	    threshold = 3 * (*wplane_rms).at(trace.chid - nwire_u - nwire_v);
-	    threshold_g = threshold_wg;
-	    if (threshold == 0 ) threshold = threshold_w;
+	  if (gds_flag == 0){
+	    if (trace.chid < nwire_u){
+	      threshold = 3 * (*uplane_rms).at(trace.chid);
+	      threshold_g = threshold_ug;
+	      if (threshold == 0 ) threshold = threshold_u;
+	    }else if (trace.chid < nwire_u + nwire_v){
+	      threshold = 3 * (*vplane_rms).at(trace.chid - nwire_u);
+	      threshold_g = threshold_vg;
+	      if (threshold == 0 ) threshold = threshold_v;
+	    }else if (trace.chid < nwire_u + nwire_v + nwire_w){
+	      threshold = 3 * (*wplane_rms).at(trace.chid - nwire_u - nwire_v);
+	      threshold_g = threshold_wg;
+	      if (threshold == 0 ) threshold = threshold_w;
+	    }
+	  }else{
+	    WirePlaneType_t plane = gds->channel_plane_conv(trace.chid);
+	    if (plane == WirePlaneType_t(0)){
+	      threshold =threshold_u;
+	      threshold_g = threshold_ug;
+	    }else if (plane == WirePlaneType_t(1)){
+	      threshold = threshold_v;
+	      threshold_g = threshold_vg;
+	    }else if (plane == WirePlaneType_t(2)){
+	      threshold = threshold_w;
+	      threshold_g = threshold_wg;
+	    }
 	  }
+
 	}
+
+	//	std::cout << q << " " << q1 << " " << threshold << std::endl;
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
