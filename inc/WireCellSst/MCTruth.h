@@ -18,7 +18,7 @@ namespace WireCellSst {
     MCTruth(std::string rootfile);
     ~MCTruth();
     void GetEntry(int i);
-
+    void Rotate_Shift(float x_center=0, float y_center=0, float z_center=0, float rotate_angle=0, float x_shift=0, float y_shift=0, float z_shift=0);
   private:
     TTree *mcTree;
     

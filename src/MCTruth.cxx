@@ -1,4 +1,5 @@
 #include "WireCellSst/MCTruth.h"
+#include "TLorentzVector.h"
 
 WireCellSst::MCTruth::MCTruth(std::string rootfile)
 {
@@ -40,4 +41,57 @@ void WireCellSst::MCTruth::GetEntry(int i)
   } else {
     std::cout<<i<<" exceeds the number of entries, which is "<<mcTree->GetEntries()<<std::endl;
   }
+}
+
+void WireCellSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_center, float rotate_angle, float x_shift, float y_shift, float z_shift){
+
+  Double_t temp_x, temp_y, temp_z;
+  for (int i=0;i!=mc_Ntrack;i++){
+    //mc_startXYZT
+    temp_x = mc_startXYZT[i][0];
+    temp_y = mc_startXYZT[i][1];
+    temp_z = mc_startXYZT[i][2];
+    mc_startXYZT[i][0] = (temp_x - x_center)*cos(rotate_angle) - (temp_z - z_center)*sin(rotate_angle) + x_center + x_shift;
+    mc_startXYZT[i][1] = temp_y + y_shift;
+    mc_startXYZT[i][2] = (temp_x - x_center)*sin(rotate_angle) + (temp_z - z_center)*cos(rotate_angle) + z_center + z_shift;
+    //mc_endXYZT
+    temp_x = mc_endXYZT[i][0];
+    temp_y = mc_endXYZT[i][1];
+    temp_z = mc_endXYZT[i][2];
+    mc_endXYZT[i][0] = (temp_x - x_center)*cos(rotate_angle) - (temp_z - z_center)*sin(rotate_angle) + x_center + x_shift;
+    mc_endXYZT[i][1] = temp_y + y_shift;
+    mc_endXYZT[i][2] = (temp_x - x_center)*sin(rotate_angle) + (temp_z- z_center)*cos(rotate_angle) + z_center + z_shift;
+    //mc_startMomentum
+    temp_x = mc_startMomentum[i][0];
+    temp_y = mc_startMomentum[i][1];
+    temp_z = mc_startMomentum[i][2];
+    mc_startMomentum[i][0] = temp_x*cos(rotate_angle) - temp_z*sin(rotate_angle);
+    mc_startMomentum[i][1] = temp_y;
+    mc_startMomentum[i][2] = temp_x*cos(rotate_angle) + temp_z*sin(rotate_angle);
+
+    //mc_endMomentum
+    temp_x = mc_endMomentum[i][0];
+    temp_y = mc_endMomentum[i][1];
+    temp_z = mc_endMomentum[i][2];
+    mc_endMomentum[i][0] = temp_x*cos(rotate_angle) - temp_z*sin(rotate_angle);
+    mc_endMomentum[i][1] = temp_y;
+    mc_endMomentum[i][2] = temp_x*cos(rotate_angle) + temp_z*sin(rotate_angle);
+
+    //mc_trackPosition
+    if (mcTree->GetBranch("mc_trackPosition")) {
+      TClonesArray *trackPoints = (TClonesArray*)(*mc_trackPosition)[i];
+      int nPoints = trackPoints->GetEntries();
+      for (int j=0;j!=nPoints;j++){
+	TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
+	//cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
+	Double_t temp_x, temp_y, temp_z;
+	temp_x = (p->X() - x_center)*cos(rotate_angle) - (p->Z() - z_center)*sin(rotate_angle) + x_center + x_shift;
+	temp_y = p->Y() + y_shift;
+	temp_z = (p->X() - x_center)*sin(rotate_angle) + (p->Z() - z_center)*cos(rotate_angle) + z_center + z_shift;
+	p->SetXYZT(temp_x,temp_y,temp_z,p->T());
+      }
+    }
+    
+  }
+  
 }
