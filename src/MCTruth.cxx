@@ -24,6 +24,28 @@ WireCellSst::MCTruth::MCTruth(std::string rootfile)
     mc_trackPosition = new TObjArray();
     mcTree->SetBranchAddress("mc_trackPosition",mc_trackPosition);
   }
+
+  mcTree->SetBranchAddress("mc_isnu", &mc_isnu);
+  mcTree->SetBranchAddress("mc_nGeniePrimaries", &mc_nGeniePrimaries);
+  mcTree->SetBranchAddress("mc_nu_pdg", &mc_nu_pdg);
+  mcTree->SetBranchAddress("mc_nu_ccnc", &mc_nu_ccnc);
+  mcTree->SetBranchAddress("mc_nu_mode", &mc_nu_mode);
+  mcTree->SetBranchAddress("mc_nu_intType", &mc_nu_intType);
+  mcTree->SetBranchAddress("mc_nu_target", &mc_nu_target);
+  mcTree->SetBranchAddress("mc_hitnuc", &mc_hitnuc);
+  mcTree->SetBranchAddress("mc_hitquark", &mc_hitquark);
+  mcTree->SetBranchAddress("mc_nu_Q2", &mc_nu_Q2);
+  mcTree->SetBranchAddress("mc_nu_W", &mc_nu_W);
+  mcTree->SetBranchAddress("mc_nu_X", &mc_nu_X);
+  mcTree->SetBranchAddress("mc_nu_Y", &mc_nu_Y);
+  mcTree->SetBranchAddress("mc_nu_Pt", &mc_nu_Pt);
+  mcTree->SetBranchAddress("mc_nu_Theta", &mc_nu_Theta);
+  mcTree->SetBranchAddress("mc_nu_pos", mc_nu_pos);
+  mcTree->SetBranchAddress("mc_nu_mom", mc_nu_mom);
+
+
+
+
 }
 
 WireCellSst::MCTruth::~MCTruth()

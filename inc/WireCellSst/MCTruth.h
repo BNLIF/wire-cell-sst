@@ -36,7 +36,27 @@ namespace WireCellSst {
     float mc_startMomentum[MAX_TRACKS][4];  // start momentum of this track; size == mc_Ntrack
     float mc_endMomentum[MAX_TRACKS][4];  // end momentum of this track; size == mc_Ntrack
     std::vector<std::vector<int> > *mc_daughters;  // daughters id of this track; vector
-    TObjArray* mc_trackPosition;    
+    TObjArray* mc_trackPosition;  
+
+    int mc_isnu; // is neutrino interaction
+    int mc_nGeniePrimaries; // number of Genie primaries
+    int mc_nu_pdg; // pdg code of neutrino
+    int mc_nu_ccnc; // cc or nc
+    int mc_nu_mode; // mode: http://nusoft.fnal.gov/larsoft/doxsvn/html/MCNeutrino_8h_source.html
+    int mc_nu_intType; // interaction type
+    int mc_nu_target; // target interaction
+    int mc_hitnuc; // hit nucleon
+    int mc_hitquark; // hit quark
+    double mc_nu_Q2; // Q^2
+    double mc_nu_W; // W
+    double mc_nu_X; // X
+    double mc_nu_Y; // Y
+    double mc_nu_Pt; // Pt
+    double mc_nu_Theta; // angle relative to lepton
+    float mc_nu_pos[4];  // interaction position of nu
+    float mc_nu_mom[4];  // interaction momentum of nu
+
+
   };
   
 }
