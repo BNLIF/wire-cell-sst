@@ -89,7 +89,7 @@ void WireCellSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_
     temp_z = mc_startMomentum[i][2];
     mc_startMomentum[i][0] = temp_x*cos(rotate_angle) - temp_z*sin(rotate_angle);
     mc_startMomentum[i][1] = temp_y;
-    mc_startMomentum[i][2] = temp_x*cos(rotate_angle) + temp_z*sin(rotate_angle);
+    mc_startMomentum[i][2] = temp_x*sin(rotate_angle) + temp_z*cos(rotate_angle);
 
     //mc_endMomentum
     temp_x = mc_endMomentum[i][0];
@@ -97,7 +97,7 @@ void WireCellSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_
     temp_z = mc_endMomentum[i][2];
     mc_endMomentum[i][0] = temp_x*cos(rotate_angle) - temp_z*sin(rotate_angle);
     mc_endMomentum[i][1] = temp_y;
-    mc_endMomentum[i][2] = temp_x*cos(rotate_angle) + temp_z*sin(rotate_angle);
+    mc_endMomentum[i][2] = temp_x*sin(rotate_angle) + temp_z*cos(rotate_angle);
 
     //mc_trackPosition
     if (mcTree->GetBranch("mc_trackPosition")) {
