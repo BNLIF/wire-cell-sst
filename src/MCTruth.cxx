@@ -44,9 +44,61 @@ WireCellSst::MCTruth::MCTruth(std::string rootfile)
   mcTree->SetBranchAddress("mc_nu_mom", mc_nu_mom);
 
 
-
-
+  mc_oldVertex[0] = -1;
+  mc_oldVertex[0] = -1;
+  mc_oldVertex[0] = -1;
 }
+
+
+WireCellSst::MCTruth::MCTruth(TTree *TMC)
+{
+  mcTree = TMC;
+  if (!mcTree ) 
+    std::cout<<"cannot find /Event/Sim tree."<<std::endl;
+  mc_daughters= new std::vector<std::vector<int> >;
+  // mcTree->SetBranchAddress("eventNo",&eventNo);
+  // mcTree->SetBranchAddress("runNo",&runNo);
+  // mcTree->SetBranchAddress("subRunNo",&subrunNo);
+  eventNo = -1;
+  runNo = -1;
+  subrunNo = -1;
+
+  mcTree->SetBranchAddress("mc_Ntrack", &mc_Ntrack);  // number of tracks in MC
+  mcTree->SetBranchAddress("mc_id", &mc_id);  // track id; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_pdg", &mc_pdg);  // track particle pdg; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_process", &mc_process);  // track generation process code; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_mother", &mc_mother);  // mother id of this track; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_daughters", &mc_daughters);  // daughters id of this track; vector
+  mcTree->SetBranchAddress("mc_startXYZT", &mc_startXYZT);  // start position of this track; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_endXYZT", &mc_endXYZT);  // start position of this track; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_startMomentum", &mc_startMomentum);  // start momentum of this track; size == mc_Ntrack
+  mcTree->SetBranchAddress("mc_endMomentum", &mc_endMomentum);  // start momentum of this track; size == mc_Ntrack
+  if (mcTree->GetBranch("mc_trackPosition")) {
+    mc_trackPosition = new TObjArray();
+    mcTree->SetBranchAddress("mc_trackPosition",mc_trackPosition);
+  }
+
+  mcTree->SetBranchAddress("mc_isnu", &mc_isnu);
+  mcTree->SetBranchAddress("mc_nGeniePrimaries", &mc_nGeniePrimaries);
+  mcTree->SetBranchAddress("mc_nu_pdg", &mc_nu_pdg);
+  mcTree->SetBranchAddress("mc_nu_ccnc", &mc_nu_ccnc);
+  mcTree->SetBranchAddress("mc_nu_mode", &mc_nu_mode);
+  mcTree->SetBranchAddress("mc_nu_intType", &mc_nu_intType);
+  mcTree->SetBranchAddress("mc_nu_target", &mc_nu_target);
+  mcTree->SetBranchAddress("mc_hitnuc", &mc_hitnuc);
+  mcTree->SetBranchAddress("mc_hitquark", &mc_hitquark);
+  mcTree->SetBranchAddress("mc_nu_Q2", &mc_nu_Q2);
+  mcTree->SetBranchAddress("mc_nu_W", &mc_nu_W);
+  mcTree->SetBranchAddress("mc_nu_X", &mc_nu_X);
+  mcTree->SetBranchAddress("mc_nu_Y", &mc_nu_Y);
+  mcTree->SetBranchAddress("mc_nu_Pt", &mc_nu_Pt);
+  mcTree->SetBranchAddress("mc_nu_Theta", &mc_nu_Theta);
+  mcTree->SetBranchAddress("mc_nu_pos", mc_nu_pos);
+  mcTree->SetBranchAddress("mc_nu_mom", mc_nu_mom);
+  
+  mcTree->SetBranchAddress("mc_oldVertex", &mc_oldVertex);
+}
+
 
 WireCellSst::MCTruth::~MCTruth()
 {

@@ -16,6 +16,8 @@ namespace WireCellSst {
   class MCTruth {
   public:
     MCTruth(std::string rootfile);
+    MCTruth(TTree *TMC);
+    
     ~MCTruth();
     void GetEntry(int i);
     void Rotate_Shift(float x_center=0, float y_center=0, float z_center=0, float rotate_angle=0, float x_shift=0, float y_shift=0, float z_shift=0);
@@ -56,7 +58,7 @@ namespace WireCellSst {
     float mc_nu_pos[4];  // interaction position of nu
     float mc_nu_mom[4];  // interaction momentum of nu
 
-
+    float mc_oldVertex[3];
   };
   
 }
