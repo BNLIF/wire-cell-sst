@@ -62,9 +62,74 @@ WireCell::Point WireCellSst::MCTruth::find_neutrino_vertex(int event_no){
   return vertex;
 }
 
-WireCell::MCParticle WireCellSst::MCTruth::find_primary_electron(int event_no){
+WireCell::MCParticleSelection WireCellSst::MCTruth::find_primary_photons(int event_no){
+  // mcTree->GetEntry(event_no);
+  WireCell::MCParticleSelection photons;
+  WireCell::Point primary_vertex = find_primary_vertex(event_no);
+  
+  for (int i=0;i!=mc_Ntrack;i++){
+    if (mc_pdg[i] != 22) continue;
+
+    float dis;
+    dis = sqrt(pow(mc_startXYZT[i][0] - primary_vertex[0],2) 
+	       + pow(mc_startXYZT[i][1] - primary_vertex[1],2) 
+	       + pow(mc_startXYZT[i][2] - primary_vertex[2],2));
+    //std::cout << dis << std::endl;
+    if (dis < 0.5 ){ // cm
+      WireCell::MCParticle *photon = new WireCell::MCParticle();
+      photon->pdg = mc_pdg[i];
+      
+      for (int j=0;j!=4;j++){
+	photon->startXYZT[j] = mc_startXYZT[i][j];
+	photon->endXYZT[j] = mc_endXYZT[i][j];
+	photon->startMomentum[j] = mc_startMomentum[i][j];
+      }
+      
+      photons.push_back(photon);
+    }
+  }
+
+  return photons;
+}
+
+WireCell::MCParticle* WireCellSst::MCTruth::find_primary_electron(int event_no){
   mcTree->GetEntry(event_no);
   
+  for (int i=0;i!=mc_Ntrack;i++){
+    if (mc_mother[i] == 0 && fabs(mc_pdg[i])==11){
+      WireCell::MCParticle *electron = new WireCell::MCParticle();
+      electron->pdg = mc_pdg[i];
+      
+      // a fix to start_Momentum[3] due to a previous bug ...
+      mc_startMomentum[i][2] = sqrt(pow(mc_startMomentum[i][3],2) - pow(0.511e-3,2) - pow(mc_startMomentum[i][0],2) - pow(mc_startMomentum[i][1],2));
+      //
+
+      for (int j=0;j!=4;j++){
+	electron->startXYZT[j] = mc_startXYZT[i][j];
+	electron->endXYZT[j] = mc_endXYZT[i][j];
+	electron->startMomentum[j] = mc_startMomentum[i][j];
+      }
+
+      
+      
+
+      if (mcTree->GetBranch("mc_trackPosition")) {
+	TClonesArray *trackPoints = (TClonesArray*)(*mc_trackPosition)[i];
+	int nPoints = trackPoints->GetEntries();
+	for (int j=0;j!=nPoints;j++){
+	  TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
+	  WireCell::Point point(p->X(),p->Y(),p->Z());
+	  electron->trajectory.push_back(point);
+	  //   cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
+	}
+      }
+
+
+      return electron;
+    }
+  }
+  
+  return 0;
   
 }
 

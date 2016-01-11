@@ -27,7 +27,8 @@ namespace WireCellSst {
 
     WireCell::Point find_primary_vertex(int event_no = 0);
     WireCell::Point find_neutrino_vertex(int event_no = 0);
-    WireCell::MCParticle find_primary_electron(int event_no = 0);
+    WireCell::MCParticle* find_primary_electron(int event_no = 0);
+    WireCell::MCParticleSelection find_primary_photons(int event_no = 0);
 
   private:
     TTree *mcTree;
