@@ -49,6 +49,44 @@ WireCellSst::MCTruth::MCTruth(std::string rootfile)
   mc_oldVertex[0] = -1;
 }
 
+WireCell::Point WireCellSst::MCTruth::find_neutrino_vertex(int event_no){
+  mcTree->GetEntry(event_no);
+  
+  WireCell::Point vertex(0,0,0);
+  
+  vertex[0] = mc_nu_pos[0];
+  vertex[1] = mc_nu_pos[1];
+  vertex[2] = mc_nu_pos[2];
+
+
+  return vertex;
+}
+
+WireCell::MCParticle WireCellSst::MCTruth::find_primary_electron(int event_no){
+  mcTree->GetEntry(event_no);
+  
+  
+}
+
+WireCell::Point WireCellSst::MCTruth::find_primary_vertex(int event_no){
+  
+  mcTree->GetEntry(event_no);
+  
+  WireCell::Point vertex(0,0,0);
+  
+  for (int i = 0; i!= mc_Ntrack;i++){
+    if (mc_mother[i] == 0) { // mother is primary particle ...
+      vertex[0] = mc_startXYZT[i][0];
+      vertex[1] = mc_startXYZT[i][1];
+      vertex[2] = mc_startXYZT[i][2];
+      break;
+    }
+  }
+
+
+  return vertex;
+}
+
 
 WireCellSst::MCTruth::MCTruth(TTree *TMC)
 {

@@ -9,6 +9,9 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "WireCellData/Point.h"
+#include "WireCellData/MCParticle.h"
+
 #define MAX_TRACKS 10000
 
 namespace WireCellSst {
@@ -21,8 +24,15 @@ namespace WireCellSst {
     ~MCTruth();
     void GetEntry(int i);
     void Rotate_Shift(float x_center=0, float y_center=0, float z_center=0, float rotate_angle=0, float x_shift=0, float y_shift=0, float z_shift=0);
+
+    WireCell::Point find_primary_vertex(int event_no = 0);
+    WireCell::Point find_neutrino_vertex(int event_no = 0);
+    WireCell::MCParticle find_primary_electron(int event_no = 0);
+
   private:
     TTree *mcTree;
+
+    
     
   public:
     int runNo;
