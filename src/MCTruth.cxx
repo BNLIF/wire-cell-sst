@@ -49,6 +49,28 @@ WireCellSst::MCTruth::MCTruth(std::string rootfile)
   mc_oldVertex[0] = -1;
 }
 
+float WireCellSst::MCTruth::find_neutrino_true_energy(int event_no){
+  mcTree->GetEntry(event_no);
+  return mc_nu_mom[3];
+}
+
+float WireCellSst::MCTruth::find_neutrino_visible_energy(int event_no){
+  mcTree->GetEntry(event_no);
+  // Hack for now ... 
+  float visE =0;
+  
+   for (int i=0;i!=mc_Ntrack;i++){
+     if (mc_mother[i] == 0){
+       if (mc_pdg[i]!=2212){
+	 visE += mc_startMomentum[i][3];
+       }
+     }
+   }
+
+  return visE;
+}
+
+
 WireCell::Point WireCellSst::MCTruth::find_neutrino_vertex(int event_no){
   mcTree->GetEntry(event_no);
   
