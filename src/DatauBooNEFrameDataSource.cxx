@@ -693,6 +693,53 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       int nu = 2400, nv = 2400, nw = 3456;
       int ntotal = nu + nv + nw;
       
+      //channel status check
+      if(1){
+	std::cout << "Check Channel Status " << std::endl;
+	double rmsOut = 0;
+     	for (int i=0;i!=nu;i++){
+		bool isCut = 0;
+		GetChannelStatus(hu[i], 0, i, isCut, rmsOut);
+		if( isCut){
+			if (uchirp_map.find(i) == uchirp_map.end()){
+	 			std::pair<int,int> abc(0, 9592);
+	  			uchirp_map[i] = abc;
+			}else{
+	  			uchirp_map[i].first = 0;
+	    			uchirp_map[i].second = 9592;
+			}
+		}
+      	}
+
+      	for (int i=0;i!=nv;i++){
+		bool isCut = 0;
+		GetChannelStatus(hv[i], 1, i, isCut, rmsOut);
+		if( isCut){
+			if (vchirp_map.find(i) == vchirp_map.end()){
+	 			std::pair<int,int> abc(0, 9592);
+	  			vchirp_map[i] = abc;
+			}else{
+	  			vchirp_map[i].first = 0;
+	    			vchirp_map[i].second = 9592;
+			}
+		}
+      	}
+	
+      	for (int i=0;i!=nw;i++){
+		bool isCut = 0;
+		GetChannelStatus(hw[i], 2, i, isCut, rmsOut);
+		if( isCut){
+			if (wchirp_map.find(i) == wchirp_map.end()){
+	 			std::pair<int,int> abc(0, 9592);
+	  			wchirp_map[i] = abc;
+			}else{
+	  			wchirp_map[i].first = 0;
+	    			wchirp_map[i].second = 9592;
+			}
+		}
+      	}
+      }
+
       
       std::cout << "Remove ZigZag " << std::endl;
       //deal with the zig zag noise
@@ -1105,3 +1152,75 @@ double WireCellSst::DatauBooNEFrameDataSource::correlation1(TH1F *h1, TH1F *h2){
   
   return r;
 }
+
+void WireCellSst::DatauBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut){
+	//calculate mean
+    	double mean = 0;
+    	int count = 0;
+    	for(unsigned int it = 0 ; it < h1->GetNbinsX() ; it++ ){
+		mean += h1->GetBinContent(it+1);
+		count++;
+    	}
+    	if( count > 0)
+		mean = mean / (double) count;
+
+	//calculate RMS
+	count = 0;
+    	double rms = 0;
+    	for(unsigned int it = 0 ; it < h1->GetNbinsX() ; it++ ){
+		int adc = h1->GetBinContent(it+1);
+		rms += (adc - mean)*(adc - mean);
+		count++;
+    	}
+    	if(count - 1 > 0)
+		rms = TMath::Sqrt( rms /(double)(  count - 1  ) );
+
+	rmsOut = rms;
+
+	//apply selection
+	bool isCut1 = 0;
+	bool isCut2 = 0;
+	bool isCut3 = 0;
+
+	//selection cut 1 : pedestal mean
+	//if( chan < 4800 && (mean < 2046 - 50 || mean > 2046 + 50) )
+	//	isCut1 = 1;
+	//if( chan >= 4800 && (mean < 474 - 50 || mean > 474 + 50) )
+	//	isCut1 = 1;
+
+	//selection cut 2: noisy channel
+	if( rms > 30 )
+		isCut2 = 1;
+
+	//selection cut 3: low RMS
+	double limit = -1;
+	if( plane == 0 ){
+		if( chan < 680 )
+			limit = (chan - 0.)*(8.6 - 1.8 )/(680. - 0.) + 1.8;
+		if( chan >= 680 && chan < 1728 )
+			limit = 8.6;
+		if( chan >= 1728 ) 
+			limit = (chan - 1728)*( 1.7 - 8.6 )/(2400. - 1728.) + 8.6;
+		if( chan > 2000 && chan < 2100 ) limit = 0;
+		if( chan > 2180 && chan < 2400 ) limit = 0;
+	}
+	if( plane == 1 ){
+		if( chan < 576 )
+			limit = (chan - 0.)*(4.0 - 1.3 )/(576.-0.) + 1.3;
+		if( chan >= 576 && chan < 1921 )
+			limit = 7.0;
+		if( chan >= 1921 ) 
+			limit = (chan - 1921)*( 1.5 - 4.5 )/(2400. - 1921.) + 4.5;
+	}
+	if( plane == 2  )
+		limit = 3;
+	limit = limit - 1;
+	if( limit < 0 )	
+		limit = 0;
+	if( rms < limit )
+		isCut3 = 1;
+
+	//isCut = isCut1 + isCut2;
+	isCut = isCut1+isCut2+isCut3;
+	return;
+  }

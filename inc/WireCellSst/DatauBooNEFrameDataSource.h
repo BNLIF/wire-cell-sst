@@ -36,6 +36,7 @@ namespace WireCellSst {
 	bool chirp_check(double rms, int plane, int channel);
 	double correlation1(TH1F *h1, TH1F *h2);
 	
+ 	void GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut);
 	void zigzag_removal(TH1F *h1, int plane, int channel_no);
 	void chirp_id(TH1F *h1, int plane, int channel_no);
 	void SignalFilter(TH1F *h1);
