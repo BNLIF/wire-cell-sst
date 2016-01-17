@@ -22,7 +22,7 @@ WireCellSst::MCTruth::MCTruth(std::string rootfile)
   mcTree->SetBranchAddress("mc_endMomentum", &mc_endMomentum);  // start momentum of this track; size == mc_Ntrack
   if (mcTree->GetBranch("mc_trackPosition")) {
     mc_trackPosition = new TObjArray();
-    mcTree->SetBranchAddress("mc_trackPosition",mc_trackPosition);
+    mcTree->SetBranchAddress("mc_trackPosition",&mc_trackPosition);
   }
 
   mcTree->SetBranchAddress("mc_isnu", &mc_isnu);
@@ -137,14 +137,14 @@ WireCell::MCParticle* WireCellSst::MCTruth::find_primary_electron(int event_no){
       
 
       if (mcTree->GetBranch("mc_trackPosition")) {
-	TClonesArray *trackPoints = (TClonesArray*)(*mc_trackPosition)[i];
-	int nPoints = trackPoints->GetEntries();
-	for (int j=0;j!=nPoints;j++){
-	  TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
-	  WireCell::Point point(p->X(),p->Y(),p->Z());
-	  electron->trajectory.push_back(point);
-	  //   cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
-	}
+      	TClonesArray *trackPoints = (TClonesArray*)(*mc_trackPosition)[i];
+      	int nPoints = trackPoints->GetEntries();
+      	for (int j=0;j!=nPoints;j++){
+      	  TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
+      	  WireCell::Point point(p->X(),p->Y(),p->Z());
+      	  electron->trajectory.push_back(point);
+      	  //   cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
+      	}
       }
 
 
@@ -201,7 +201,7 @@ WireCellSst::MCTruth::MCTruth(TTree *TMC)
   mcTree->SetBranchAddress("mc_endMomentum", &mc_endMomentum);  // start momentum of this track; size == mc_Ntrack
   if (mcTree->GetBranch("mc_trackPosition")) {
     mc_trackPosition = new TObjArray();
-    mcTree->SetBranchAddress("mc_trackPosition",mc_trackPosition);
+    mcTree->SetBranchAddress("mc_trackPosition",&mc_trackPosition);
   }
 
   mcTree->SetBranchAddress("mc_isnu", &mc_isnu);
@@ -282,13 +282,13 @@ void WireCellSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_
       TClonesArray *trackPoints = (TClonesArray*)(*mc_trackPosition)[i];
       int nPoints = trackPoints->GetEntries();
       for (int j=0;j!=nPoints;j++){
-	TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
-	//cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
-	Double_t temp_x, temp_y, temp_z;
-	temp_x = (p->X() - x_center)*cos(rotate_angle) - (p->Z() - z_center)*sin(rotate_angle) + x_center + x_shift;
-	temp_y = p->Y() + y_shift;
-	temp_z = (p->X() - x_center)*sin(rotate_angle) + (p->Z() - z_center)*cos(rotate_angle) + z_center + z_shift;
-	p->SetXYZT(temp_x,temp_y,temp_z,p->T());
+    	TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
+    	//cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
+    	Double_t temp_x, temp_y, temp_z;
+    	temp_x = (p->X() - x_center)*cos(rotate_angle) - (p->Z() - z_center)*sin(rotate_angle) + x_center + x_shift;
+    	temp_y = p->Y() + y_shift;
+    	temp_z = (p->X() - x_center)*sin(rotate_angle) + (p->Z() - z_center)*cos(rotate_angle) + z_center + z_shift;
+    	p->SetXYZT(temp_x,temp_y,temp_z,p->T());
       }
     }
     
