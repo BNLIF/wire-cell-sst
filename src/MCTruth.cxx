@@ -101,6 +101,7 @@ WireCell::MCParticleSelection WireCellSst::MCTruth::find_primary_photons(int eve
       WireCell::MCParticle *photon = new WireCell::MCParticle();
       photon->pdg = mc_pdg[i];
       
+      // temporary fix 
       mc_startMomentum[i][2] = sqrt(pow(mc_startMomentum[i][3],2) - pow(mc_startMomentum[i][0],2) - pow(mc_startMomentum[i][1],2));
       for (int j=0;j!=4;j++){
 	photon->startXYZT[j] = mc_startXYZT[i][j];
