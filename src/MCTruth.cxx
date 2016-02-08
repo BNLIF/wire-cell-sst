@@ -61,13 +61,13 @@ float WireCellSst::MCTruth::find_neutrino_visible_energy(int event_no){
   
    for (int i=0;i!=mc_Ntrack;i++){
      if (mc_mother[i] == 0){
-       if (mc_pdg[i]!=2212){
-	 visE += mc_startMomentum[i][3];
+       if (mc_pdg[i]==2212){
+	 visE += sqrt(pow(mc_startMomentum[i][3],2)-pow(0.939,2));
        }
      }
    }
 
-  return visE;
+   return find_neutrino_true_energy(event_no) - visE;
 }
 
 
