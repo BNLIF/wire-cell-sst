@@ -509,23 +509,25 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   double maxRMSCut[3] = {10.0,10.0,5.0};
   double minRMSCut[3] = {2,2,2};
 
+  if (channel_no>2080 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+
   if (planeNum == 0){
     if (channel_no < 100){
       maxRMSCut[0] = 5;
       minRMSCut[0] = 1;
     }else if (channel_no >= 100 && channel_no<2000){
-      maxRMSCut[0] = 10;
+      maxRMSCut[0] = 11;
       minRMSCut[0] = 2;
     }else if (channel_no >= 2000 && channel_no < 2400){
       maxRMSCut[0] = 5;
-      minRMSCut[0] = 1;
+      minRMSCut[0] = 0.95;
     }
   }else if (planeNum == 1){
     if (channel_no <290){
       maxRMSCut[1] = 5;
       minRMSCut[1] = 1;
     }else if (channel_no>=290 && channel_no < 2200){
-      maxRMSCut[1] = 10;
+      maxRMSCut[1] = 11;
       minRMSCut[1] = 2;
     }else if (channel_no >=2200){
       maxRMSCut[1] = 5;
@@ -536,6 +538,12 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
     minRMSCut[2] = 2;
   }
   
+  // //rely on the Brian's filter ... 
+  // for (int i=0;i!=3;i++){
+  //   maxRMSCut[i] *=2.;
+  //   minRMSCut[i] /=2.;
+  // }
+
   // std::cout << "Xin: " << planeNum << " " << channel_no << " " << rmsVal << std::endl;
    
   if(rmsVal > maxRMSCut[planeNum] || rmsVal < minRMSCut[planeNum])
@@ -694,7 +702,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       int ntotal = nu + nv + nw;
       
       //channel status check
-      if(1){
+      if(0){
 	std::cout << "Check Channel Status " << std::endl;
 	double rmsOut = 0;
      	for (int i=0;i!=nu;i++){
@@ -740,6 +748,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	}
       }
 
+      // if (uchirp_map.find(1517)!=uchirp_map.end()){
+      // 	std::cout << "Xin Channel Status!" << std::endl;
+      // }
+
       
       std::cout << "Remove ZigZag " << std::endl;
       //deal with the zig zag noise
@@ -784,6 +796,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	RawAdaptiveBaselineAlg(hw[it->first]);
       	RemoveFilterFlags(hw[it->first]);
       }
+
+      // if (uchirp_map.find(1517)!=uchirp_map.end()){
+      // 	std::cout << "Xin: Chirping !" << std::endl;
+      // }
       
       std::cout << "Noisy Channel " << std::endl;
       // deal with the noisy signal, and put them into chirping map 
@@ -803,7 +819,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	RemoveFilterFlags(hw[i]);
       }
       
-      
+      // if (uchirp_map.find(1517)!=uchirp_map.end()){
+      // 	std::cout << "Xin: Noise Filter!" << std::endl;
+      // }
+
+
       // deal with coherent noise removal 
       int n = bins_per_frame;
       int nbin = bins_per_frame;
@@ -1363,6 +1383,8 @@ void WireCellSst::DatauBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plan
 
 	rmsOut = rms;
 
+	if (fabs(chan-1517)<5 && plane == 0) std::cout << "Xin: " << chan << " " << rmsOut << std::endl;
+
 	//apply selection
 	bool isCut1 = 0;
 	bool isCut2 = 0;
@@ -1375,18 +1397,20 @@ void WireCellSst::DatauBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plan
 	//	isCut1 = 1;
 
 	//selection cut 2: noisy channel
-	if( rms > 30 )
+	//if( rms > 30 )
+	if( rms > 45 )
 		isCut2 = 1;
 
 	//selection cut 3: low RMS
 	double limit = -1;
+	double uplane_limit = 8.6;
 	if( plane == 0 ){
 		if( chan < 680 )
-			limit = (chan - 0.)*(8.6 - 1.8 )/(680. - 0.) + 1.8;
+			limit = (chan - 0.)*(uplane_limit - 1.8 )/(680. - 0.) + 1.8;
 		if( chan >= 680 && chan < 1728 )
-			limit = 8.6;
+			limit = uplane_limit;
 		if( chan >= 1728 ) 
-			limit = (chan - 1728)*( 1.7 - 8.6 )/(2400. - 1728.) + 8.6;
+			limit = (chan - 1728)*( 1.7 - uplane_limit )/(2400. - 1728.) + uplane_limit;
 		if( chan > 2000 && chan < 2100 ) limit = 0;
 		if( chan > 2180 && chan < 2400 ) limit = 0;
 	}
