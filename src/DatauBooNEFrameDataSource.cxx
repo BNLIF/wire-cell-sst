@@ -861,45 +861,101 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	}
       }
       
-      
-      
       for (int i=0;i!=uplane_all.size();i++){
-      	//std::cout << "U " << i << " " << uplane_all.size() << std::endl;
-      	//calculate maximum_rms;
-      	float max_rms = 0;
+	float max_rms = 0;
       	for (int j=0;j!=uplane_all.at(i).size();j++){
       	  if (urms_map[uplane_all.at(i).at(j)] > max_rms) max_rms = urms_map[uplane_all.at(i).at(j)];
       	}
-      	// if (max_rms<10) max_rms = 10;
-      	// std::cout << i << " " << max_rms << std::endl;
+	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
 	
-	
-      	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
       	if (uplane_all.at(i).size()>0){
-      	  for (int j=0;j!=nbin;j++){
+      	  
+	  for (int j=0;j!=nbin;j++){
       	    h3->Reset();
       	    for (int k=0;k!=uplane_all.at(i).size();k++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
       		  fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
       	    }
-	    
-      	    if (h3->GetSum()>0){
+	    if (h3->GetSum()>0){
       	      double xq = 0.5;
       	      h3->GetQuantiles(1,&par[1],&xq);
       	    }else{
       	      par[1] = 0;
       	    }
-	    
-      	    // if (j == 100) std::cout << par[1] << " " << h3->GetSum() << std::endl;
-	    
-      	    for (int k=0;k!=uplane_all.at(i).size();k++){
-      	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-      	    }
+	    h44->SetBinContent(j+1,par[1]);
       	  }
+	  
+	  // do the RMS
+	  float min = h44->GetMinimum();
+	  float max = h44->GetMaximum();
+	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
+	  // std::cout << max << " " << min << " " << int(max-min+1) << " " << nbin << std::endl;
+	  for (int j=0;j!=nbin;j++){
+	    h55->Fill(h44->GetBinContent(j+1));
+	  }
+	  float mean = h55->GetMean();
+	  float rms = h55->GetRMS();
+	  for (int j=0;j!=h55->GetNbinsX();j++){
+	    int bin_center = h55->GetBinCenter(j+1);
+	    if (bin_center < mean - 5*rms || bin_center > mean + 5*rms){
+	      h55->SetBinContent(j+1,0);
+	    }
+	  }
+	 
+	  mean = h55->GetMean();
+	  rms = h55->GetRMS();
+	  delete h55;
+	  // remove +- 3sigma one
+	  std::vector<int> signals;
+	  for (int j=0;j!=nbin;j++){
+	    float content = h44->GetBinContent(j+1);
+	    if (fabs(content-mean)>3.0*rms){
+	      h44->SetBinContent(j+1,0);
+	      signals.push_back(j);
+	    }
+	  }
+	  
+	  // adaptive baseline 
+	  for (int j=0;j!=signals.size();j++){
+	    int bin = signals.at(j);
+	    int prev_bin=bin;
+	    int next_bin=bin;
+	    
+	    int flag = 1;
+	    while(flag){
+	      prev_bin--;
+	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+	  	flag = 0;
+	      }
+	    }
+
+	    flag =1;
+	    while(flag){
+	      next_bin++;
+	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+	  	flag = 0;
+	      }
+	    }
+	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+	    float content = h44->GetBinContent(prev_bin+1) + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+	      * (h44->GetBinContent(next_bin+1) - h44->GetBinContent(prev_bin+1));
+	    h44->SetBinContent(bin+1,content);
+	  }
+
+
+	  for (int j=0;j!=nbin;j++){
+	    for (int k=0;k!=uplane_all.at(i).size();k++){
+      	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      	    }
+	  }
+
       	}
+
       	delete h3;
+	delete h44;
       }
       
       for (int i=0;i!=vplane_all.size();i++){
@@ -912,6 +968,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	
 	
       	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
+
       	if (vplane_all.at(i).size()>0){
       	  for (int j=0;j!=nbin;j++){
       	    h3->Reset();
@@ -927,14 +985,78 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	    }else{
       	      par[1] = 0;
       	    }
-	    
-      	    for (int k=0;k!=vplane_all.at(i).size();k++){
-      	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-      	    }
+	    h44->SetBinContent(j+1,par[1]);
       	  }
+	  
+	   // do the RMS
+	  float min = h44->GetMinimum();
+	  float max = h44->GetMaximum();
+	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
+	  //std::cout << max << " " << min << " " << int(max-min+1) << std::endl;
+	  for (int j=0;j!=nbin;j++){
+	    h55->Fill(h44->GetBinContent(j+1));
+	  }
+	  float mean = h55->GetMean();
+	  float rms = h55->GetRMS();
+	  for (int j=0;j!=h55->GetNbinsX();j++){
+	    int bin_center = h55->GetBinCenter(j+1);
+	    if (bin_center < mean - 5*rms || bin_center > mean + 5*rms){
+	      h55->SetBinContent(j+1,0);
+	    }
+	  }
+	  
+	  mean = h55->GetMean();
+	  rms = h55->GetRMS();
+	  delete h55;
+	  // remove +- 3sigma one
+	  std::vector<int> signals;
+	  for (int j=0;j!=nbin;j++){
+	    float content = h44->GetBinContent(j+1);
+	    if (fabs(content-mean)>3.0*rms){
+	      h44->SetBinContent(j+1,0);
+	      signals.push_back(j);
+	    }
+	  }
+	  
+	  // adaptive baseline 
+	  for (int j=0;j!=signals.size();j++){
+	    int bin = signals.at(j);
+	    int prev_bin=bin;
+	    int next_bin=bin;
+	    
+	    int flag = 1;
+	    while(flag){
+	      prev_bin--;
+	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+	  	flag = 0;
+	      }
+	    }
+
+	    flag =1;
+	    while(flag){
+	      next_bin++;
+	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+	  	flag = 0;
+	      }
+	    }
+
+	    float content = h44->GetBinContent(prev_bin+1) + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+	      * (h44->GetBinContent(next_bin+1) - h44->GetBinContent(prev_bin+1));
+	    h44->SetBinContent(bin+1,content);
+	  }
+
+
+	  for (int j=0;j!=nbin;j++){
+	    for (int k=0;k!=vplane_all.at(i).size();k++){
+      	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      	    }
+	  }
+
       	}
+
       	delete h3;
+	delete h44;
       }
       
       for (int i=0;i!=wplane_all.size();i++){
@@ -946,6 +1068,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	
       	//std::cout << "W " << i << " " << wplane_all.size() << std::endl;
       	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
       	if (wplane_all.at(i).size()>0){
       	  for (int j=0;j!=nbin;j++){
       	    h3->Reset();
@@ -961,14 +1084,77 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	    }else{
       	      par[1] = 0;
       	    }
-	    
-      	    for (int k=0;k!=wplane_all.at(i).size();k++){
-      	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-par[1]);
-      	    }
+	    h44->SetBinContent(j+1,par[1]);
       	  }
+
+	   // do the RMS
+	  float min = h44->GetMinimum();
+	  float max = h44->GetMaximum();
+	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
+	  //std::cout << max << " " << min << " " << int(max-min+1) << std::endl;
+	  for (int j=0;j!=nbin;j++){
+	    h55->Fill(h44->GetBinContent(j+1));
+	  }
+	  float mean = h55->GetMean();
+	  float rms = h55->GetRMS();
+	  for (int j=0;j!=h55->GetNbinsX();j++){
+	    int bin_center = h55->GetBinCenter(j+1);
+	    if (bin_center < mean - 5*rms || bin_center > mean + 5*rms){
+	      h55->SetBinContent(j+1,0);
+	    }
+	  }
+	  
+	  mean = h55->GetMean();
+	  rms = h55->GetRMS();
+	  delete h55;
+	  // remove +- 3sigma one
+	  std::vector<int> signals;
+	  for (int j=0;j!=nbin;j++){
+	    float content = h44->GetBinContent(j+1);
+	    if (fabs(content-mean)>3.0*rms){
+	      h44->SetBinContent(j+1,0);
+	      signals.push_back(j);
+	    }
+	  }
+	  
+	  // adaptive baseline 
+	  for (int j=0;j!=signals.size();j++){
+	    int bin = signals.at(j);
+	    int prev_bin=bin;
+	    int next_bin=bin;
+	    
+	    int flag = 1;
+	    while(flag){
+	      prev_bin--;
+	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+	  	flag = 0;
+	      }
+	    }
+
+	    flag =1;
+	    while(flag){
+	      next_bin++;
+	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+	  	flag = 0;
+	      }
+	    }
+
+	    float content = h44->GetBinContent(prev_bin+1) + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+	      * (h44->GetBinContent(next_bin+1) - h44->GetBinContent(prev_bin+1));
+	    h44->SetBinContent(bin+1,content);
+	  }
+
+
+	  for (int j=0;j!=nbin;j++){
+	    for (int k=0;k!=wplane_all.at(i).size();k++){
+      	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+      		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      	    }
+	  }
+
       	}
       	delete h3;
+	delete h44;
       }
       
       
