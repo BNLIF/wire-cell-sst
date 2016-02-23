@@ -509,18 +509,18 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   double maxRMSCut[3] = {10.0,10.0,5.0};
   double minRMSCut[3] = {2,2,2};
 
-  if (channel_no>2080 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  //  if (channel_no>2080 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
 
   if (planeNum == 0){
     if (channel_no < 100){
       maxRMSCut[0] = 5;
       minRMSCut[0] = 1;
     }else if (channel_no >= 100 && channel_no<2000){
-      maxRMSCut[0] = 11;
+      maxRMSCut[0] = 11; // increase the threshold slightly ... 
       minRMSCut[0] = 2;
     }else if (channel_no >= 2000 && channel_no < 2400){
       maxRMSCut[0] = 5;
-      minRMSCut[0] = 0.95;
+      minRMSCut[0] = 0.9; // take into account FT-1 channel ... 
     }
   }else if (planeNum == 1){
     if (channel_no <290){
@@ -752,6 +752,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // 	std::cout << "Xin Channel Status!" << std::endl;
       // }
 
+      //hack for now to deal with FT-1 channel ... 
+      for (int i=2192;i!=nu;i++){
+	hu[i]->Scale(2);
+      }
       
       std::cout << "Remove ZigZag " << std::endl;
       //deal with the zig zag noise
@@ -1383,7 +1387,7 @@ void WireCellSst::DatauBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plan
 
 	rmsOut = rms;
 
-	if (fabs(chan-1517)<5 && plane == 0) std::cout << "Xin: " << chan << " " << rmsOut << std::endl;
+	//	if (fabs(chan-1517)<5 && plane == 0) std::cout << "Xin: " << chan << " " << rmsOut << std::endl;
 
 	//apply selection
 	bool isCut1 = 0;
@@ -1398,7 +1402,7 @@ void WireCellSst::DatauBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plan
 
 	//selection cut 2: noisy channel
 	//if( rms > 30 )
-	if( rms > 45 )
+	if( rms > 30 )
 		isCut2 = 1;
 
 	//selection cut 3: low RMS
