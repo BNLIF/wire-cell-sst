@@ -923,7 +923,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  float rms = h55->GetRMS();
 	  for (int j=0;j!=h55->GetNbinsX();j++){
 	    int bin_center = h55->GetBinCenter(j+1);
-	    if (bin_center < mean - 5*rms || bin_center > mean + 5*rms){
+	    if (bin_center < mean - 4*rms || bin_center > mean + 4*rms){
 	      h55->SetBinContent(j+1,0);
 	    }
 	  }
@@ -1024,7 +1024,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  float rms = h55->GetRMS();
 	  for (int j=0;j!=h55->GetNbinsX();j++){
 	    int bin_center = h55->GetBinCenter(j+1);
-	    if (bin_center < mean - 5*rms || bin_center > mean + 5*rms){
+	    if (bin_center < mean - 4*rms || bin_center > mean + 4*rms){
 	      h55->SetBinContent(j+1,0);
 	    }
 	  }
@@ -1123,7 +1123,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  float rms = h55->GetRMS();
 	  for (int j=0;j!=h55->GetNbinsX();j++){
 	    int bin_center = h55->GetBinCenter(j+1);
-	    if (bin_center < mean - 5*rms || bin_center > mean + 5*rms){
+	    if (bin_center < mean - 4*rms || bin_center > mean + 4*rms){
 	      h55->SetBinContent(j+1,0);
 	    }
 	  }
