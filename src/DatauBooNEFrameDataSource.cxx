@@ -1191,6 +1191,14 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // }
       // vchirp_map.clear();
 
+
+      // deal with the w plane to remove the PMT signal (negative pulse ...)
+      for (int i=0;i!=nwire_w;i++){
+	RemovePMTSignalCollection(hw[i]);
+      }
+
+
+
       
       double sum_u = 0, sum_v = 0, sum_w = 0;
       for (auto it = uchirp_map.begin(); it!= uchirp_map.end();it++){
@@ -1308,6 +1316,32 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     }
 }
 
+
+void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalCollection(TH1F* hist){
+  float rms = hist->GetRMS();
+
+  float rms1 = 0;
+  float rms2 = 0;
+  
+  for (int i=0;i!=hist->GetNbinsX();i++){
+    float content = hist->GetBinContent(i+1);
+    if (fabs(content) < 3*rms){
+      rms1 += content*content;
+      rms2 ++;
+    }
+  }
+  
+  if (rms2 >0){
+    rms1 = sqrt(rms1/rms2);
+    for (int i=0;i!=hist->GetNbinsX();i++){
+      float content = hist->GetBinContent(i+1);
+      if (content < -3 *rms1){
+	hist->SetBinContent(i+1,0);
+      }
+    }
+  }
+  
+}
 
 bool WireCellSst::DatauBooNEFrameDataSource::chirp_check(double rms, int plane, int channel){
   if (plane == 0){
