@@ -297,7 +297,7 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
-	}else{
+	  //	}else{
 	  // if (umap!=0&&vmap!=0&&wmap!=0){
 	  //   // hack for now for data
 	  //   int nwire_u = 2400;
@@ -315,8 +315,11 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	  //   }
 	  // }
 	  //   //hack for now 
+	  //	}
+	}else if (q_next > threshold || q_prev > threshold){
+	  if ((q1 > q_next/3.&&q_next>threshold) || (q1 > q_prev/3.&&q_prev>threshold)) // scale by a factor of 3 ... 
+	    slice_group.push_back(Channel::Charge(trace.chid, q1));
 	}
-
 
 	// else if (q_next > threshold || q_prev > threshold){
 	//   if (q1 > threshold_g){
