@@ -748,6 +748,27 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	}
       }
 
+
+      //special cut on W-plane ... 
+      for (int i=0;i!=nw;i++){
+	bool isCut = 0;
+	int chan = i;
+	if (chan >=7136 - 4800 && chan <=7263 - 4800){
+	  if (chan != 7200- 4800 && chan!=7215 - 4800)
+	    isCut = 1;
+	}
+	if( isCut){
+	  if (wchirp_map.find(i) == wchirp_map.end()){
+	    std::pair<int,int> abc(0, 9592);
+	    wchirp_map[i] = abc;
+	  }else{
+	    wchirp_map[i].first = 0;
+	    wchirp_map[i].second = 9592;
+	  }
+	}
+      }
+
+
       // if (uchirp_map.find(1517)!=uchirp_map.end()){
       // 	std::cout << "Xin Channel Status!" << std::endl;
       // }
@@ -962,9 +983,25 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  	flag = 0;
 	      }
 	    }
+	    
+	    float prev_content, next_content;
+	    if (prev_bin >=4){
+	      prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+			      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+	    }else{
+	      prev_content = h44->GetBinContent(prev_bin+1);
+	    }
+	    if (next_bin <= nbin-5){
+	      next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+			      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+	    }else{
+	      next_content = h44->GetBinContent(next_bin+1);
+	    }
+	    
+
 	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-	    float content = h44->GetBinContent(prev_bin+1) + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-	      * (h44->GetBinContent(next_bin+1) - h44->GetBinContent(prev_bin+1));
+	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+	      * (next_content - prev_content);
 	    h44->SetBinContent(bin+1,content);
 	  }
 
@@ -1063,9 +1100,26 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  	flag = 0;
 	      }
 	    }
+	    
+	    float prev_content, next_content;
+	    if (prev_bin >=4){
+	      prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+			      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+	    }else{
+	      prev_content = h44->GetBinContent(prev_bin+1);
+	    }
+	    if (next_bin <= nbin-5){
+	      next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+			      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+	    }else{
+	      next_content = h44->GetBinContent(next_bin+1);
+	    }
+	    
 
-	    float content = h44->GetBinContent(prev_bin+1) + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-	      * (h44->GetBinContent(next_bin+1) - h44->GetBinContent(prev_bin+1));
+	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+	      * (next_content - prev_content);
+
 	    h44->SetBinContent(bin+1,content);
 	  }
 
@@ -1163,8 +1217,25 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
-	    float content = h44->GetBinContent(prev_bin+1) + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-	      * (h44->GetBinContent(next_bin+1) - h44->GetBinContent(prev_bin+1));
+	    float prev_content, next_content;
+	    if (prev_bin >=4){
+	      prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+			      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+	    }else{
+	      prev_content = h44->GetBinContent(prev_bin+1);
+	    }
+	    if (next_bin <= nbin-5){
+	      next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+			      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+	    }else{
+	      next_content = h44->GetBinContent(next_bin+1);
+	    }
+	    
+
+	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+	      * (next_content - prev_content);
+
 	    h44->SetBinContent(bin+1,content);
 	  }
 
@@ -1470,5 +1541,13 @@ void WireCellSst::DatauBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plan
 
 	//isCut = isCut1 + isCut2;
 	isCut = isCut1+isCut2+isCut3;
+
+	// Add special projection for W-plane signal ... 
+	if (plane == 2 && chan >=7136 - 4800 && chan <=7263 - 4800){
+	  if (chan != 7200- 4800 && chan!=7215 - 4800)
+	    isCut = isCut + 1;
+	}
+
+
 	return;
   }
