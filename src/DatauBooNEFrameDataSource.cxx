@@ -702,7 +702,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       int ntotal = nu + nv + nw;
       
       //channel status check
-      if(0){
+      if(0){ // turn this off for now ... 
 	std::cout << "Check Channel Status " << std::endl;
 	double rmsOut = 0;
      	for (int i=0;i!=nu;i++){
