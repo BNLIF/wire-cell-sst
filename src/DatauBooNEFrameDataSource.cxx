@@ -975,6 +975,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  	flag = 0;
 	      }
 	    }
+	    
+
+
 
 	    flag =1;
 	    while(flag){
@@ -984,19 +987,23 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
+	    // if (prev_bin>0) prev_bin --;
+	    // if (next_bin<nbin-1) next_bin++; 
+
+
 	    float prev_content, next_content;
-	    if (prev_bin >=4){
-	      prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-			      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-	    }else{
-	      prev_content = h44->GetBinContent(prev_bin+1);
-	    }
-	    if (next_bin <= nbin-5){
-	      next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-			      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-	    }else{
-	      next_content = h44->GetBinContent(next_bin+1);
-	    }
+	    // if (prev_bin >=4){
+	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+	    // }else{
+	    prev_content = h44->GetBinContent(prev_bin+1);
+	    // }
+	    // if (next_bin <= nbin-5){
+	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+	    // }else{
+	    next_content = h44->GetBinContent(next_bin+1);
+	    // }
 	    
 
 	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
@@ -1101,19 +1108,22 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
+	    //  if (prev_bin>0) prev_bin --;
+	    // if (next_bin<nbin-1) next_bin++; 
+
 	    float prev_content, next_content;
-	    if (prev_bin >=4){
-	      prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-			      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-	    }else{
+	    // if (prev_bin >=4){
+	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+	    // }else{
 	      prev_content = h44->GetBinContent(prev_bin+1);
-	    }
-	    if (next_bin <= nbin-5){
-	      next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-			      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-	    }else{
+	    // }
+	    // if (next_bin <= nbin-5){
+	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+	    // }else{
 	      next_content = h44->GetBinContent(next_bin+1);
-	    }
+	    // }
 	    
 
 	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
@@ -1217,19 +1227,22 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
+	    // if (prev_bin>0) prev_bin --;
+	    // if (next_bin<nbin-1) next_bin++; 
+
 	    float prev_content, next_content;
-	    if (prev_bin >=4){
-	      prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-			      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-	    }else{
+	    // if (prev_bin >=4){
+	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+	    // }else{
 	      prev_content = h44->GetBinContent(prev_bin+1);
-	    }
-	    if (next_bin <= nbin-5){
-	      next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-			      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-	    }else{
+	    // }
+	    // if (next_bin <= nbin-5){
+	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+	    // }else{
 	      next_content = h44->GetBinContent(next_bin+1);
-	    }
+	    // }
 	    
 
 	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
