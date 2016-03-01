@@ -139,6 +139,12 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	return index;		// already loaded, no-op
     }
 
+
+    int saved_signal[8256];
+    for (int i=0;i!=8256;i++){
+      saved_signal[i] = 0;
+    }
+    std::set<int> fired_channels;
     // new slice
 
     _slice.clear();
@@ -165,10 +171,11 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	
 	// Save association of a channel ID and its charge.
 	int q = trace.charge[slice_tbin];
-
+	saved_signal[trace.chid] = q;
 	
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q));
+	  fired_channels.insert(trace.chid);
 	}
 	// else{
 	//   if (umap!=0&&vmap!=0&&wmap!=0){
@@ -215,7 +222,8 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	int q_next, q_prev;
 	int q1 = trace1.charge[slice_tbin];
 	// int q1_next, q1_prev;
-	
+	saved_signal[trace.chid] = q1;
+
 	if (slice_tbin == tbin){
 	  q_next  = trace.charge[slice_tbin +1];
 	  q_prev  = trace.charge[slice_tbin +1];
@@ -297,6 +305,7 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
+	  fired_channels.insert(trace.chid);
 	  //	}else{
 	  // if (umap!=0&&vmap!=0&&wmap!=0){
 	  //   // hack for now for data
@@ -317,8 +326,10 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	  //   //hack for now 
 	  //	}
 	}else if (q_next > threshold || q_prev > threshold){
-	  if ((q1 > q_next/3.&&q_next>threshold) || (q1 > q_prev/3.&&q_prev>threshold)) // scale by a factor of 3 ... 
+	  if ((q1 > q_next/3.&&q_next>threshold) || (q1 > q_prev/3.&&q_prev>threshold)) {// scale by a factor of 3 ... 
 	    slice_group.push_back(Channel::Charge(trace.chid, q1));
+	    fired_channels.insert(trace.chid);
+	  }
 	}
 
 	// else if (q_next > threshold || q_prev > threshold){
@@ -332,6 +343,52 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
       }
     }
     
+    // try to save stuff for the coherent subtraction ... 
+    // compare the 48 channels
+    // require >30 channels to fire?
+    // require an up to 5 empty channels?
+    // require both end has fired channels
+    int step_limit = 5;
+    int counter[172];
+    for (int i=0;i!=172;i++){
+      counter[i] = 0;
+    }
+    for (auto it = fired_channels.begin();it!=fired_channels.end();it++){
+      int count = int(*it/48);
+      counter[count]++;
+    }
+    for (int i=0;i!=172;i++){
+      if (counter[i]>30){
+	//std::cout << "Xin " << slice_tbin << " " << i << " " << counter[i] << std::endl;
+	for (int j=i*48;j!=(i+1)*48;j++){
+	  // this channel need to be not fired
+	  auto it = fired_channels.find(j);
+	  if (it == fired_channels.end()){
+	    int prev_channel,next_channel;
+	    // find the previous fired channel
+	    for (int k=j-1;k!=j-1-step_limit;k--){
+	      prev_channel = k;
+	      auto it1 = fired_channels.find(k);
+	      if (it1 != fired_channels.end()) break;
+	    }
+	    // find the next fired channel
+	    for (int k=j+1;k!=j+1+step_limit;k++){
+	      next_channel = k;
+	      auto it1 = fired_channels.find(k);
+	      if (it1 != fired_channels.end()) break;
+	    }
+
+	    if (fabs(next_channel - prev_channel) <= step_limit+1){
+	      slice_group.push_back(Channel::Charge(j, saved_signal[j]));
+	    }
+	  }
+	}
+	
+      }
+    }
+    //
+
+
     _slice.reset(slice_tbin, slice_group);
     //std::cout << sum << std::endl;
     return index;
