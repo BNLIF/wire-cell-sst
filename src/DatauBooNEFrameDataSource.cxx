@@ -78,6 +78,13 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
       value_re[j] = 0;
       value_im[j] = 0;
     }
+
+    // test ... 
+    if (plane==0 || plane==1 ){
+      if (j>=169&&j<=173) value_re[j] = 0; // remove the single frequency content
+      // if (j>=513&&j<=516) value_re[j] = 0;
+    }
+
   }
   
   ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
