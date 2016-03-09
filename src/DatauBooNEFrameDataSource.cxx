@@ -71,7 +71,7 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
     
     if (j==0) rho = 0;
     
-    if (j<=3500 || j> nbin-3500){
+    if (j<=3500 || j> nbin-3500){ // filter out the zigzag noise, >730 kHz noise
       value_re[j] = rho*cos(phi)/nbin;
       value_im[j] = rho*sin(phi)/nbin;
     }else{
@@ -81,16 +81,19 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
 
     // test ... 
     if (plane==0 || plane==1 ){
-      if (j>=169&&j<=173) {
-	value_re[j] = 0; // remove the single frequency content
+      if (j>=169&&j<=173) { // filter out the 36 kHz noise
+	value_re[j] = 0; 
 	value_im[j] = 0.;
       }
-      // if (j<=169) {
-      // 	value_re[j] = 0.;
-      // 	value_im[j] = 0.;
-      // }
-      // if (j>=513&&j<=516) value_re[j] = 0;
+      if (plane == 0){
+	if (j>=513 && j<=516){ // for U-plane, filter out the 110 kHz noise
+	  value_re[j] = 0; 
+	  value_im[j] = 0.;
+	}
+      }
     }
+     
+    
 
   }
   
