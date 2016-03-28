@@ -1132,13 +1132,44 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	  
 	  // calculate scaling coefficient ... 
+	  double ave_coef = 0;
+	  double_t ave_coef1 = 0;
+	  std::vector<double> coef_all;
+	  for (int k=0;k!=uplane_all.at(i).size();k++){
+	    double sum2 = 0;
+	    double sum3 = 0;
+	    double coef = 0;
+	    
+	    for (int j=0;j!=nbin;j++){
+	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * urms_map[uplane_all.at(i).at(k)] ){
+		sum2 += hu[uplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
+		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
+	      }
+	    }
+	    if (sum3 >0)
+	      coef = sum2/sum3;
+	    coef_all.push_back(coef);
+	    
+	    if (coef !=0){
+	      ave_coef += coef;
+	      ave_coef1 ++;
+	    }
+	    
+	  }
+	  if (ave_coef1>0)
+	    ave_coef = ave_coef / ave_coef1;
 	  
+	  // for (int k=0;k!=uplane_all.at(i).size();k++){
+	  //   std::cout << "U " << uplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
+	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
+	  // }
 	  //  
 
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=uplane_all.at(i).size();k++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * coef_all.at(k)/ave_coef);
+	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
 	  }
 
@@ -1257,10 +1288,49 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  }
 
 
+	  // calculate scaling coefficient ... 
+	  double ave_coef = 0;
+	  double ave_coef1 = 0;
+	  std::vector<double> coef_all;
+	  for (int k=0;k!=vplane_all.at(i).size();k++){
+	    double sum2 = 0;
+	    double sum3 = 0;
+	    double coef = 0;
+	    
+	    for (int j=0;j!=nbin;j++){
+	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * vrms_map[vplane_all.at(i).at(k)] ){
+		sum2 += hv[vplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
+		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
+	      }
+	    }
+	    if (sum3 >0)
+	      coef = sum2/sum3;
+
+	    coef_all.push_back(coef);
+	    
+	    //	    std::cout << k << " " << coef << std::endl;
+
+	    if (coef!=0){
+	      ave_coef += coef;
+	      ave_coef1 ++;
+	    }
+	  }
+	  if (ave_coef1>0)
+	    ave_coef = ave_coef / ave_coef1;
+	  //  
+	  //	  std::cout << "VAve: " << ave_coef << std::endl;
+	  
+	  // for (int k=0;k!=vplane_all.at(i).size();k++){
+	  //   std::cout << "V " <<  vplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
+	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
+	  // }
+
+
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=vplane_all.at(i).size();k++){
       	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
+	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
 	  }
 
@@ -1376,10 +1446,45 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  }
 
 
+	  // calculate scaling coefficient ... 
+	  double ave_coef = 0;
+	  double ave_coef1 = 0;
+	  std::vector<double> coef_all;
+	  for (int k=0;k!=wplane_all.at(i).size();k++){
+	    double sum2 = 0;
+	    double sum3 = 0;
+	    double coef = 0;
+	    
+	    for (int j=0;j!=nbin;j++){
+	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * wrms_map[wplane_all.at(i).at(k)] ){
+		sum2 += hw[wplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
+		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
+	      }
+	    }
+	    if (sum3 >0)
+	      coef = sum2/sum3;
+	    // std::cout << k << " " << coef << std::endl;
+	    coef_all.push_back(coef);
+	    if (coef!=0){
+	      ave_coef += coef;
+	      ave_coef1 ++;
+	    }
+	  }
+	  if (ave_coef1)
+	    ave_coef = ave_coef / ave_coef1;
+	  //  
+	  //	  std::cout << "WAve: " << ave_coef << std::endl;
+	  // for (int k=0;k!=wplane_all.at(i).size();k++){
+	  //   std::cout << "W " << wplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
+	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
+	  // }
+
+
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=wplane_all.at(i).size();k++){
       	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
+		//hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
 	  }
 
