@@ -56,7 +56,7 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* ro
 
   TF1 *f1 = new TF1("func1",response,0,10,2);
   TF1 *f2 = new TF1("func2",response,0,10,2);
-  f1->SetParameters(47.*1.012,1.0);
+  f1->SetParameters(78.*1.012,1.0);
   f2->SetParameters(140.*1.012,2.0);
 
 
@@ -131,6 +131,15 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
   
 
   // need to restore the incorrectly set ASICs gain and shaping time ... 
+  int flag_restore = 0;
+  if (plane == 0){ // U-plane only    could be time-dependent 
+    if (channel_no >=2016 && channel_no <= 2095 
+	|| channel_no >=2192 && channel_no <=2303 
+	|| channel_no >= 2352 && channel_no <=2400)
+      {
+	flag_restore = 1;
+      }
+  }
 
 
   for (int j=0;j!=nbin;j++){
@@ -146,8 +155,20 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
     }
     phi = phi - 2*hp_rc->GetBinContent(j+1);
     
-    
+    // need to restore the incorrectly set ASICs gain and shaping time ... 
+    if (flag_restore == 1){
+      if (hm_1us->GetBinContent(j+1)>0){
+	rho = rho / hm_1us->GetBinContent(j+1) * hm_2us->GetBinContent(j+1);
+      }else{
+	rho = 0;
+      }
+      phi = phi - hp_1us->GetBinContent(j+1) + hp_2us->GetBinContent(j+1);
+    }
+    // done ...
 
+    if (plane == 0 && channel_no ==2240){
+      if (j>=17&& j<=19) rho = 0;  // filter out 3.6 kHz noise for this single channel
+    }
 
     // filter the zero frequency
     if (j==0) rho = 0;    
@@ -871,9 +892,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // }
 
       //hack for now to deal with FT-1 channel ... 
-      for (int i=2192;i!=nu;i++){
-	hu[i]->Scale(2);
-      }
+      // for (int i=2192;i!=nu;i++){
+      // 	hu[i]->Scale(2);
+      // } // removed, as we implement the special treatment of FT-1 channels
       
       std::cout << "Remove ZigZag " << std::endl;
       //deal with the zig zag noise
@@ -1109,6 +1130,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    h44->SetBinContent(bin+1,content);
 	  }
 
+	  
+	  // calculate scaling coefficient ... 
+	  
+	  //  
 
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=uplane_all.at(i).size();k++){
@@ -1116,6 +1141,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
 	  }
+
 
       	}
 
