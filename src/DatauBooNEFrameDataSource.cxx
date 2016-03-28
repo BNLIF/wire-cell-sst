@@ -10,6 +10,29 @@
 
 using namespace WireCell;
 
+
+double response(double *x, double *par){
+double f = 4.31054*exp(-2.94809*x[0]/par[1])*par[0]-2.6202*exp(-2.82833*x[0]/par[1])*cos(1.19361*x[0]/par[1])*par[0]
+              -2.6202*exp(-2.82833*x[0]/par[1])*cos(1.19361*x[0]/par[1])*cos(2.38722*x[0]/par[1])*par[0]
+                    +0.464924*exp(-2.40318*x[0]/par[1])*cos(2.5928*x[0]/par[1])*par[0]
+                          +0.464924*exp(-2.40318*x[0]/par[1])*cos(2.5928*x[0]/par[1])*cos(5.18561*x[0]/par[1])*par[0]
+                                +0.762456*exp(-2.82833*x[0]/par[1])*sin(1.19361*x[0]/par[1])*par[0]
+                                      -0.762456*exp(-2.82833*x[0]/par[1])*cos(2.38722*x[0]/par[1])*sin(1.19361*x[0]/par[1])*par[0]
+                                            +0.762456*exp(-2.82833*x[0]/par[1])*cos(1.19361*x[0]/par[1])*sin(2.38722*x[0]/par[1])*par[0]
+                                                  -2.6202*exp(-2.82833*x[0]/par[1])*sin(1.19361*x[0]/par[1])*sin(2.38722*x[0]/par[1])*par[0] 
+                                                        -0.327684*exp(-2.40318*x[0]/par[1])*sin(2.5928*x[0]/par[1])*par[0] + 
+                                                              +0.327684*exp(-2.40318*x[0]/par[1])*cos(5.18561*x[0]/par[1])*sin(2.5928*x[0]/par[1])*par[0]
+                                                                    -0.327684*exp(-2.40318*x[0]/par[1])*cos(2.5928*x[0]/par[1])*sin(5.18561*x[0]/par[1])*par[0]
+                                                                          +0.464924*exp(-2.40318*x[0]/par[1])*sin(2.5928*x[0]/par[1])*sin(5.18561*x[0]/par[1])*par[0];
+
+ if (x[0] >0&&x[0] < 10){
+    return f;
+ }else{
+   return 0;
+ }
+}
+
+
 WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1)
     : WireCell::FrameDataSource()
     , root_file(root_file)
@@ -27,6 +50,36 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* ro
   nwire_v = wires_v.size();
   nwire_w = wires_w.size();
   
+  h_rc = new TH1F("h_rc","h_rc",bins_per_frame,0,bins_per_frame);
+  h_1us = new TH1F("h_1us","h_1us",bins_per_frame,0,bins_per_frame);
+  h_2us = new TH1F("h_2us","h_2us",bins_per_frame,0,bins_per_frame);
+
+  TF1 *f1 = new TF1("func1",response,0,10,2);
+  TF1 *f2 = new TF1("func2",response,0,10,2);
+  f1->SetParameters(47.*1.012,1.0);
+  f2->SetParameters(140.*1.012,2.0);
+
+
+  double x0 = h_rc->GetBinCenter(1)/2.;
+  for (Int_t i=0;i!=bins_per_frame;i++){
+    double x = h_rc->GetBinCenter(i+1)/2.; // convert to us, assume 2 MHz digitization
+    Double_t content = -1.0/2./1000 * exp(-(x-x0)/1000.); // 1 ms RC time
+    if (x==x0) content +=1;
+    h_rc->SetBinContent(i+1,content);
+    h_1us->SetBinContent(i+1,f1->Eval(x));
+    h_2us->SetBinContent(i+1,f2->Eval(x));
+  }
+  hm_rc = h_rc->FFT(0,"MAG");
+  hp_rc = h_rc->FFT(0,"PH");
+  
+  hm_1us = h_1us->FFT(0,"MAG");
+  hp_1us = h_1us->FFT(0,"PH");
+
+  hm_2us = h_2us->FFT(0,"MAG");
+  hp_2us = h_2us->FFT(0,"PH");
+
+  delete f1;
+  delete f2;
 }
 
 void WireCellSst::DatauBooNEFrameDataSource::Clear(){
@@ -35,6 +88,17 @@ void WireCellSst::DatauBooNEFrameDataSource::Clear(){
 
 WireCellSst::DatauBooNEFrameDataSource::~DatauBooNEFrameDataSource()
 {
+  delete h_rc;
+  delete hm_rc;
+  delete hp_rc;
+
+  delete h_1us;
+  delete hm_1us;
+  delete hp_1us;
+
+  delete h_2us;
+  delete hm_2us;
+  delete hp_2us;
 }
 
 int WireCellSst::DatauBooNEFrameDataSource::size() const
@@ -65,12 +129,28 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
   hm = h1->FFT(0,"MAG");
   hp = h1->FFT(0,"PH");
   
+
+  // need to restore the incorrectly set ASICs gain and shaping time ... 
+
+
   for (int j=0;j!=nbin;j++){
+    
     double rho = hm->GetBinContent(j+1);
     double phi = hp->GetBinContent(j+1);
     
-    if (j==0) rho = 0;
+    // need to remove RC+RC shapings
+    if (hm_rc->GetBinContent(j+1)>0){
+      rho = rho/pow(hm_rc->GetBinContent(j+1),2);
+    }else{
+      rho = 0;
+    }
+    phi = phi - 2*hp_rc->GetBinContent(j+1);
     
+    
+
+
+    // filter the zero frequency
+    if (j==0) rho = 0;    
     if (j<=3500 || j> nbin-3500){ // filter out the zigzag noise, >730 kHz noise
       value_re[j] = rho*cos(phi)/nbin;
       value_im[j] = rho*sin(phi)/nbin;

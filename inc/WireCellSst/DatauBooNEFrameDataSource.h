@@ -79,7 +79,14 @@ namespace WireCellSst {
 	std::map<int, float> urms_map;
 	std::map<int, float> vrms_map;
 	std::map<int, float> wrms_map;
-	
+
+	// RC+RC 
+	TH1F *h_rc;
+	TH1 *hm_rc, *hp_rc;
+	TH1F *h_1us;
+	TH1 *hm_1us, *hp_1us;
+	TH1F *h_2us;
+	TH1 *hm_2us, *hp_2us;
     };
 
     
