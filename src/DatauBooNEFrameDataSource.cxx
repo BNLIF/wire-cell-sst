@@ -135,7 +135,7 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
   if (plane == 0){ // U-plane only    could be time-dependent 
     if (channel_no >=2016 && channel_no <= 2095 
 	|| channel_no >=2192 && channel_no <=2303 
-	|| channel_no >= 2352 && channel_no <=2400)
+	|| channel_no >= 2352 && channel_no <2400)
       {
 	flag_restore = 1;
       }
@@ -640,7 +640,6 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   // if (channel_no==675 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
   // if (channel_no==946 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
   // if (channel_no==959 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
-
   //  if (channel_no>2080 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
 
   if (planeNum == 0){
