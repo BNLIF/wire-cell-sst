@@ -633,6 +633,8 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   double maxRMSCut[3] = {10.0,10.0,5.0};
   double minRMSCut[3] = {2,2,2};
 
+  if (channel_no==7680-4800 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  
   // if (channel_no==673 && planeNum==0) {
   //   std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
   //   std::cout << hist->GetBinContent(100) << std::endl;
@@ -648,7 +650,7 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
       minRMSCut[0] = 1;
     }else if (channel_no >= 100 && channel_no<2000){
       maxRMSCut[0] = 11; // increase the threshold slightly ... 
-      minRMSCut[0] = 2;
+      minRMSCut[0] = 1.9;
     }else if (channel_no >= 2000 && channel_no < 2400){
       maxRMSCut[0] = 5;
       minRMSCut[0] = 0.9; // take into account FT-1 channel ... 
@@ -659,14 +661,14 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
       minRMSCut[1] = 1;
     }else if (channel_no>=290 && channel_no < 2200){
       maxRMSCut[1] = 11;
-      minRMSCut[1] = 2;
+      minRMSCut[1] = 1.9;
     }else if (channel_no >=2200){
       maxRMSCut[1] = 5;
       minRMSCut[1] = 1;
     }
   }else if (planeNum == 2){
     maxRMSCut[2] = 8;
-    minRMSCut[2] = 2;
+    minRMSCut[2] = 1.9;
   }
   
   // //rely on the Brian's filter ... 
@@ -912,6 +914,18 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // std::cout << "Before Chirp ID " << uchirp_map.size() << " " << 
       // 	vchirp_map.size() << " " << wchirp_map.size() << std::endl;
 
+      for (int i=2016; i<2400;i++){
+	int channel_no = i;
+	if (channel_no >=2016 && channel_no <= 2095 
+	    || channel_no >=2192 && channel_no <=2303 
+	    || channel_no >= 2352 && channel_no <2400){
+	  hu[i]->Scale(14./7.8); // assume 7.8 mV/fC gain
+	}
+      }
+
+	
+
+
       std::cout << "Identify Chirping" << std::endl;
       // deal with the chirping ... set chirping part > 10000
       for (int i=0;i!=nu;i++){
@@ -923,6 +937,22 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       for (int i=0;i!=nw;i++){
       	chirp_id(hw[i],2,i);
       }
+
+      
+      for (int i=2016; i<2400;i++){
+	int channel_no = i;
+	if (channel_no >=2016 && channel_no <= 2095 
+	    || channel_no >=2192 && channel_no <=2303 
+	    || channel_no >= 2352 && channel_no <2400){
+	  hu[i]->Scale(7.8/14.); // assume 7.8 mV/fC gain
+	}
+      }
+
+      
+      // if (uchirp_map.find(2240)!=uchirp_map.end()){
+      // 	std::cout << "1: " << 2240 << std::endl; 
+      // }
+      
 
 
       // for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
@@ -1021,6 +1051,15 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	NoisyFilterAlg(hw[i],2,i);
       	RemoveFilterFlags(hw[i]);
       }
+
+
+      // if (uchirp_map.find(2240)!=uchirp_map.end()){
+      // 	std::cout << "2: " << 2240 << std::endl; 
+      // }
+      // if (vchirp_map.find(320)!=vchirp_map.end()){
+      // 	std::cout << "2: " << 2720 << std::endl; 
+      // }
+
       
       // std::cout << "3" << std::endl;
       //  for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
