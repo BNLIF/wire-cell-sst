@@ -176,8 +176,8 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
     if (j==0) rho = 0; 
     
     // if (j<=3500 || j> nbin-3500){ // filter out the zigzag noise, >730 kHz noise
-    //   value_re[j] = rho*cos(phi)/nbin;
-    //   value_im[j] = rho*sin(phi)/nbin;
+    value_re[j] = rho*cos(phi)/nbin;
+    value_im[j] = rho*sin(phi)/nbin;
     // }else{
     //   value_re[j] = 0;
     //   value_im[j] = 0;
@@ -636,7 +636,39 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   double maxRMSCut[3] = {10.0,10.0,5.0};
   double minRMSCut[3] = {2,2,2};
 
-  if (channel_no==7680-4800 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 623 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  
+  // if (channel_no== 678 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1234 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1633 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1634 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1673 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1684 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1736 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1741 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1792 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1797 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 1820 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+
+  // if (channel_no== 2584 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2586 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2585 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2612 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2616 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2618 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2619 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2620 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2621 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2622 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2623 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2630 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2642 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2679 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 2680 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 3264 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  // if (channel_no== 3265 && planeNum==2) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
+  
+   
   
   // if (channel_no==673 && planeNum==0) {
   //   std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
@@ -671,14 +703,11 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
     }
   }else if (planeNum == 2){
     maxRMSCut[2] = 8;
-    minRMSCut[2] = 1.9;
+    minRMSCut[2] = 1.3;
   }
   
-  // //rely on the Brian's filter ... 
-  // for (int i=0;i!=3;i++){
-  //   maxRMSCut[i] *=2.;
-  //   minRMSCut[i] /=2.;
-  // }
+  //test ... 
+ 
 
   // std::cout << "Xin: " << planeNum << " " << channel_no << " " << rmsVal << std::endl;
    
@@ -722,6 +751,36 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
     }
   
   return;
+}
+
+bool WireCellSst::DatauBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, int channel_no){
+  bool flag = false;
+  TH1 *htemp_m = h1->FFT(0,"MAG");
+
+  Double_t content[5];
+  for (int i=0;i!=5;i++){
+    content[i] = htemp_m->GetBinContent(i+2);
+  }
+  if (content[0] > content[1] && 
+      content[0] > content[2] &&
+      content[0] > content[3] &&
+      content[0] > content[4] &&
+      (content[0] + content[1] + content[2] + content[3] + content[4])/5. > 6000.){
+    flag = true;
+  }
+
+  // if (flag){
+  //   std::cout << content[0] << " " << content[1] << " " << content[2] << " " << 
+  //     content[3] << " " << content[4] << std::endl;
+  //   //remove baseline 
+    
+
+  // }
+  
+
+  delete htemp_m;
+
+  return flag;
 }
 
 
@@ -974,6 +1033,36 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // 	}
       // }
 
+      std::cout << "ID RC channels!" << std::endl;
+      
+      std::vector<int> ided_rc_uplane;
+      std::vector<int> ided_rc_vplane;
+      std::vector<int> ided_rc_wplane;
+
+      for (int i=0;i!=nu;i++){
+      	if (ID_RC(hu[i],0,i)){
+	  ided_rc_uplane.push_back(i);
+	  std::cout << "U: " << i << std::endl;
+	}
+      }
+      for (int i=0;i!=nv;i++){
+	if (ID_RC(hv[i],0,i)){
+	  ided_rc_vplane.push_back(i);
+	  std::cout << "V: " << i << std::endl;
+	}
+      }
+      for (int i=0;i!=nw;i++){
+	if (ID_RC(hw[i],0,i)){
+	  ided_rc_wplane.push_back(i);
+	  std::cout << "W: " << i << std::endl;
+	}
+      }
+
+      // std::cout << ided_rc_uplane.size() << " " << ided_rc_vplane.size()
+      // 		<< " " << ided_rc_wplane.size() << std::endl;
+
+     
+
 
       std::cout << "Remove ZigZag " << std::endl;
       // deal with the zig zag noise
@@ -981,16 +1070,53 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // correct RC+RC 
       // correct misconfigured channel (need a database ...)
       for (int i=0;i!=nu;i++){
-      	zigzag_removal(hu[i],0,i);
+	auto it = find(ided_rc_uplane.begin(),ided_rc_uplane.end(),i);
+	if (it == ided_rc_uplane.end()){
+	  zigzag_removal(hu[i],0,i);
+	}else{
+	  zigzag_removal(hu[i],0,i,0);
+	}
       }
       for (int i=0;i!=nv;i++){
-      	zigzag_removal(hv[i],1,i);
+	auto it = find(ided_rc_vplane.begin(),ided_rc_vplane.end(),i);
+	if (it == ided_rc_vplane.end()){
+	  zigzag_removal(hv[i],1,i);
+	}else{
+	  zigzag_removal(hv[i],1,i,0);
+	}
       }
       for (int i=0;i!=nw;i++){
-      	zigzag_removal(hw[i],2,i);
+	auto it = find(ided_rc_wplane.begin(),ided_rc_wplane.end(),i);
+	if (it == ided_rc_wplane.end()){
+	  zigzag_removal(hw[i],2,i);
+	}else{
+	  zigzag_removal(hw[i],2,i,0);
+	}
       }
 
       
+      // // put RC into adaptive baseline group  ... 
+      // for (int i=0;i!=ided_rc_uplane.size();i++){
+      // 	if (uchirp_map.find(ided_rc_uplane.at(i)) == uchirp_map.end()){
+      // 	  std::pair<int,int> abc(-1, -1);
+      // 	  uchirp_map[ided_rc_uplane.at(i)] = abc;
+      // 	}
+      // }
+      // for (int i=0;i!=ided_rc_vplane.size();i++){
+      // 	if (vchirp_map.find(ided_rc_vplane.at(i)) == vchirp_map.end()){
+      // 	  std::pair<int,int> abc(-1, -1);
+      // 	  vchirp_map[ided_rc_vplane.at(i)] = abc;
+      // 	}
+      // }
+      // for (int i=0;i!=ided_rc_wplane.size();i++){
+      // 	if (wchirp_map.find(ided_rc_wplane.at(i)) == wchirp_map.end()){
+      // 	  std::pair<int,int> abc(-1, -1);
+      // 	  wchirp_map[ided_rc_wplane.at(i)] = abc;
+      // 	}
+      // }
+      
+
+
       std::cout << "Adaptive Baseline " << uchirp_map.size() << " " << 
       	vchirp_map.size() << " " << wchirp_map.size() << std::endl;
       // do the adaptive baseline ... 
@@ -1014,6 +1140,28 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	//RemoveFilterFlags(hw[it->first]);
       }
 
+
+      // do the adaptive baseline for the bad RC channels ... 
+      for (int i=0; i!=ided_rc_uplane.size();i++){
+      	if (uchirp_map.find(ided_rc_uplane.at(i)) == uchirp_map.end()){
+      	  SignalFilter(hu[ided_rc_uplane.at(i)]);
+      	  RawAdaptiveBaselineAlg(hu[ided_rc_uplane.at(i)]);
+      	}
+      }
+      for (int i=0; i!=ided_rc_vplane.size();i++){
+      	if (vchirp_map.find(ided_rc_vplane.at(i)) == vchirp_map.end()){
+      	  SignalFilter(hv[ided_rc_vplane.at(i)]);
+      	  RawAdaptiveBaselineAlg(hv[ided_rc_vplane.at(i)]);
+      	}
+      }
+      for (int i=0; i!=ided_rc_wplane.size();i++){
+      	if (wchirp_map.find(ided_rc_wplane.at(i)) == wchirp_map.end()){
+      	  SignalFilter(hw[ided_rc_wplane.at(i)]);
+      	  RawAdaptiveBaselineAlg(hw[ided_rc_wplane.at(i)]);
+      	}
+      }
+
+
       // std::cout << "2" << std::endl;
       //  for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
       // 	if (it->second.first!=0 || it->second.second!=9591){
@@ -1030,12 +1178,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // 	  std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
       // 	}
       // }
-
-
-
       // if (uchirp_map.find(1517)!=uchirp_map.end()){
       // 	std::cout << "Xin: Chirping !" << std::endl;
       // }
+
+      
       
       std::cout << "Noisy Channel " << std::endl;
       // deal with the noisy signal, and put them into chirping map 
@@ -1056,35 +1203,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       }
 
 
-      // if (uchirp_map.find(2240)!=uchirp_map.end()){
-      // 	std::cout << "2: " << 2240 << std::endl; 
-      // }
-      // if (vchirp_map.find(320)!=vchirp_map.end()){
-      // 	std::cout << "2: " << 2720 << std::endl; 
-      // }
-
-      
-      // std::cout << "3" << std::endl;
-      //  for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
-      // 	if (it->second.first!=0 || it->second.second!=9591){
-      // 	  std::cout << "U: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-      // 	}
-      // }
-      // for (auto it = vchirp_map.begin(); it!= vchirp_map.end(); it++){
-      // 	if (it->second.first!=0 || it->second.second!=9591){
-      // 	  std::cout << "V: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-      // 	}
-      // }
-      // for (auto it = wchirp_map.begin(); it!= wchirp_map.end(); it++){
-      // 	if (it->second.first!=0 || it->second.second!=9591){
-      // 	  std::cout << "W: " << it->first << " " << it->second.first << " " << it->second.second << std::endl;
-      // 	}
-      // }
-
-
-      // if (uchirp_map.find(1517)!=uchirp_map.end()){
-      // 	std::cout << "Xin: Noise Filter!" << std::endl;
-      // }
+    
 
 
       // deal with coherent noise removal 
