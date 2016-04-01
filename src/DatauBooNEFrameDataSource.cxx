@@ -703,7 +703,7 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
     }
   }else if (planeNum == 2){
     maxRMSCut[2] = 8;
-    minRMSCut[2] = 1.3;
+    minRMSCut[2] = 1.3; // reduce threshold to take into account the adaptive baseline ... 
   }
   
   //test ... 
@@ -1042,19 +1042,19 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       for (int i=0;i!=nu;i++){
       	if (ID_RC(hu[i],0,i)){
 	  ided_rc_uplane.push_back(i);
-	  std::cout << "U: " << i << std::endl;
+	  //std::cout << "U: " << i << std::endl;
 	}
       }
       for (int i=0;i!=nv;i++){
 	if (ID_RC(hv[i],0,i)){
 	  ided_rc_vplane.push_back(i);
-	  std::cout << "V: " << i << std::endl;
+	  //std::cout << "V: " << i << std::endl;
 	}
       }
       for (int i=0;i!=nw;i++){
 	if (ID_RC(hw[i],0,i)){
 	  ided_rc_wplane.push_back(i);
-	  std::cout << "W: " << i << std::endl;
+	  //std::cout << "W: " << i << std::endl;
 	}
       }
 
