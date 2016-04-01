@@ -112,7 +112,7 @@ void WireCellSst::DatauBooNEFrameDataSource::Save(){
 }
 
 
-void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no){
+void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC){
   TVirtualFFT *ifft;
   double value_re[9600],value_im[9600];
   
@@ -147,14 +147,16 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
     double rho = hm->GetBinContent(j+1);
     double phi = hp->GetBinContent(j+1);
     
-    // need to remove RC+RC shapings
-    if (hm_rc->GetBinContent(j+1)>0){
-      rho = rho/pow(hm_rc->GetBinContent(j+1),2);
-    }else{
-      rho = 0;
-    }
-    phi = phi - 2*hp_rc->GetBinContent(j+1);
-    
+    if (flag_RC == 1){
+      // need to remove RC+RC shapings
+      if (hm_rc->GetBinContent(j+1)>0){
+	rho = rho/pow(hm_rc->GetBinContent(j+1),2);
+      }else{
+	rho = 0;
+      }
+      phi = phi - 2*hp_rc->GetBinContent(j+1);
+    }    
+
     // need to restore the incorrectly set ASICs gain and shaping time ... 
     if (flag_restore == 1){
       if (hm_1us->GetBinContent(j+1)>0){
@@ -171,14 +173,15 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
     }
 
     // filter the zero frequency
-    if (j==0) rho = 0;    
-    if (j<=3500 || j> nbin-3500){ // filter out the zigzag noise, >730 kHz noise
-      value_re[j] = rho*cos(phi)/nbin;
-      value_im[j] = rho*sin(phi)/nbin;
-    }else{
-      value_re[j] = 0;
-      value_im[j] = 0;
-    }
+    if (j==0) rho = 0; 
+    
+    // if (j<=3500 || j> nbin-3500){ // filter out the zigzag noise, >730 kHz noise
+    //   value_re[j] = rho*cos(phi)/nbin;
+    //   value_im[j] = rho*sin(phi)/nbin;
+    // }else{
+    //   value_re[j] = 0;
+    //   value_im[j] = 0;
+    // }
 
     // test ... 
     if (plane==0 || plane==1 ){
