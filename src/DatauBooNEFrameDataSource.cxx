@@ -1203,7 +1203,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       }
 
 
-    
+      // test for Brian ... 
+      int pad_window = 0;
+
 
 
       // deal with coherent noise removal 
@@ -1333,6 +1335,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
+	    prev_bin = prev_bin - pad_window;
+	    if (prev_bin <0) prev_bin = 0;
 
 
 
@@ -1343,6 +1347,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  	flag = 0;
 	      }
 	    }
+	    
+	    next_bin = next_bin + pad_window;
+	    if (next_bin > nbin-1) next_bin = nbin-1; 
 	    
 	    // if (prev_bin>0) prev_bin --;
 	    // if (next_bin<nbin-1) next_bin++; 
@@ -1493,6 +1500,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
+	    prev_bin = prev_bin - pad_window;
+	    if (prev_bin <0) prev_bin = 0;
+
 	    flag =1;
 	    while(flag){
 	      next_bin++;
@@ -1501,6 +1511,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
+	     next_bin = next_bin + pad_window;
+	    if (next_bin > nbin-1) next_bin = nbin-1; 
+
 	    //  if (prev_bin>0) prev_bin --;
 	    // if (next_bin<nbin-1) next_bin++; 
 
@@ -1651,6 +1664,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
+	    prev_bin = prev_bin - pad_window;
+	    if (prev_bin <0) prev_bin = 0;
+
 	    flag =1;
 	    while(flag){
 	      next_bin++;
@@ -1658,6 +1674,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  	flag = 0;
 	      }
 	    }
+
+	    next_bin = next_bin + pad_window;
+	    if (next_bin > nbin-1) next_bin = nbin-1; 
+
 
 	    // if (prev_bin>0) prev_bin --;
 	    // if (next_bin<nbin-1) next_bin++; 
