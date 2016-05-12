@@ -1319,6 +1319,21 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      h44->SetBinContent(j+1,0);
 	      signals.push_back(j);
 	    }
+	    
+	    // add the front and back padding
+	    for (int k=0;k!=pad_window;k++){
+	      int bin = j+k+1;
+	      if (bin > nbin-1) bin = nbin-1;
+	      auto it = find(signals.begin(),signals.end(),bin);
+	      if (it == signals.end())
+		signals.push_back(bin);
+	      bin = j-k-1;
+	      if (bin <0) bin = 0;
+	      it = find(signals.begin(),signals.end(),bin);
+	      if (it == signals.end())
+		signals.push_back(bin);
+	    }
+	    
 	  }
 	  
 	  // adaptive baseline 
@@ -1335,8 +1350,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
-	    prev_bin = prev_bin - pad_window;
-	    if (prev_bin <0) prev_bin = 0;
+	    // prev_bin = prev_bin - pad_window;
+	    // if (prev_bin <0) prev_bin = 0;
 
 
 
@@ -1348,8 +1363,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
-	    next_bin = next_bin + pad_window;
-	    if (next_bin > nbin-1) next_bin = nbin-1; 
+	    // next_bin = next_bin + pad_window;
+	    // if (next_bin > nbin-1) next_bin = nbin-1; 
 	    
 	    // if (prev_bin>0) prev_bin --;
 	    // if (next_bin<nbin-1) next_bin++; 
@@ -1484,6 +1499,21 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      h44->SetBinContent(j+1,0);
 	      signals.push_back(j);
 	    }
+
+	    // add the front and back padding
+	    for (int k=0;k!=pad_window;k++){
+	      int bin = j+k+1;
+	      if (bin > nbin-1) bin = nbin-1;
+	      auto it = find(signals.begin(),signals.end(),bin);
+	      if (it == signals.end())
+		signals.push_back(bin);
+	      bin = j-k-1;
+	      if (bin <0) bin = 0;
+	      it = find(signals.begin(),signals.end(),bin);
+	      if (it == signals.end())
+		signals.push_back(bin);
+	    }
+
 	  }
 	  
 	  // adaptive baseline 
@@ -1500,8 +1530,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
-	    prev_bin = prev_bin - pad_window;
-	    if (prev_bin <0) prev_bin = 0;
+	    // prev_bin = prev_bin - pad_window;
+	    // if (prev_bin <0) prev_bin = 0;
 
 	    flag =1;
 	    while(flag){
@@ -1511,8 +1541,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
-	     next_bin = next_bin + pad_window;
-	    if (next_bin > nbin-1) next_bin = nbin-1; 
+	    //  next_bin = next_bin + pad_window;
+	    // if (next_bin > nbin-1) next_bin = nbin-1; 
 
 	    //  if (prev_bin>0) prev_bin --;
 	    // if (next_bin<nbin-1) next_bin++; 
@@ -1648,6 +1678,21 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      h44->SetBinContent(j+1,0);
 	      signals.push_back(j);
 	    }
+
+	    // add the front and back padding
+	    for (int k=0;k!=pad_window;k++){
+	      int bin = j+k+1;
+	      if (bin > nbin-1) bin = nbin-1;
+	      auto it = find(signals.begin(),signals.end(),bin);
+	      if (it == signals.end())
+		signals.push_back(bin);
+	      bin = j-k-1;
+	      if (bin <0) bin = 0;
+	      it = find(signals.begin(),signals.end(),bin);
+	      if (it == signals.end())
+		signals.push_back(bin);
+	    }
+
 	  }
 	  
 	  // adaptive baseline 
@@ -1664,8 +1709,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
-	    prev_bin = prev_bin - pad_window;
-	    if (prev_bin <0) prev_bin = 0;
+	    // prev_bin = prev_bin - pad_window;
+	    // if (prev_bin <0) prev_bin = 0;
 
 	    flag =1;
 	    while(flag){
@@ -1675,8 +1720,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
-	    next_bin = next_bin + pad_window;
-	    if (next_bin > nbin-1) next_bin = nbin-1; 
+	    // next_bin = next_bin + pad_window;
+	    // if (next_bin > nbin-1) next_bin = nbin-1; 
 
 
 	    // if (prev_bin>0) prev_bin --;
