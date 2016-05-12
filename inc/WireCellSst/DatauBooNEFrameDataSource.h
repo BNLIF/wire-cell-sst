@@ -50,7 +50,7 @@ namespace WireCellSst {
 	void RemoveFilterFlags(TH1F *hist);
 	void RawAdaptiveBaselineAlg(TH1F *hist);
 	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
-	void RemovePMTSignalCollection(TH1F *hist);
+	void RemovePMTSignalCollection(TH1F *hist, float rms);
 
 	int get_run_no(){return run_no;};
 	int get_subrun_no(){return subrun_no;};

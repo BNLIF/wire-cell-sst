@@ -1765,7 +1765,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       // deal with the w plane to remove the PMT signal (negative pulse ...)
       for (int i=0;i!=nwire_w;i++){
-	RemovePMTSignalCollection(hw[i]);
+	//RemovePMTSignalCollection(hw[i],wrms_map[i]);
       }
 
 
@@ -1888,9 +1888,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 }
 
 
-void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalCollection(TH1F* hist){
-  float rms = hist->GetRMS();
-
+void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalCollection(TH1F* hist, float rms){
   float rms1 = 0;
   float rms2 = 0;
   
