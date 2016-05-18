@@ -194,6 +194,22 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
 	  value_re[j] = 0; 
 	  value_im[j] = 0.;
 	}
+
+	// //another test
+	// if (j==168 || j==167 || j==174 || j==175 ||
+	//     j==511 || j==512 || j==517 || j==518){
+	//   value_re[j] = 0.;
+	//   value_im[j] = 0.;
+	// }
+
+	// //test the high-frequency component
+	// if (j==857 || j==858|| j==1028 || j==1029 || j==1030 ||
+	//     j==1200 || j== 1371 || j==1372 || j==1543 || j==1714 || j==1715 
+	//     || j==1716 || j==1886 || j==2057){
+	//   value_re[j] = 0; 
+	//   value_im[j] = 0.;
+	// }
+	
       }
     }
      
@@ -1426,6 +1442,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  // }
 	  //  
 
+	  //h44->Reset();
+
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=uplane_all.at(i).size();k++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
@@ -1607,6 +1625,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
 	  // }
 
+	  //h44->Reset();
 
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=vplane_all.at(i).size();k++){
@@ -1783,7 +1802,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
 	  // }
 
-
+	  //h44->Reset();
+	   
 	  for (int j=0;j!=nbin;j++){
 	    for (int k=0;k!=wplane_all.at(i).size();k++){
       	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
