@@ -1223,7 +1223,6 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       int pad_window = 0;
 
 
-
       // deal with coherent noise removal 
       int n = bins_per_frame;
       int nbin = bins_per_frame;
@@ -1329,28 +1328,37 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  delete h55;
 	  // remove +- 3sigma one
 	  std::vector<int> signals;
+	  std::vector<bool> signalsBool;
+    	  for (int j=0;j!=nbin;j++)
+		signalsBool.push_back(0);
+
 	  for (int j=0;j!=nbin;j++){
 	    float content = h44->GetBinContent(j+1);
 	    if (fabs(content-mean)>3.0*rms){
 	      h44->SetBinContent(j+1,0);
-	      signals.push_back(j);
-	    }
+	      //signals.push_back(j);
+	      signalsBool.at(j) = 1;
 	    
-	    // add the front and back padding
-	    for (int k=0;k!=pad_window;k++){
-	      int bin = j+k+1;
-	      if (bin > nbin-1) bin = nbin-1;
-	      auto it = find(signals.begin(),signals.end(),bin);
-	      if (it == signals.end())
-		signals.push_back(bin);
-	      bin = j-k-1;
-	      if (bin <0) bin = 0;
-	      it = find(signals.begin(),signals.end(),bin);
-	      if (it == signals.end())
-		signals.push_back(bin);
+	      // add the front and back padding
+	      for (int k=0;k!=pad_window;k++){
+	        int bin = j+k+1;
+	        if (bin > nbin-1) bin = nbin-1;
+	        signalsBool.at(bin) = 1;
+	        //auto it = find(signals.begin(),signals.end(),bin);
+	        //if (it == signals.end())
+		  //signals.push_back(bin);
+	        bin = j-k-1;
+	        if (bin <0) bin = 0;
+	        signalsBool.at(bin) = 1;
+	        //it = find(signals.begin(),signals.end(),bin);
+	        //if (it == signals.end())
+		//signals.push_back(bin);
+	      }
 	    }
-	    
 	  }
+	  for (int j=0;j!=nbin;j++)
+		if( signalsBool.at(j) == 1 )
+			signals.push_back(j);
 	  
 	  // adaptive baseline 
 	  for (int j=0;j!=signals.size();j++){
@@ -1511,28 +1519,37 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  delete h55;
 	  // remove +- 3sigma one
 	  std::vector<int> signals;
+	  std::vector<bool> signalsBool;
+    	  for (int j=0;j!=nbin;j++)
+		signalsBool.push_back(0);
+
 	  for (int j=0;j!=nbin;j++){
 	    float content = h44->GetBinContent(j+1);
 	    if (fabs(content-mean)>3.0*rms){
 	      h44->SetBinContent(j+1,0);
-	      signals.push_back(j);
+	      //signals.push_back(j);
+	      signalsBool.at(j) = 1;
+	    
+	      // add the front and back padding
+	      for (int k=0;k!=pad_window;k++){
+	        int bin = j+k+1;
+	        if (bin > nbin-1) bin = nbin-1;
+	        signalsBool.at(bin) = 1;
+	        //auto it = find(signals.begin(),signals.end(),bin);
+	        //if (it == signals.end())
+		  //signals.push_back(bin);
+	        bin = j-k-1;
+	        if (bin <0) bin = 0;
+	        signalsBool.at(bin) = 1;
+	        //it = find(signals.begin(),signals.end(),bin);
+	        //if (it == signals.end())
+		//signals.push_back(bin);
+	      }
 	    }
-
-	    // add the front and back padding
-	    for (int k=0;k!=pad_window;k++){
-	      int bin = j+k+1;
-	      if (bin > nbin-1) bin = nbin-1;
-	      auto it = find(signals.begin(),signals.end(),bin);
-	      if (it == signals.end())
-		signals.push_back(bin);
-	      bin = j-k-1;
-	      if (bin <0) bin = 0;
-	      it = find(signals.begin(),signals.end(),bin);
-	      if (it == signals.end())
-		signals.push_back(bin);
-	    }
-
 	  }
+	  for (int j=0;j!=nbin;j++)
+		if( signalsBool.at(j) == 1 )
+			signals.push_back(j);
 	  
 	  // adaptive baseline 
 	  for (int j=0;j!=signals.size();j++){
@@ -1691,28 +1708,37 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  delete h55;
 	  // remove +- 3sigma one
 	  std::vector<int> signals;
+	  std::vector<bool> signalsBool;
+    	  for (int j=0;j!=nbin;j++)
+		signalsBool.push_back(0);
+
 	  for (int j=0;j!=nbin;j++){
 	    float content = h44->GetBinContent(j+1);
 	    if (fabs(content-mean)>3.0*rms){
 	      h44->SetBinContent(j+1,0);
-	      signals.push_back(j);
+	      //signals.push_back(j);
+	      signalsBool.at(j) = 1;
+	    
+	      // add the front and back padding
+	      for (int k=0;k!=pad_window;k++){
+	        int bin = j+k+1;
+	        if (bin > nbin-1) bin = nbin-1;
+	        signalsBool.at(bin) = 1;
+	        //auto it = find(signals.begin(),signals.end(),bin);
+	        //if (it == signals.end())
+		  //signals.push_back(bin);
+	        bin = j-k-1;
+	        if (bin <0) bin = 0;
+	        signalsBool.at(bin) = 1;
+	        //it = find(signals.begin(),signals.end(),bin);
+	        //if (it == signals.end())
+		//signals.push_back(bin);
+	      }
 	    }
-
-	    // add the front and back padding
-	    for (int k=0;k!=pad_window;k++){
-	      int bin = j+k+1;
-	      if (bin > nbin-1) bin = nbin-1;
-	      auto it = find(signals.begin(),signals.end(),bin);
-	      if (it == signals.end())
-		signals.push_back(bin);
-	      bin = j-k-1;
-	      if (bin <0) bin = 0;
-	      it = find(signals.begin(),signals.end(),bin);
-	      if (it == signals.end())
-		signals.push_back(bin);
-	    }
-
 	  }
+	  for (int j=0;j!=nbin;j++)
+		if( signalsBool.at(j) == 1 )
+			signals.push_back(j);
 	  
 	  // adaptive baseline 
 	  for (int j=0;j!=signals.size();j++){
