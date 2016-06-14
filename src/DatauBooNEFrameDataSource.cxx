@@ -1220,7 +1220,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 
       // test for Brian ... 
-      int pad_window = 0;
+      int pad_window = 5;
 
 
       // deal with coherent noise removal 
