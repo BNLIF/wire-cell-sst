@@ -250,10 +250,22 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
     h2.Fill(h1->GetBinContent(j+1));
   }
   
+  // double xq = 0.5;
+  // h2.GetQuantiles(1,&par[1],&xq);
+  // xq = 0.5 + 0.34;
+  // h2.GetQuantiles(1,&par[0],&xq);
+  // xq = 0.5 - 0.34;
+  // h2.GetQuantiels(1,&par[2],&xq);
   
-  h2.Fit(f1,"Q0","");
-  f1->GetParameters(par);
+  // par[2] = sqrt((pow(par[0]-par[1],2)+pow(par[2]-par[1],2))/2.);
+  // par[0] = h2.GetSum();
+  // f1->SetParameters(par);
+  // h2.Fit(f1,"Q0","");
+  // f1->GetParameters(par);
   
+  // a different way to calculate the mean ... 
+  double xq = 0.5;
+  h2.GetQuantiles(1,&par[1],&xq);
   
   for (int j=0;j!=nbin;j++){
     h1->SetBinContent(j+1,h1->GetBinContent(j+1)-par[1]);
