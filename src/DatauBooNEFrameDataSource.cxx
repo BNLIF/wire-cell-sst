@@ -1233,7 +1233,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       // test for Brian ... 
       int pad_window = 5;
-
+      int protection_factor = 5.0;
 
       // deal with coherent noise removal 
       int n = bins_per_frame;
@@ -1346,7 +1346,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	  for (int j=0;j!=nbin;j++){
 	    float content = h44->GetBinContent(j+1);
-	    if (fabs(content-mean)>3.0*rms){
+	    if (fabs(content-mean)>protection_factor*rms){
 	      h44->SetBinContent(j+1,0);
 	      //signals.push_back(j);
 	      signalsBool.at(j) = 1;
@@ -1537,7 +1537,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	  for (int j=0;j!=nbin;j++){
 	    float content = h44->GetBinContent(j+1);
-	    if (fabs(content-mean)>3.0*rms){
+	    if (fabs(content-mean)>protection_factor*rms){
 	      h44->SetBinContent(j+1,0);
 	      //signals.push_back(j);
 	      signalsBool.at(j) = 1;
@@ -1726,7 +1726,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	  for (int j=0;j!=nbin;j++){
 	    float content = h44->GetBinContent(j+1);
-	    if (fabs(content-mean)>3.0*rms){
+	    if (fabs(content-mean)>protection_factor*rms){
 	      h44->SetBinContent(j+1,0);
 	      //signals.push_back(j);
 	      signalsBool.at(j) = 1;
