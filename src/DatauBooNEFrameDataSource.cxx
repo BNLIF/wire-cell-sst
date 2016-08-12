@@ -481,30 +481,64 @@ double WireCellSst::DatauBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist){
   int waveformSize = hist->GetNbinsX();
   int counter = 0;
 
+  double min = hist->GetMinimum();
+  double max = hist->GetMaximum();
+  if (max > 4096) max = 4096;
+  if (min > 4096) min = 4096;
+  TH1F *hrmsc = new TH1F("hrmsc","hrmsc",int(max-min+1),min,max+1);
   for(int i = 0; i < waveformSize; i++)
     {
       ADCval = hist->GetBinContent(i+1);
       
       if(ADCval < 4096.0)
-	{
-	  theMean += ADCval;
-	  theRMS += TMath::Power(ADCval,2.0);
-	  counter++;
+   	{
+	  hrmsc->Fill(ADCval);
 	}
     }
+
+  double par[3];
+  if (hrmsc->GetSum()>0){
+    double xq = 0.5-0.34;
+    hrmsc->GetQuantiles(1,&par[0],&xq);
+    xq = 0.5;
+    hrmsc->GetQuantiles(1,&par[1],&xq);
+    xq = 0.5+0.34;
+    hrmsc->GetQuantiles(1,&par[2],&xq);
+    
+    theRMS = sqrt((pow(par[2]-par[1],2)+pow(par[1]-par[0],2))/2.);
+
+  }else{
+    theRMS = 0;
+  }
   
-  if(counter == 0)
-    {
-      theMean = 0.0;
-      theRMS = 0.0;
-    }
-  else
-    {
-      theMean /= (double)counter;
-      theRMS /= (double)counter;
-    theRMS = TMath::Sqrt(theRMS-TMath::Power(theMean,2.0));
-    }
+  delete hrmsc;
+
+  // for(int i = 0; i < waveformSize; i++)
+  //   {
+  //     ADCval = hist->GetBinContent(i+1);
+      
+  //     if(ADCval < 4096.0)
+  // 	{
+  // 	  theMean += ADCval;
+  // 	  theRMS += TMath::Power(ADCval,2.0);
+  // 	  counter++;
+  // 	}
+  //   }
   
+  // if(counter == 0)
+  //   {
+  //     theMean = 0.0;
+  //     theRMS = 0.0;
+  //   }
+  // else
+  //   {
+  //     theMean /= (double)counter;
+  //     theRMS /= (double)counter;
+  //   theRMS = TMath::Sqrt(theRMS-TMath::Power(theMean,2.0));
+  //   }
+  
+ 
+
   return theRMS;
 
 }
@@ -1086,6 +1120,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	}
       }
 
+      // if (find(ided_rc_wplane.begin(),ided_rc_wplane.end(),1140)!=ided_rc_wplane.end()) std::cout <<"Xin1: " << 1140 << std::endl;
+
       // std::cout << ided_rc_uplane.size() << " " << ided_rc_vplane.size()
       // 		<< " " << ided_rc_wplane.size() << std::endl;
 
@@ -1168,6 +1204,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	//RemoveFilterFlags(hw[it->first]);
       }
 
+      // if (wchirp_map.find(1140)!=wchirp_map.end()) std::cout <<"Xin2: " << 1140 << std::endl;
+
 
       // do the adaptive baseline for the bad RC channels ... 
       for (int i=0; i!=ided_rc_uplane.size();i++){
@@ -1229,6 +1267,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	NoisyFilterAlg(hw[i],2,i);
       	RemoveFilterFlags(hw[i]);
       }
+
+      //if (wchirp_map.find(1140)!=wchirp_map.end()) std::cout <<"Xin3: " << 1140 << std::endl;
 
 
       // test for Brian ... 
