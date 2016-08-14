@@ -189,7 +189,7 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
 	value_re[j] = 0; 
 	value_im[j] = 0.;
       }
-      if (plane == 0){
+      if (plane == 0 || plane == 1){
 	if (j>=513 && j<=516){ // for U-plane, filter out the 110 kHz noise
 	  value_re[j] = 0; 
 	  value_im[j] = 0.;
