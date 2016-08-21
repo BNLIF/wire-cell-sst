@@ -8,6 +8,7 @@
 
 #include "TTree.h"
 #include "TH1F.h"
+#include "TH2F.h"
 
 namespace WireCellSst {
 
@@ -22,6 +23,8 @@ namespace WireCellSst {
 
       public:
 	DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
+	DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *Trun, const WireCell::GeomDataSource& gds);
+
 	virtual ~DatauBooNEFrameDataSource();
 
 	void Save();
@@ -71,6 +74,8 @@ namespace WireCellSst {
 	int nwire_u, nwire_v, nwire_w;
 
 	int nevents;
+	
+	bool load_results_from_file;
 
 	int run_no, subrun_no, event_no;
 

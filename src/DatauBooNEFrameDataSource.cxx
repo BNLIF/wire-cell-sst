@@ -32,11 +32,112 @@ double f = 4.31054*exp(-2.94809*x[0]/par[1])*par[0]-2.6202*exp(-2.82833*x[0]/par
  }
 }
 
+WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *Trun, const WireCell::GeomDataSource& gds)
+    : WireCell::FrameDataSource()
+    , root_file(0)
+    , gds(gds)
+{
+  load_results_from_file = true;
+
+  // fill basic information
+  GeomWireSelection wires_u = gds.wires_in_plane(WirePlaneType_t(0));
+  GeomWireSelection wires_v = gds.wires_in_plane(WirePlaneType_t(1));
+  GeomWireSelection wires_w = gds.wires_in_plane(WirePlaneType_t(2));
+  
+  nwire_u = wires_u.size();
+  nwire_v = wires_v.size();
+  nwire_w = wires_w.size();
+  
+  Trun->SetBranchAddress("eventNo",&event_no);
+  Trun->SetBranchAddress("runNo",&run_no);
+  Trun->SetBranchAddress("subRunNo",&subrun_no);
+
+  Trun->GetEntry(0);
+  
+  // fill chirp_map 
+  Int_t chid, plane;
+  Int_t start_time, end_time;
+  T_bad->SetBranchAddress("chid",&chid);
+  T_bad->SetBranchAddress("plane",&plane);
+  T_bad->SetBranchAddress("start_time",&start_time);
+  T_bad->SetBranchAddress("end_time",&end_time);
+  for (Int_t i=0;i!=T_bad->GetEntries();i++){
+    T_bad->GetEntry(i);
+    
+    std::pair<int,int> abc(start_time,end_time);
+    if (plane == 0){
+      uchirp_map[chid] = abc;
+    }else if (plane == 1){
+      vchirp_map[chid] = abc;
+    }else if (plane == 2){
+      wchirp_map[chid] = abc;
+    }
+    
+  }
+  
+  // fill frame
+  if (hu_raw->GetNbinsX() != nwire_u) 
+    std::cout << "U plane channels mismatched!" << std::endl;
+  if (hv_raw->GetNbinsX() != nwire_v) 
+    std::cout << "V plane channels mismatched!" << std::endl;
+  if (hw_raw->GetNbinsX() != nwire_w) 
+    std::cout << "W plane channels mismatched!" << std::endl;
+  
+  
+  frame.index =0;
+  frame.clear();		// win or lose, we start anew
+  
+  int bins_per_frame = hu_raw->GetNbinsY();
+
+  // U plane
+  for (size_t ind=0; ind < hu_raw->GetNbinsX(); ++ind) {
+    WireCell::Trace trace;
+    trace.chid = ind;
+    trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+    trace.charge.resize(bins_per_frame, 0.0);
+    
+    for (int ibin=0; ibin != bins_per_frame; ibin++) {
+      trace.charge.at(ibin) = hu_raw->GetBinContent(ind+1,ibin+1);
+    }
+    frame.traces.push_back(trace);
+  }
+  
+  // V plane
+  for (size_t ind=0; ind < hv_raw->GetNbinsX(); ++ind) {
+    WireCell::Trace trace;
+    trace.chid = ind + nwire_u;
+    trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+    trace.charge.resize(bins_per_frame, 0.0);
+    
+    for (int ibin=0; ibin != bins_per_frame; ibin++) {
+      trace.charge.at(ibin) = hv_raw->GetBinContent(ind+1,ibin+1);
+    }
+    frame.traces.push_back(trace);
+  }
+
+  // W plane
+  for (size_t ind=0; ind < hw_raw->GetNbinsX(); ++ind) {
+    WireCell::Trace trace;
+    trace.chid = ind + nwire_u + nwire_v;
+    trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+    trace.charge.resize(bins_per_frame, 0.0);
+    
+    for (int ibin=0; ibin != bins_per_frame; ibin++) {
+      trace.charge.at(ibin) = hw_raw->GetBinContent(ind+1,ibin+1);
+    }
+    frame.traces.push_back(trace);
+  }
+
+
+    
+}
+
 
 WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1)
     : WireCell::FrameDataSource()
     , root_file(root_file)
     , gds(gds)
+    , load_results_from_file(false)
 {
   bins_per_frame = bins_per_frame1;
   
@@ -88,17 +189,19 @@ void WireCellSst::DatauBooNEFrameDataSource::Clear(){
 
 WireCellSst::DatauBooNEFrameDataSource::~DatauBooNEFrameDataSource()
 {
-  delete h_rc;
-  delete hm_rc;
-  delete hp_rc;
-
-  delete h_1us;
-  delete hm_1us;
-  delete hp_1us;
-
-  delete h_2us;
-  delete hm_2us;
-  delete hp_2us;
+  if (!load_results_from_file){
+    delete h_rc;
+    delete hm_rc;
+    delete hp_rc;
+    
+    delete h_1us;
+    delete hm_1us;
+    delete hp_1us;
+    
+    delete h_2us;
+    delete hm_2us;
+    delete hp_2us;
+  }
 }
 
 int WireCellSst::DatauBooNEFrameDataSource::size() const
@@ -850,6 +953,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 {
   
   // return frame_number;
+
+  if (load_results_from_file) return frame_number;
 
     if (frame.index == frame_number) {
 	return frame_number;
