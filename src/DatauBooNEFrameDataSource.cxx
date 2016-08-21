@@ -87,7 +87,7 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
   frame.index =0;
   frame.clear();		// win or lose, we start anew
   
-  int bins_per_frame = hu_raw->GetNbinsY();
+  bins_per_frame = hu_raw->GetNbinsY();
 
   // U plane
   for (size_t ind=0; ind < hu_raw->GetNbinsX(); ++ind) {
