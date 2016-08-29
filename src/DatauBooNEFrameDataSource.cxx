@@ -68,9 +68,9 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
     if (plane == 0){
       uchirp_map[chid] = abc;
     }else if (plane == 1){
-      vchirp_map[chid] = abc;
+      vchirp_map[chid-nwire_u] = abc;
     }else if (plane == 2){
-      wchirp_map[chid] = abc;
+      wchirp_map[chid-nwire_u-nwire_v] = abc;
     }
     
   }
