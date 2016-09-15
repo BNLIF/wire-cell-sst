@@ -25,7 +25,7 @@ namespace WireCellSst {
       
       /// Return the number of slices in the current frame.  
       virtual int size() const;
-      
+      void set_flag(int flag1);
       /// Go to the given slice, return slice number or -1 on error
       virtual int jump(int slice_number); 
       
