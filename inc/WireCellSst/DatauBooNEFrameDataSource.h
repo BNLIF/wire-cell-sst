@@ -55,6 +55,7 @@ namespace WireCellSst {
 	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
 	void RemovePMTSignalCollection(TH1F *hist, float rms);
 
+
 	int get_run_no(){return run_no;};
 	int get_subrun_no(){return subrun_no;};
 	int get_event_no(){return event_no;};
@@ -74,6 +75,8 @@ namespace WireCellSst {
 	int nwire_u, nwire_v, nwire_w;
 
 	int nevents;
+	
+	int flag_mis_config;
 	
 	bool load_results_from_file;
 

@@ -360,10 +360,20 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	  continue;
 	}
 	
+	WirePlaneType_t plane = gds->channel_plane_conv(trace.chid);
+	if (plane == WirePlaneType_t(0)){
+	  threshold =threshold_u;
+	}else if (plane == WirePlaneType_t(1)){
+	  threshold = threshold_v;
+	}else if (plane == WirePlaneType_t(2)){
+	  threshold = threshold_w;
+	}
+
 	// Save association of a channel ID and its charge.
 	int q = trace.charge[slice_tbin];
 	
 	if (q>threshold){
+	  //	  std::cout << q << " " << threshold << std::endl;
 	  slice_group.push_back(Channel::Charge(trace.chid, q));
 	  fired_channels.insert(trace.chid);
 	}

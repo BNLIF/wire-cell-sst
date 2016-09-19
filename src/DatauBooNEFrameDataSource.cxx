@@ -240,7 +240,8 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
 	|| channel_no >=2192 && channel_no <=2303 
 	|| channel_no >= 2352 && channel_no <2400)
       {
-	flag_restore = 1;
+	if (flag_mis_config)
+	  flag_restore = 1;
       }
   }
 
@@ -993,6 +994,15 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     
     int siz = tree->GetEntry(frame_number);
     
+    // default is misconfigued
+    flag_mis_config = 1; 
+
+    //when is it configued correctly
+    if (run_no>=5114 && run_no <= 5281 ||
+	run_no > 6700){
+      flag_mis_config = 0;
+    }
+
     
     if (siz > 0 && frame_number < siz) {
       
@@ -1148,7 +1158,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	if (channel_no >=2016 && channel_no <= 2095 
 	    || channel_no >=2192 && channel_no <=2303 
 	    || channel_no >= 2352 && channel_no <2400){
-	  hu[i]->Scale(14./7.8); // assume 7.8 mV/fC gain
+	  if (flag_mis_config)
+	    hu[i]->Scale(14./7.8); // assume 7.8 mV/fC gain
 	}
       }
 
@@ -1173,7 +1184,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	if (channel_no >=2016 && channel_no <= 2095 
 	    || channel_no >=2192 && channel_no <=2303 
 	    || channel_no >= 2352 && channel_no <2400){
-	  hu[i]->Scale(7.8/14.); // assume 7.8 mV/fC gain
+	  if (flag_mis_config)
+	    hu[i]->Scale(7.8/14.); // assume 7.8 mV/fC gain
 	}
       }
 
