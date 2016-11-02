@@ -802,6 +802,8 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   double maxRMSCut[3] = {10.0,10.0,5.0};
   double minRMSCut[3] = {2,2,2};
 
+  //  std::cout << rmsVal << " " << planeNum << " " << channel_no << std::endl;
+
   // if (channel_no== 623 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
   
   // if (channel_no== 678 && planeNum==1) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
@@ -927,6 +929,10 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, int chan
   for (int i=0;i!=5;i++){
     content[i] = htemp_m->GetBinContent(i+2);
   }
+  // if (plane ==0 && channel_no ==384){
+  //   std::cout << content[0] << " " << content[1] << " " << content[2] << " " << content[3] << " " << content[4] << std::endl;
+  // }
+
   if (content[0] > content[1] && 
       content[0] > content[2] &&
       content[0] > content[3] &&
@@ -1141,6 +1147,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       }
 
 
+      if (1){
       // if (uchirp_map.find(1517)!=uchirp_map.end()){
       // 	std::cout << "Xin Channel Status!" << std::endl;
       // }
@@ -1177,7 +1184,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       for (int i=0;i!=nw;i++){
       	chirp_id(hw[i],2,i);
       }
-
+      // std::cout << "Before Chirp ID " << uchirp_map.size() << " " << 
+      //  	vchirp_map.size() << " " << wchirp_map.size() << std::endl;
       
       for (int i=2016; i<2400;i++){
 	int channel_no = i;
@@ -1240,7 +1248,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // if (find(ided_rc_wplane.begin(),ided_rc_wplane.end(),1140)!=ided_rc_wplane.end()) std::cout <<"Xin1: " << 1140 << std::endl;
 
       // std::cout << ided_rc_uplane.size() << " " << ided_rc_vplane.size()
-      // 		<< " " << ided_rc_wplane.size() << std::endl;
+      //  		<< " " << ided_rc_wplane.size() << std::endl;
 
      
 
@@ -1384,15 +1392,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	NoisyFilterAlg(hw[i],2,i);
       	RemoveFilterFlags(hw[i]);
       }
-
+      }
       //if (wchirp_map.find(1140)!=wchirp_map.end()) std::cout <<"Xin3: " << 1140 << std::endl;
 
 
-      // test for Brian ... 
-      int pad_window = 5;
-      int protection_factor = 5.0;
-
-      // deal with coherent noise removal 
+      if (1){
+	// test for Brian ... 
+	int pad_window = 5;
+	int protection_factor = 5.0;
+	
+	// deal with coherent noise removal 
       int n = bins_per_frame;
       int nbin = bins_per_frame;
       double par[3];
@@ -1450,190 +1459,190 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       }
       
       for (int i=0;i!=uplane_all.size();i++){
-	float max_rms = 0;
+      	float max_rms = 0;
       	for (int j=0;j!=uplane_all.at(i).size();j++){
       	  if (urms_map[uplane_all.at(i).at(j)] > max_rms) max_rms = urms_map[uplane_all.at(i).at(j)];
       	}
-	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
-	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
+      	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
+      	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
 	
       	if (uplane_all.at(i).size()>0){
       	  
-	  for (int j=0;j!=nbin;j++){
+      	  for (int j=0;j!=nbin;j++){
       	    h3->Reset();
       	    for (int k=0;k!=uplane_all.at(i).size();k++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))<5*max_rms && 
       		  fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		h3->Fill(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1));
       	    }
-	    if (h3->GetSum()>0){
+      	    if (h3->GetSum()>0){
       	      double xq = 0.5;
       	      h3->GetQuantiles(1,&par[1],&xq);
       	    }else{
       	      par[1] = 0;
       	    }
-	    h44->SetBinContent(j+1,par[1]);
+      	    h44->SetBinContent(j+1,par[1]);
       	  }
 	  
-	  // do the RMS
-	  float min = h44->GetMinimum();
-	  float max = h44->GetMaximum();
-	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
-	  // std::cout << max << " " << min << " " << int(max-min+1) << " " << nbin << std::endl;
-	  for (int j=0;j!=nbin;j++){
-	    h55->Fill(h44->GetBinContent(j+1));
-	  }
-	  float mean = h55->GetMean();
-	  float rms = h55->GetRMS();
-	  for (int j=0;j!=h55->GetNbinsX();j++){
-	    int bin_center = h55->GetBinCenter(j+1);
-	    if (bin_center < mean - 4.5*rms || bin_center > mean + 4.5*rms){
-	      h55->SetBinContent(j+1,0);
-	    }
-	  }
+      	  // do the RMS
+      	  float min = h44->GetMinimum();
+      	  float max = h44->GetMaximum();
+      	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
+      	  // std::cout << max << " " << min << " " << int(max-min+1) << " " << nbin << std::endl;
+      	  for (int j=0;j!=nbin;j++){
+      	    h55->Fill(h44->GetBinContent(j+1));
+      	  }
+      	  float mean = h55->GetMean();
+      	  float rms = h55->GetRMS();
+      	  for (int j=0;j!=h55->GetNbinsX();j++){
+      	    int bin_center = h55->GetBinCenter(j+1);
+      	    if (bin_center < mean - 4.5*rms || bin_center > mean + 4.5*rms){
+      	      h55->SetBinContent(j+1,0);
+      	    }
+      	  }
 	 
-	  mean = h55->GetMean();
-	  rms = h55->GetRMS();
-	  delete h55;
-	  // remove +- 3sigma one
-	  std::vector<int> signals;
-	  std::vector<bool> signalsBool;
-    	  for (int j=0;j!=nbin;j++)
-		signalsBool.push_back(0);
+      	  mean = h55->GetMean();
+      	  rms = h55->GetRMS();
+      	  delete h55;
+      	  // remove +- 3sigma one
+      	  std::vector<int> signals;
+      	  std::vector<bool> signalsBool;
+      	  for (int j=0;j!=nbin;j++)
+      		signalsBool.push_back(0);
 
-	  for (int j=0;j!=nbin;j++){
-	    float content = h44->GetBinContent(j+1);
-	    if (fabs(content-mean)>protection_factor*rms){
-	      h44->SetBinContent(j+1,0);
-	      //signals.push_back(j);
-	      signalsBool.at(j) = 1;
+      	  for (int j=0;j!=nbin;j++){
+      	    float content = h44->GetBinContent(j+1);
+      	    if (fabs(content-mean)>protection_factor*rms){
+      	      h44->SetBinContent(j+1,0);
+      	      //signals.push_back(j);
+      	      signalsBool.at(j) = 1;
 	    
-	      // add the front and back padding
-	      for (int k=0;k!=pad_window;k++){
-	        int bin = j+k+1;
-	        if (bin > nbin-1) bin = nbin-1;
-	        signalsBool.at(bin) = 1;
-	        //auto it = find(signals.begin(),signals.end(),bin);
-	        //if (it == signals.end())
-		  //signals.push_back(bin);
-	        bin = j-k-1;
-	        if (bin <0) bin = 0;
-	        signalsBool.at(bin) = 1;
-	        //it = find(signals.begin(),signals.end(),bin);
-	        //if (it == signals.end())
-		//signals.push_back(bin);
-	      }
-	    }
-	  }
-	  for (int j=0;j!=nbin;j++)
-		if( signalsBool.at(j) == 1 )
-			signals.push_back(j);
+      	      // add the front and back padding
+      	      for (int k=0;k!=pad_window;k++){
+      	        int bin = j+k+1;
+      	        if (bin > nbin-1) bin = nbin-1;
+      	        signalsBool.at(bin) = 1;
+      	        //auto it = find(signals.begin(),signals.end(),bin);
+      	        //if (it == signals.end())
+      		  //signals.push_back(bin);
+      	        bin = j-k-1;
+      	        if (bin <0) bin = 0;
+      	        signalsBool.at(bin) = 1;
+      	        //it = find(signals.begin(),signals.end(),bin);
+      	        //if (it == signals.end())
+      		//signals.push_back(bin);
+      	      }
+      	    }
+      	  }
+      	  for (int j=0;j!=nbin;j++)
+      		if( signalsBool.at(j) == 1 )
+      			signals.push_back(j);
 	  
-	  // adaptive baseline 
-	  for (int j=0;j!=signals.size();j++){
-	    int bin = signals.at(j);
-	    int prev_bin=bin;
-	    int next_bin=bin;
+      	  // adaptive baseline 
+      	  for (int j=0;j!=signals.size();j++){
+      	    int bin = signals.at(j);
+      	    int prev_bin=bin;
+      	    int next_bin=bin;
 	    
-	    int flag = 1;
-	    while(flag){
-	      prev_bin--;
-	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-	  	flag = 0;
-	      }
-	    }
+      	    int flag = 1;
+      	    while(flag){
+      	      prev_bin--;
+      	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+      	  	flag = 0;
+      	      }
+      	    }
 	    
-	    // prev_bin = prev_bin - pad_window;
-	    // if (prev_bin <0) prev_bin = 0;
+      	    // prev_bin = prev_bin - pad_window;
+      	    // if (prev_bin <0) prev_bin = 0;
 
 
 
-	    flag =1;
-	    while(flag){
-	      next_bin++;
-	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-	  	flag = 0;
-	      }
-	    }
+      	    flag =1;
+      	    while(flag){
+      	      next_bin++;
+      	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+      	  	flag = 0;
+      	      }
+      	    }
 	    
-	    // next_bin = next_bin + pad_window;
-	    // if (next_bin > nbin-1) next_bin = nbin-1; 
+      	    // next_bin = next_bin + pad_window;
+      	    // if (next_bin > nbin-1) next_bin = nbin-1; 
 	    
-	    // if (prev_bin>0) prev_bin --;
-	    // if (next_bin<nbin-1) next_bin++; 
+      	    // if (prev_bin>0) prev_bin --;
+      	    // if (next_bin<nbin-1) next_bin++; 
 
 
-	    float prev_content, next_content;
-	    // if (prev_bin >=4){
-	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-	    // }else{
-	    prev_content = h44->GetBinContent(prev_bin+1);
-	    // }
-	    // if (next_bin <= nbin-5){
-	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-	    // }else{
-	    next_content = h44->GetBinContent(next_bin+1);
-	    // }
+      	    float prev_content, next_content;
+      	    // if (prev_bin >=4){
+      	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+      	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+      	    // }else{
+      	    prev_content = h44->GetBinContent(prev_bin+1);
+      	    // }
+      	    // if (next_bin <= nbin-5){
+      	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+      	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+      	    // }else{
+      	    next_content = h44->GetBinContent(next_bin+1);
+      	    // }
 	    
 
-	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-	      * (next_content - prev_content);
-	    h44->SetBinContent(bin+1,content);
-	  }
+      	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+      	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+      	      * (next_content - prev_content);
+      	    h44->SetBinContent(bin+1,content);
+      	  }
 
 	  
-	  // calculate scaling coefficient ... 
-	  double ave_coef = 0;
-	  double_t ave_coef1 = 0;
-	  std::vector<double> coef_all;
-	  for (int k=0;k!=uplane_all.at(i).size();k++){
-	    double sum2 = 0;
-	    double sum3 = 0;
-	    double coef = 0;
+      	  // calculate scaling coefficient ... 
+      	  double ave_coef = 0;
+      	  double_t ave_coef1 = 0;
+      	  std::vector<double> coef_all;
+      	  for (int k=0;k!=uplane_all.at(i).size();k++){
+      	    double sum2 = 0;
+      	    double sum3 = 0;
+      	    double coef = 0;
 	    
-	    for (int j=0;j!=nbin;j++){
-	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * urms_map[uplane_all.at(i).at(k)] ){
-		sum2 += hu[uplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
-		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
-	      }
-	    }
-	    if (sum3 >0)
-	      coef = sum2/sum3;
-	    coef_all.push_back(coef);
+      	    for (int j=0;j!=nbin;j++){
+      	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * urms_map[uplane_all.at(i).at(k)] ){
+      		sum2 += hu[uplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
+      		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
+      	      }
+      	    }
+      	    if (sum3 >0)
+      	      coef = sum2/sum3;
+      	    coef_all.push_back(coef);
 	    
-	    if (coef !=0){
-	      ave_coef += coef;
-	      ave_coef1 ++;
-	    }
+      	    if (coef !=0){
+      	      ave_coef += coef;
+      	      ave_coef1 ++;
+      	    }
 	    
-	  }
-	  if (ave_coef1>0)
-	    ave_coef = ave_coef / ave_coef1;
+      	  }
+      	  if (ave_coef1>0)
+      	    ave_coef = ave_coef / ave_coef1;
 	  
-	  // for (int k=0;k!=uplane_all.at(i).size();k++){
-	  //   std::cout << "U " << uplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
-	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
-	  // }
-	  //  
+      	  // for (int k=0;k!=uplane_all.at(i).size();k++){
+      	  //   std::cout << "U " << uplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
+      	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
+      	  // }
+      	  //  
 
-	  //h44->Reset();
+      	  //h44->Reset();
 
-	  for (int j=0;j!=nbin;j++){
-	    for (int k=0;k!=uplane_all.at(i).size();k++){
+      	  for (int j=0;j!=nbin;j++){
+      	    for (int k=0;k!=uplane_all.at(i).size();k++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * coef_all.at(k)/ave_coef);
-	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
-	  }
+      	  }
 
 
       	}
 
       	delete h3;
-	delete h44;
+      	delete h44;
       }
       
       for (int i=0;i!=vplane_all.size();i++){
@@ -1646,7 +1655,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	
 	
       	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
-	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
+      	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
 
       	if (vplane_all.at(i).size()>0){
       	  for (int j=0;j!=nbin;j++){
@@ -1663,168 +1672,168 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	    }else{
       	      par[1] = 0;
       	    }
-	    h44->SetBinContent(j+1,par[1]);
+      	    h44->SetBinContent(j+1,par[1]);
       	  }
 	  
-	   // do the RMS
-	  float min = h44->GetMinimum();
-	  float max = h44->GetMaximum();
-	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
-	  //std::cout << max << " " << min << " " << int(max-min+1) << std::endl;
-	  for (int j=0;j!=nbin;j++){
-	    h55->Fill(h44->GetBinContent(j+1));
-	  }
-	  float mean = h55->GetMean();
-	  float rms = h55->GetRMS();
-	  for (int j=0;j!=h55->GetNbinsX();j++){
-	    int bin_center = h55->GetBinCenter(j+1);
-	    if (bin_center < mean - 4.5*rms || bin_center > mean + 4.5*rms){
-	      h55->SetBinContent(j+1,0);
-	    }
-	  }
+      	   // do the RMS
+      	  float min = h44->GetMinimum();
+      	  float max = h44->GetMaximum();
+      	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
+      	  //std::cout << max << " " << min << " " << int(max-min+1) << std::endl;
+      	  for (int j=0;j!=nbin;j++){
+      	    h55->Fill(h44->GetBinContent(j+1));
+      	  }
+      	  float mean = h55->GetMean();
+      	  float rms = h55->GetRMS();
+      	  for (int j=0;j!=h55->GetNbinsX();j++){
+      	    int bin_center = h55->GetBinCenter(j+1);
+      	    if (bin_center < mean - 4.5*rms || bin_center > mean + 4.5*rms){
+      	      h55->SetBinContent(j+1,0);
+      	    }
+      	  }
 	  
-	  mean = h55->GetMean();
-	  rms = h55->GetRMS();
-	  delete h55;
-	  // remove +- 3sigma one
-	  std::vector<int> signals;
-	  std::vector<bool> signalsBool;
-    	  for (int j=0;j!=nbin;j++)
-		signalsBool.push_back(0);
+      	  mean = h55->GetMean();
+      	  rms = h55->GetRMS();
+      	  delete h55;
+      	  // remove +- 3sigma one
+      	  std::vector<int> signals;
+      	  std::vector<bool> signalsBool;
+      	  for (int j=0;j!=nbin;j++)
+      		signalsBool.push_back(0);
 
-	  for (int j=0;j!=nbin;j++){
-	    float content = h44->GetBinContent(j+1);
-	    if (fabs(content-mean)>protection_factor*rms){
-	      h44->SetBinContent(j+1,0);
-	      //signals.push_back(j);
-	      signalsBool.at(j) = 1;
+      	  for (int j=0;j!=nbin;j++){
+      	    float content = h44->GetBinContent(j+1);
+      	    if (fabs(content-mean)>protection_factor*rms){
+      	      h44->SetBinContent(j+1,0);
+      	      //signals.push_back(j);
+      	      signalsBool.at(j) = 1;
 	    
-	      // add the front and back padding
-	      for (int k=0;k!=pad_window;k++){
-	        int bin = j+k+1;
-	        if (bin > nbin-1) bin = nbin-1;
-	        signalsBool.at(bin) = 1;
-	        //auto it = find(signals.begin(),signals.end(),bin);
-	        //if (it == signals.end())
-		  //signals.push_back(bin);
-	        bin = j-k-1;
-	        if (bin <0) bin = 0;
-	        signalsBool.at(bin) = 1;
-	        //it = find(signals.begin(),signals.end(),bin);
-	        //if (it == signals.end())
-		//signals.push_back(bin);
-	      }
-	    }
-	  }
-	  for (int j=0;j!=nbin;j++)
-		if( signalsBool.at(j) == 1 )
-			signals.push_back(j);
+      	      // add the front and back padding
+      	      for (int k=0;k!=pad_window;k++){
+      	        int bin = j+k+1;
+      	        if (bin > nbin-1) bin = nbin-1;
+      	        signalsBool.at(bin) = 1;
+      	        //auto it = find(signals.begin(),signals.end(),bin);
+      	        //if (it == signals.end())
+      		  //signals.push_back(bin);
+      	        bin = j-k-1;
+      	        if (bin <0) bin = 0;
+      	        signalsBool.at(bin) = 1;
+      	        //it = find(signals.begin(),signals.end(),bin);
+      	        //if (it == signals.end())
+      		//signals.push_back(bin);
+      	      }
+      	    }
+      	  }
+      	  for (int j=0;j!=nbin;j++)
+      		if( signalsBool.at(j) == 1 )
+      			signals.push_back(j);
 	  
-	  // adaptive baseline 
-	  for (int j=0;j!=signals.size();j++){
-	    int bin = signals.at(j);
-	    int prev_bin=bin;
-	    int next_bin=bin;
+      	  // adaptive baseline 
+      	  for (int j=0;j!=signals.size();j++){
+      	    int bin = signals.at(j);
+      	    int prev_bin=bin;
+      	    int next_bin=bin;
 	    
-	    int flag = 1;
-	    while(flag){
-	      prev_bin--;
-	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-	  	flag = 0;
-	      }
-	    }
+      	    int flag = 1;
+      	    while(flag){
+      	      prev_bin--;
+      	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+      	  	flag = 0;
+      	      }
+      	    }
 
-	    // prev_bin = prev_bin - pad_window;
-	    // if (prev_bin <0) prev_bin = 0;
+      	    // prev_bin = prev_bin - pad_window;
+      	    // if (prev_bin <0) prev_bin = 0;
 
-	    flag =1;
-	    while(flag){
-	      next_bin++;
-	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-	  	flag = 0;
-	      }
-	    }
+      	    flag =1;
+      	    while(flag){
+      	      next_bin++;
+      	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+      	  	flag = 0;
+      	      }
+      	    }
 	    
-	    //  next_bin = next_bin + pad_window;
-	    // if (next_bin > nbin-1) next_bin = nbin-1; 
+      	    //  next_bin = next_bin + pad_window;
+      	    // if (next_bin > nbin-1) next_bin = nbin-1; 
 
-	    //  if (prev_bin>0) prev_bin --;
-	    // if (next_bin<nbin-1) next_bin++; 
+      	    //  if (prev_bin>0) prev_bin --;
+      	    // if (next_bin<nbin-1) next_bin++; 
 
-	    float prev_content, next_content;
-	    // if (prev_bin >=4){
-	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-	    // }else{
-	      prev_content = h44->GetBinContent(prev_bin+1);
-	    // }
-	    // if (next_bin <= nbin-5){
-	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-	    // }else{
-	      next_content = h44->GetBinContent(next_bin+1);
-	    // }
+      	    float prev_content, next_content;
+      	    // if (prev_bin >=4){
+      	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+      	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+      	    // }else{
+      	      prev_content = h44->GetBinContent(prev_bin+1);
+      	    // }
+      	    // if (next_bin <= nbin-5){
+      	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+      	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+      	    // }else{
+      	      next_content = h44->GetBinContent(next_bin+1);
+      	    // }
 	    
 
-	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-	      * (next_content - prev_content);
+      	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+      	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+      	      * (next_content - prev_content);
 
-	    h44->SetBinContent(bin+1,content);
-	  }
+      	    h44->SetBinContent(bin+1,content);
+      	  }
 
 
-	  // calculate scaling coefficient ... 
-	  double ave_coef = 0;
-	  double ave_coef1 = 0;
-	  std::vector<double> coef_all;
-	  for (int k=0;k!=vplane_all.at(i).size();k++){
-	    double sum2 = 0;
-	    double sum3 = 0;
-	    double coef = 0;
+      	  // calculate scaling coefficient ... 
+      	  double ave_coef = 0;
+      	  double ave_coef1 = 0;
+      	  std::vector<double> coef_all;
+      	  for (int k=0;k!=vplane_all.at(i).size();k++){
+      	    double sum2 = 0;
+      	    double sum3 = 0;
+      	    double coef = 0;
 	    
-	    for (int j=0;j!=nbin;j++){
-	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * vrms_map[vplane_all.at(i).at(k)] ){
-		sum2 += hv[vplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
-		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
-	      }
-	    }
-	    if (sum3 >0)
-	      coef = sum2/sum3;
+      	    for (int j=0;j!=nbin;j++){
+      	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * vrms_map[vplane_all.at(i).at(k)] ){
+      		sum2 += hv[vplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
+      		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
+      	      }
+      	    }
+      	    if (sum3 >0)
+      	      coef = sum2/sum3;
 
-	    coef_all.push_back(coef);
+      	    coef_all.push_back(coef);
 	    
-	    //	    std::cout << k << " " << coef << std::endl;
+      	    //	    std::cout << k << " " << coef << std::endl;
 
-	    if (coef!=0){
-	      ave_coef += coef;
-	      ave_coef1 ++;
-	    }
-	  }
-	  if (ave_coef1>0)
-	    ave_coef = ave_coef / ave_coef1;
-	  //  
-	  //	  std::cout << "VAve: " << ave_coef << std::endl;
+      	    if (coef!=0){
+      	      ave_coef += coef;
+      	      ave_coef1 ++;
+      	    }
+      	  }
+      	  if (ave_coef1>0)
+      	    ave_coef = ave_coef / ave_coef1;
+      	  //  
+      	  //	  std::cout << "VAve: " << ave_coef << std::endl;
 	  
-	  // for (int k=0;k!=vplane_all.at(i).size();k++){
-	  //   std::cout << "V " <<  vplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
-	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
-	  // }
+      	  // for (int k=0;k!=vplane_all.at(i).size();k++){
+      	  //   std::cout << "V " <<  vplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
+      	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
+      	  // }
 
-	  //h44->Reset();
+      	  //h44->Reset();
 
-	  for (int j=0;j!=nbin;j++){
-	    for (int k=0;k!=vplane_all.at(i).size();k++){
+      	  for (int j=0;j!=nbin;j++){
+      	    for (int k=0;k!=vplane_all.at(i).size();k++){
       	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
-	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
-	  }
+      	  }
 
       	}
 
       	delete h3;
-	delete h44;
+      	delete h44;
       }
       
       for (int i=0;i!=wplane_all.size();i++){
@@ -1836,7 +1845,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	
       	//std::cout << "W " << i << " " << wplane_all.size() << std::endl;
       	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
-	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
+      	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
       	if (wplane_all.at(i).size()>0){
       	  for (int j=0;j!=nbin;j++){
       	    h3->Reset();
@@ -1852,164 +1861,164 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	    }else{
       	      par[1] = 0;
       	    }
-	    h44->SetBinContent(j+1,par[1]);
+      	    h44->SetBinContent(j+1,par[1]);
       	  }
 
-	   // do the RMS
-	  float min = h44->GetMinimum();
-	  float max = h44->GetMaximum();
-	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
-	  //std::cout << max << " " << min << " " << int(max-min+1) << std::endl;
-	  for (int j=0;j!=nbin;j++){
-	    h55->Fill(h44->GetBinContent(j+1));
-	  }
-	  float mean = h55->GetMean();
-	  float rms = h55->GetRMS();
-	  for (int j=0;j!=h55->GetNbinsX();j++){
-	    int bin_center = h55->GetBinCenter(j+1);
-	    if (bin_center < mean - 4.5*rms || bin_center > mean + 4.5*rms){
-	      h55->SetBinContent(j+1,0);
-	    }
-	  }
+      	   // do the RMS
+      	  float min = h44->GetMinimum();
+      	  float max = h44->GetMaximum();
+      	  TH1F *h55 = new TH1F("h55","h55",int(max-min+1),min,max+1);
+      	  //std::cout << max << " " << min << " " << int(max-min+1) << std::endl;
+      	  for (int j=0;j!=nbin;j++){
+      	    h55->Fill(h44->GetBinContent(j+1));
+      	  }
+      	  float mean = h55->GetMean();
+      	  float rms = h55->GetRMS();
+      	  for (int j=0;j!=h55->GetNbinsX();j++){
+      	    int bin_center = h55->GetBinCenter(j+1);
+      	    if (bin_center < mean - 4.5*rms || bin_center > mean + 4.5*rms){
+      	      h55->SetBinContent(j+1,0);
+      	    }
+      	  }
 	  
-	  mean = h55->GetMean();
-	  rms = h55->GetRMS();
-	  delete h55;
-	  // remove +- 3sigma one
-	  std::vector<int> signals;
-	  std::vector<bool> signalsBool;
-    	  for (int j=0;j!=nbin;j++)
-		signalsBool.push_back(0);
+      	  mean = h55->GetMean();
+      	  rms = h55->GetRMS();
+      	  delete h55;
+      	  // remove +- 3sigma one
+      	  std::vector<int> signals;
+      	  std::vector<bool> signalsBool;
+      	  for (int j=0;j!=nbin;j++)
+      		signalsBool.push_back(0);
 
-	  for (int j=0;j!=nbin;j++){
-	    float content = h44->GetBinContent(j+1);
-	    if (fabs(content-mean)>protection_factor*rms){
-	      h44->SetBinContent(j+1,0);
-	      //signals.push_back(j);
-	      signalsBool.at(j) = 1;
+      	  for (int j=0;j!=nbin;j++){
+      	    float content = h44->GetBinContent(j+1);
+      	    if (fabs(content-mean)>protection_factor*rms){
+      	      h44->SetBinContent(j+1,0);
+      	      //signals.push_back(j);
+      	      signalsBool.at(j) = 1;
 	    
-	      // add the front and back padding
-	      for (int k=0;k!=pad_window;k++){
-	        int bin = j+k+1;
-	        if (bin > nbin-1) bin = nbin-1;
-	        signalsBool.at(bin) = 1;
-	        //auto it = find(signals.begin(),signals.end(),bin);
-	        //if (it == signals.end())
-		  //signals.push_back(bin);
-	        bin = j-k-1;
-	        if (bin <0) bin = 0;
-	        signalsBool.at(bin) = 1;
-	        //it = find(signals.begin(),signals.end(),bin);
-	        //if (it == signals.end())
-		//signals.push_back(bin);
-	      }
-	    }
-	  }
-	  for (int j=0;j!=nbin;j++)
-		if( signalsBool.at(j) == 1 )
-			signals.push_back(j);
+      	      // add the front and back padding
+      	      for (int k=0;k!=pad_window;k++){
+      	        int bin = j+k+1;
+      	        if (bin > nbin-1) bin = nbin-1;
+      	        signalsBool.at(bin) = 1;
+      	        //auto it = find(signals.begin(),signals.end(),bin);
+      	        //if (it == signals.end())
+      		  //signals.push_back(bin);
+      	        bin = j-k-1;
+      	        if (bin <0) bin = 0;
+      	        signalsBool.at(bin) = 1;
+      	        //it = find(signals.begin(),signals.end(),bin);
+      	        //if (it == signals.end())
+      		//signals.push_back(bin);
+      	      }
+      	    }
+      	  }
+      	  for (int j=0;j!=nbin;j++)
+      		if( signalsBool.at(j) == 1 )
+      			signals.push_back(j);
 	  
-	  // adaptive baseline 
-	  for (int j=0;j!=signals.size();j++){
-	    int bin = signals.at(j);
-	    int prev_bin=bin;
-	    int next_bin=bin;
+      	  // adaptive baseline 
+      	  for (int j=0;j!=signals.size();j++){
+      	    int bin = signals.at(j);
+      	    int prev_bin=bin;
+      	    int next_bin=bin;
 	    
-	    int flag = 1;
-	    while(flag){
-	      prev_bin--;
-	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-	  	flag = 0;
-	      }
-	    }
+      	    int flag = 1;
+      	    while(flag){
+      	      prev_bin--;
+      	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+      	  	flag = 0;
+      	      }
+      	    }
 
-	    // prev_bin = prev_bin - pad_window;
-	    // if (prev_bin <0) prev_bin = 0;
+      	    // prev_bin = prev_bin - pad_window;
+      	    // if (prev_bin <0) prev_bin = 0;
 
-	    flag =1;
-	    while(flag){
-	      next_bin++;
-	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-	  	flag = 0;
-	      }
-	    }
+      	    flag =1;
+      	    while(flag){
+      	      next_bin++;
+      	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+      	  	flag = 0;
+      	      }
+      	    }
 
-	    // next_bin = next_bin + pad_window;
-	    // if (next_bin > nbin-1) next_bin = nbin-1; 
+      	    // next_bin = next_bin + pad_window;
+      	    // if (next_bin > nbin-1) next_bin = nbin-1; 
 
 
-	    // if (prev_bin>0) prev_bin --;
-	    // if (next_bin<nbin-1) next_bin++; 
+      	    // if (prev_bin>0) prev_bin --;
+      	    // if (next_bin<nbin-1) next_bin++; 
 
-	    float prev_content, next_content;
-	    // if (prev_bin >=4){
-	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-	    // }else{
-	      prev_content = h44->GetBinContent(prev_bin+1);
-	    // }
-	    // if (next_bin <= nbin-5){
-	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-	    // }else{
-	      next_content = h44->GetBinContent(next_bin+1);
-	    // }
+      	    float prev_content, next_content;
+      	    // if (prev_bin >=4){
+      	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+      	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+      	    // }else{
+      	      prev_content = h44->GetBinContent(prev_bin+1);
+      	    // }
+      	    // if (next_bin <= nbin-5){
+      	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+      	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+      	    // }else{
+      	      next_content = h44->GetBinContent(next_bin+1);
+      	    // }
 	    
 
-	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-	      * (next_content - prev_content);
+      	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+      	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+      	      * (next_content - prev_content);
 
-	    h44->SetBinContent(bin+1,content);
-	  }
+      	    h44->SetBinContent(bin+1,content);
+      	  }
 
 
-	  // calculate scaling coefficient ... 
-	  double ave_coef = 0;
-	  double ave_coef1 = 0;
-	  std::vector<double> coef_all;
-	  for (int k=0;k!=wplane_all.at(i).size();k++){
-	    double sum2 = 0;
-	    double sum3 = 0;
-	    double coef = 0;
+      	  // calculate scaling coefficient ... 
+      	  double ave_coef = 0;
+      	  double ave_coef1 = 0;
+      	  std::vector<double> coef_all;
+      	  for (int k=0;k!=wplane_all.at(i).size();k++){
+      	    double sum2 = 0;
+      	    double sum3 = 0;
+      	    double coef = 0;
 	    
-	    for (int j=0;j!=nbin;j++){
-	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * wrms_map[wplane_all.at(i).at(k)] ){
-		sum2 += hw[wplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
-		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
-	      }
-	    }
-	    if (sum3 >0)
-	      coef = sum2/sum3;
-	    // std::cout << k << " " << coef << std::endl;
-	    coef_all.push_back(coef);
-	    if (coef!=0){
-	      ave_coef += coef;
-	      ave_coef1 ++;
-	    }
-	  }
-	  if (ave_coef1)
-	    ave_coef = ave_coef / ave_coef1;
-	  //  
-	  //	  std::cout << "WAve: " << ave_coef << std::endl;
-	  // for (int k=0;k!=wplane_all.at(i).size();k++){
-	  //   std::cout << "W " << wplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
-	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
-	  // }
+      	    for (int j=0;j!=nbin;j++){
+      	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)) < 4 * wrms_map[wplane_all.at(i).at(k)] ){
+      		sum2 += hw[wplane_all.at(i).at(k)]->GetBinContent(j+1) * h44->GetBinContent(j+1);
+      		sum3 += h44->GetBinContent(j+1) * h44->GetBinContent(j+1);
+      	      }
+      	    }
+      	    if (sum3 >0)
+      	      coef = sum2/sum3;
+      	    // std::cout << k << " " << coef << std::endl;
+      	    coef_all.push_back(coef);
+      	    if (coef!=0){
+      	      ave_coef += coef;
+      	      ave_coef1 ++;
+      	    }
+      	  }
+      	  if (ave_coef1)
+      	    ave_coef = ave_coef / ave_coef1;
+      	  //  
+      	  //	  std::cout << "WAve: " << ave_coef << std::endl;
+      	  // for (int k=0;k!=wplane_all.at(i).size();k++){
+      	  //   std::cout << "W " << wplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
+      	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
+      	  // }
 
-	  //h44->Reset();
+      	  //h44->Reset();
 	   
-	  for (int j=0;j!=nbin;j++){
-	    for (int k=0;k!=wplane_all.at(i).size();k++){
+      	  for (int j=0;j!=nbin;j++){
+      	    for (int k=0;k!=wplane_all.at(i).size();k++){
       	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
-		//hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      		//hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
-	  }
+      	  }
 
       	}
       	delete h3;
-	delete h44;
+      	delete h44;
       }
       
       
@@ -2023,11 +2032,13 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // vchirp_map.clear();
 
 
-      // deal with the w plane to remove the PMT signal (negative pulse ...)
-      for (int i=0;i!=nwire_w;i++){
-	//RemovePMTSignalCollection(hw[i],wrms_map[i]);
       }
 
+      // deal with the w plane to remove the PMT signal (negative pulse ...)
+      for (int i=0;i!=nwire_w;i++){
+      	//RemovePMTSignalCollection(hw[i],wrms_map[i]);
+      }
+      
 
 
       
