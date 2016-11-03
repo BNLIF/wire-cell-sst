@@ -157,7 +157,7 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* ro
 
   TF1 *f1 = new TF1("func1",response,0,10,2);
   TF1 *f2 = new TF1("func2",response,0,10,2);
-  f1->SetParameters(78.*1.012,1.0);
+  f1->SetParameters(47.*1.012,1.0);
   f2->SetParameters(140.*1.012,2.0);
 
 
@@ -1166,7 +1166,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    || channel_no >=2192 && channel_no <=2303 
 	    || channel_no >= 2352 && channel_no <2400){
 	  if (flag_mis_config)
-	    hu[i]->Scale(14./7.8); // assume 7.8 mV/fC gain
+	    hu[i]->Scale(14./4.7); // assume 4.7 mV/fC gain
 	}
       }
 
@@ -1193,7 +1193,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    || channel_no >=2192 && channel_no <=2303 
 	    || channel_no >= 2352 && channel_no <2400){
 	  if (flag_mis_config)
-	    hu[i]->Scale(7.8/14.); // assume 7.8 mV/fC gain
+	    hu[i]->Scale(4.7/14.); // assume 4.7 mV/fC gain
 	}
       }
 
@@ -1392,6 +1392,20 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	NoisyFilterAlg(hw[i],2,i);
       	RemoveFilterFlags(hw[i]);
       }
+
+
+      // for (int i=2016; i<2400;i++){
+      // 	int channel_no = i;
+      // 	if (channel_no >=2016 && channel_no <= 2095 
+      // 	    || channel_no >=2192 && channel_no <=2303 
+      // 	    || channel_no >= 2352 && channel_no <2400){
+      // 	  if (flag_mis_config)
+      // 	    hu[i]->Scale(7.8/4.7); // assume 4.7 mV/fC gain
+      // 	}
+      // }
+      
+      
+
       }
       //if (wchirp_map.find(1140)!=wchirp_map.end()) std::cout <<"Xin3: " << 1140 << std::endl;
 
@@ -2033,6 +2047,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 
       }
+
+
+     
+
 
       // deal with the w plane to remove the PMT signal (negative pulse ...)
       for (int i=0;i!=nwire_w;i++){
