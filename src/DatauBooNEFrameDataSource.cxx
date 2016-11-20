@@ -1137,11 +1137,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	}
 	if( isCut){
 	  if (wchirp_map.find(i) == wchirp_map.end()){
-	    std::pair<int,int> abc(0, 9591);
+	    std::pair<int,int> abc(0, bins_per_frame-1);
 	    wchirp_map[i] = abc;
 	  }else{
 	    wchirp_map[i].first = 0;
-	    wchirp_map[i].second = 9591;
+	    wchirp_map[i].second = bins_per_frame-1;
 	  }
 	}
       }
@@ -2089,6 +2089,20 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       std::cout << "Efficiency: " << eff_3plane << " " << eff_2plane << std::endl;
       
       
+      // loop through the chirping channels ... 
+      // save chirping ones into the lf_noisy_channels
+      for (auto it = uchirp_map.begin(); it!= uchirp_map.end(); it++){
+	int channel = it->first;
+	if (it->second.first!=0 || it->second.second<bins_per_frame-1){
+	  lf_noisy_channels.insert(channel);
+	}
+      }
+      for (auto it = vchirp_map.begin(); it!= vchirp_map.end(); it++){
+	int channel = it->first;
+	if (it->second.first!=0 || it->second.second<bins_per_frame-1){
+	  lf_noisy_channels.insert(channel);
+	}
+      }
       
       
       // load the stuff back to the frame ... 

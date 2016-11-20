@@ -68,6 +68,7 @@ namespace WireCellSst {
 	WireCell::ChirpMap& get_v_cmap(){return vchirp_map;};
 	WireCell::ChirpMap& get_w_cmap(){return wchirp_map;};
 
+	std::set<int>& get_lf_noisy_channels(){return lf_noisy_channels;};
 
     private:
 	const WireCell::GeomDataSource& gds;
@@ -90,6 +91,8 @@ namespace WireCellSst {
 	WireCell::ChirpMap vchirp_map;
 	WireCell::ChirpMap wchirp_map;
 	
+	std::set<int> lf_noisy_channels;
+
 	std::map<int, float> urms_map;
 	std::map<int, float> vrms_map;
 	std::map<int, float> wrms_map;
