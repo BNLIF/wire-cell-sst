@@ -927,6 +927,58 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   return;
 }
 
+bool WireCellSst::DatauBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
+  TH1F *h1_copy = (TH1F*)h1->Clone("h1_copy");
+  Double_t min = h1->GetMinimum();
+  Double_t max = h1->GetMaximum();
+  TH1F *h2 = new TH1F("h2","h2",int(10*(max-min)+1),min,max+1);
+  Double_t valid = 0;
+
+  for (Int_t j=0;j!=h1->GetNbinsX();j++){
+    if (h1->GetBinContent(j+1)!=0){
+      h2->Fill(h1->GetBinContent(j+1));
+      valid ++;
+    }
+  }
+
+  if (h2->GetSum()>0){
+    Double_t par[3];
+    double xq = 0.5;
+    h2->GetQuantiles(1,&par[0],&xq);
+    xq = 0.5 - 0.34;
+    h2->GetQuantiles(1,&par[1],&xq);
+    xq = 0.5 + 0.34;
+    h2->GetQuantiles(1,&par[2],&xq);
+    Double_t rms = sqrt((pow(par[2]-par[0],2) + pow(par[1]-par[0],2))/2.);
+    Double_t mean = par[0];
+    for (Int_t j=0;j!=h1->GetNbinsX();j++){
+      if (fabs(h1->GetBinContent(j+1)-mean)>3.5*rms){
+	for (int k=-5;k!=5;k++){
+	  h1_copy->SetBinContent(k+j+1,mean);
+	}
+      }
+    }
+  }
+  delete h2;
+  
+  Double_t content = 0;
+  if (valid >0){
+    TH1 *hm = h1_copy->FFT(0,"MAG");
+    for (int freq=0;freq!=250;freq++){
+      content += pow(hm->GetBinContent(freq+2),1);
+    }
+  delete hm;
+  }
+  
+  delete h1_copy;
+  
+  if (valid >0){
+    if (content/valid>14) return true;
+  }
+  
+  return false;
+}
+
 bool WireCellSst::DatauBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, int channel_no){
   bool flag = false;
   TH1 *htemp_m = h1->FFT(0,"MAG");
@@ -2109,7 +2161,12 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  lf_noisy_channels.insert(channel);
 	}
       }
-      
+      // Try to ID  lf noisy channels
+      for (int i=0;i!=nwire_u;i++){
+	if (ID_lf_noisy(hu[i])) lf_noisy_channels.insert(i);
+	if (ID_lf_noisy(hv[i])) lf_noisy_channels.insert(nwire_u+i);
+      }
+
       
       // load the stuff back to the frame ... 
       

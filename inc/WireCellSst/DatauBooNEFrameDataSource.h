@@ -42,7 +42,8 @@ namespace WireCellSst {
  	void GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut);
 	void zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC = 1);
 	bool ID_RC(TH1F *h1, int plane, int channel_no);
-	 
+
+	bool ID_lf_noisy(TH1F *h1);
 
 	void chirp_id(TH1F *h1, int plane, int channel_no);
 
