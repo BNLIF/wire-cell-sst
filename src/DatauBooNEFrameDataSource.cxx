@@ -2156,7 +2156,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	}
       }
       for (auto it = vchirp_map.begin(); it!= vchirp_map.end(); it++){
-	int channel = it->first;
+	int channel = it->first+nwire_u;
 	if (it->second.first!=0 || it->second.second<bins_per_frame-1){
 	  lf_noisy_channels.insert(channel);
 	}
