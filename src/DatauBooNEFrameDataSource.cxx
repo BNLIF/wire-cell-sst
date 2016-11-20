@@ -32,7 +32,7 @@ double f = 4.31054*exp(-2.94809*x[0]/par[1])*par[0]-2.6202*exp(-2.82833*x[0]/par
  }
 }
 
-WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *Trun, const WireCell::GeomDataSource& gds)
+WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds)
     : WireCell::FrameDataSource()
     , root_file(0)
     , gds(gds)
@@ -75,6 +75,12 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
     
   }
   
+  T_lf->SetBranchAddress("channel",&chid);
+  for (Int_t i=0;i!=T_lf->GetEntries();i++){
+    T_lf->GetEntry(i);
+    lf_noisy_channels.insert(chid);
+  }
+
   // fill frame
   if (hu_raw->GetNbinsX() != nwire_u) 
     std::cout << "U plane channels mismatched!" << std::endl;

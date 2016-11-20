@@ -23,7 +23,7 @@ namespace WireCellSst {
 
       public:
 	DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
-	DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *Trun, const WireCell::GeomDataSource& gds);
+	DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds);
 
 	virtual ~DatauBooNEFrameDataSource();
 
