@@ -1470,8 +1470,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       if (1){
 	// test for Brian ... 
-	int pad_window = 5;
 	int protection_factor = 5.0;
+	float min_adc_limit = 50;
+	
+	int pad_window_uf = 10;
+	int pad_window_ub = 10;
+	int pad_window_vf = 7;
+	int pad_window_vb = 7;
+	int pad_window_w = 10;
+
+
 	
 	// deal with coherent noise removal 
       int n = bins_per_frame;
@@ -1575,6 +1583,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	 
       	  mean = h55->GetMean();
       	  rms = h55->GetRMS();
+
+	  //  std::cout << 0 << " " << i << " " << rms << std::endl;
+
       	  delete h55;
       	  // remove +- 3sigma one
       	  std::vector<int> signals;
@@ -1584,20 +1595,22 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  for (int j=0;j!=nbin;j++){
       	    float content = h44->GetBinContent(j+1);
-      	    if (fabs(content-mean)>protection_factor*rms){
+      	    if (fabs(content-mean)>std::min(protection_factor*rms,min_adc_limit)){
       	      h44->SetBinContent(j+1,0);
       	      //signals.push_back(j);
       	      signalsBool.at(j) = 1;
 	    
       	      // add the front and back padding
-      	      for (int k=0;k!=pad_window;k++){
+      	      for (int k=0;k!=pad_window_ub;k++){
       	        int bin = j+k+1;
       	        if (bin > nbin-1) bin = nbin-1;
       	        signalsBool.at(bin) = 1;
       	        //auto it = find(signals.begin(),signals.end(),bin);
       	        //if (it == signals.end())
       		  //signals.push_back(bin);
-      	        bin = j-k-1;
+	      }
+	      for (int k=0;k!=pad_window_uf;k++){
+      	        int bin = j-k-1;
       	        if (bin <0) bin = 0;
       	        signalsBool.at(bin) = 1;
       	        //it = find(signals.begin(),signals.end(),bin);
@@ -1766,6 +1779,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  
       	  mean = h55->GetMean();
       	  rms = h55->GetRMS();
+	  
+	  // std::cout << 1 << " " << i << " " << rms << std::endl;
+
       	  delete h55;
       	  // remove +- 3sigma one
       	  std::vector<int> signals;
@@ -1775,20 +1791,22 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  for (int j=0;j!=nbin;j++){
       	    float content = h44->GetBinContent(j+1);
-      	    if (fabs(content-mean)>protection_factor*rms){
+      	    if (fabs(content-mean)>std::min(protection_factor*rms,min_adc_limit)){
       	      h44->SetBinContent(j+1,0);
       	      //signals.push_back(j);
       	      signalsBool.at(j) = 1;
 	    
       	      // add the front and back padding
-      	      for (int k=0;k!=pad_window;k++){
+      	      for (int k=0;k!=pad_window_vb;k++){
       	        int bin = j+k+1;
       	        if (bin > nbin-1) bin = nbin-1;
       	        signalsBool.at(bin) = 1;
       	        //auto it = find(signals.begin(),signals.end(),bin);
       	        //if (it == signals.end())
       		  //signals.push_back(bin);
-      	        bin = j-k-1;
+	      }
+	      for (int k=0;k!=pad_window_vf;k++){
+      	        int bin = j-k-1;
       	        if (bin <0) bin = 0;
       	        signalsBool.at(bin) = 1;
       	        //it = find(signals.begin(),signals.end(),bin);
@@ -1955,6 +1973,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  
       	  mean = h55->GetMean();
       	  rms = h55->GetRMS();
+	  
+	  //std::cout << 2 << " " << i << " " << rms << std::endl;
+
       	  delete h55;
       	  // remove +- 3sigma one
       	  std::vector<int> signals;
@@ -1964,13 +1985,13 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  for (int j=0;j!=nbin;j++){
       	    float content = h44->GetBinContent(j+1);
-      	    if (fabs(content-mean)>protection_factor*rms){
+      	    if (fabs(content-mean)>std::min(protection_factor*rms,min_adc_limit)){
       	      h44->SetBinContent(j+1,0);
       	      //signals.push_back(j);
       	      signalsBool.at(j) = 1;
 	    
       	      // add the front and back padding
-      	      for (int k=0;k!=pad_window;k++){
+      	      for (int k=0;k!=pad_window_w;k++){
       	        int bin = j+k+1;
       	        if (bin > nbin-1) bin = nbin-1;
       	        signalsBool.at(bin) = 1;
