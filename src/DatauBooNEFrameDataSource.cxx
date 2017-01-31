@@ -3,7 +3,9 @@
 #include "TClonesArray.h"
 #include "TH1F.h"
 #include "TFile.h"
+#include "TRandom.h"
 #include "TVirtualFFT.h"
+#include "TGraph.h"
 #include "WireCellData/GeomWire.h"
 #include "TF1.h"
 #include "TMath.h"
@@ -31,6 +33,84 @@ double f = 4.31054*exp(-2.94809*x[0]/par[1])*par[0]-2.6202*exp(-2.82833*x[0]/par
    return 0;
  }
 }
+
+Double_t PoissonReal(const Double_t *k,  const Double_t *lambda) {
+  return TMath::Exp(k[0]*TMath::Log(lambda[0])-lambda[0]) / TMath::Gamma(k[0]+1.);
+}
+
+void WireCellSst::DatauBooNEFrameDataSource::Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel){
+  
+  Double_t L = 0;
+  if (plane == 2) L = 233; // cm
+  if (plane ==0 || plane == 1){
+    if (channel <= 672){
+      L = channel / 672. * (465.9-0.59) + 0.59;
+    }else if (channel <=1726){
+      L = 465.9; // cm
+    }else{
+      L = (2399-channel) / 672. * (465.9-0.59) + 0.59;
+    }
+  }
+  Double_t RMS = sqrt(0.9*0.9 + pow(0.79 + 0.22*L/100.,2));
+
+  Double_t MaxPoissArg = 100.; 
+  TF1 *MyPoisson = new TF1("MyPoisson", PoissonReal,0.,MaxPoissArg,1);
+
+  // ADC to parameter conversion
+  Double_t x[14]={0.5,  0.6,  0.7,  0.8,      1.0,1.3 , 1.6, 2.0,  2.5, 3.0,3.5,4.5,9,16};
+  Double_t y[14]={2.43326,2.211, 2.04155,1.9036,1.72,1.55, 1.44, 1.34,1.27, 1.22,1.19,1.15,1.076,1.048};
+  TGraph *g4 = new TGraph(14,y,x);
+
+  Double_t params[1];
+  
+  
+  //to be updated ... 
+  params[0] = g4->Eval(RMS);
+  
+  MyPoisson->SetParameters(params);
+  
+  //std::cout << params[0] << " " << L << std::endl;
+
+  TF1 *f1 = new TF1("f","[0]+([1]+[2]*x*9592./2.)*exp(-[3]*pow(x*9592./2.,[4]))"); // x in MHz
+  Double_t fitpar[5]={4.74264e+01,1.35048e+02,3.25547e-01,1.61809e-06,1.93925e+00};
+  f1->SetParameters(fitpar);
+
+  Double_t value_re[10000], value_im[10000];
+  Int_t n = h1->GetNbinsX();
+  
+  for (Int_t i=0;i!=n;i++){
+    Double_t freq;
+    if (i<n/2.){
+      freq = (i)*2./n; // assume 2 MHz digitization 
+    }else{
+      freq = (n-i)*2./n;
+    }
+    
+    Double_t rho = f1->Eval(freq) *sqrt(n/9592.)* MyPoisson->GetRandom()/params[0];
+    //h1->SetBinContent(i+1, rho);
+    if (i==0) rho = 0;
+    Double_t phi = gRandom->Uniform(0,2*3.1415926);
+    value_re[i] = rho*cos(phi)/n;
+    value_im[i] = rho*sin(phi)/n;
+  }
+  
+  TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
+  ifft->SetPointsComplex(value_re,value_im);
+  ifft->Transform();
+  TH1 *fb = 0;
+  fb = TH1::TransformHisto(ifft,fb,"Re");
+
+  for (Int_t i=0;i!=n;i++){
+    h1->SetBinContent(i+1,fb->GetBinContent(i+1));
+  }
+
+  delete f1;
+  delete MyPoisson;
+  delete g4;
+  delete ifft;
+  delete fb;
+}
+
 
 WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds)
     : WireCell::FrameDataSource()
@@ -81,6 +161,9 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
     lf_noisy_channels.insert(chid);
   }
 
+  
+  
+
   // fill frame
   if (hu_raw->GetNbinsX() != nwire_u) 
     std::cout << "U plane channels mismatched!" << std::endl;
@@ -102,10 +185,13 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
     trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
     trace.charge.resize(bins_per_frame, 0.0);
     
+   
     for (int ibin=0; ibin != bins_per_frame; ibin++) {
       trace.charge.at(ibin) = hu_raw->GetBinContent(ind+1,ibin+1);
     }
+    
     frame.traces.push_back(trace);
+    
   }
   
   // V plane
@@ -115,9 +201,11 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
     trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
     trace.charge.resize(bins_per_frame, 0.0);
     
+    
     for (int ibin=0; ibin != bins_per_frame; ibin++) {
       trace.charge.at(ibin) = hv_raw->GetBinContent(ind+1,ibin+1);
     }
+    
     frame.traces.push_back(trace);
   }
 
@@ -128,22 +216,25 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
     trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
     trace.charge.resize(bins_per_frame, 0.0);
     
+    
     for (int ibin=0; ibin != bins_per_frame; ibin++) {
       trace.charge.at(ibin) = hw_raw->GetBinContent(ind+1,ibin+1);
     }
+    
     frame.traces.push_back(trace);
   }
 
 
-    
+ 
 }
 
 
-WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1)
+WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1, int flag_add_noise)
     : WireCell::FrameDataSource()
     , root_file(root_file)
     , gds(gds)
     , load_results_from_file(false)
+    , flag_add_noise(flag_add_noise)
 {
   bins_per_frame = bins_per_frame1;
   
@@ -881,7 +972,11 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   }
   
   //test ... 
- 
+  if (flag_add_noise){
+    minRMSCut[0] = 0;
+    minRMSCut[1] = 0.;
+    minRMSCut[2] = 0;
+  }
 
   // std::cout << "Xin: " << planeNum << " " << channel_no << " " << rmsVal << std::endl;
    
@@ -1067,6 +1162,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       flag_mis_config = 0;
     }
 
+    if (flag_add_noise)
+      flag_mis_config = 0;
+
     
     if (siz > 0 && frame_number < siz) {
       
@@ -1103,6 +1201,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       std::cout << "Load Data " << std::endl;
       // load into frame
       int nchannels = channelid->size();
+
+      TH1F *hnoise = new TH1F("hnoise","hnoise",bins_per_frame,0,bins_per_frame);
+      
       for (size_t ind=0; ind < nchannels; ++ind) {
 	TH1F* signal = dynamic_cast<TH1F*>(esignal->At(ind));
 	if (!signal) continue;
@@ -1118,21 +1219,40 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	TH1F *htemp;
 	float threshold;
+
+	
 	if (trace.chid < nwire_u){
 	  htemp = hu[trace.chid];
 	  threshold = 2048;
+	  if (flag_add_noise){
+	    Simu_Noise_uBooNE_Empirical(hnoise,0,trace.chid);
+	  }
 	}else if (trace.chid < nwire_u + nwire_v){
 	  htemp = hv[trace.chid - nwire_u];
 	  threshold = 2048;
+	  if (flag_add_noise){
+	    Simu_Noise_uBooNE_Empirical(hnoise,1,trace.chid-nwire_u);
+	  }
 	}else{
 	  htemp = hw[trace.chid - nwire_u - nwire_v];
 	  threshold = 400;
+	  if (flag_add_noise){
+	    Simu_Noise_uBooNE_Empirical(hnoise,2,trace.chid-nwire_u-nwire_v);
+	  }
 	}
 	
-	for (int ibin=0; ibin != bins_per_frame; ibin++) {
-	  htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
+	if (flag_add_noise){
+	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	    // pure noise to be fixed
+	    htemp->SetBinContent(ibin+1,hnoise->GetBinContent(ibin+1));
+	  }
+	}else{
+	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
+	  }
 	}	
       }
+      delete hnoise;
       
       int nu = 2400, nv = 2400, nw = 3456;
       int ntotal = nu + nv + nw;
@@ -1184,26 +1304,26 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // 	}
       // }
 
-
-      //special cut on W-plane ... 
-      for (int i=0;i!=nw;i++){
-	bool isCut = 0;
-	int chan = i;
-	if (chan >=7136 - 4800 && chan <=7263 - 4800){
-	  if (chan != 7200- 4800 && chan!=7215 - 4800)
-	    isCut = 1;
-	}
-	if( isCut){
-	  if (wchirp_map.find(i) == wchirp_map.end()){
-	    std::pair<int,int> abc(0, bins_per_frame-1);
-	    wchirp_map[i] = abc;
-	  }else{
-	    wchirp_map[i].first = 0;
-	    wchirp_map[i].second = bins_per_frame-1;
+      if (!flag_add_noise){
+	//special cut on W-plane ... 
+	for (int i=0;i!=nw;i++){
+	  bool isCut = 0;
+	  int chan = i;
+	  if (chan >=7136 - 4800 && chan <=7263 - 4800){
+	    if (chan != 7200- 4800 && chan!=7215 - 4800)
+	      isCut = 1;
+	  }
+	  if( isCut){
+	    if (wchirp_map.find(i) == wchirp_map.end()){
+	      std::pair<int,int> abc(0, bins_per_frame-1);
+	      wchirp_map[i] = abc;
+	    }else{
+	      wchirp_map[i].first = 0;
+	      wchirp_map[i].second = bins_per_frame-1;
+	    }
 	  }
 	}
       }
-
 
       if (1){
       // if (uchirp_map.find(1517)!=uchirp_map.end()){
@@ -1310,37 +1430,38 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
      
 
-
-      std::cout << "Remove ZigZag " << std::endl;
-      // deal with the zig zag noise
-      // filter single frequency 36 and 110 kHz
-      // correct RC+RC 
-      // correct misconfigured channel (need a database ...)
-      for (int i=0;i!=nu;i++){
-	auto it = find(ided_rc_uplane.begin(),ided_rc_uplane.end(),i);
-	if (it == ided_rc_uplane.end()){
-	  zigzag_removal(hu[i],0,i);
-	}else{
-	  zigzag_removal(hu[i],0,i,0);
+      if (!flag_add_noise){
+	std::cout << "Remove ZigZag " << std::endl;
+	// deal with the zig zag noise
+	// filter single frequency 36 and 110 kHz
+	// correct RC+RC 
+	// correct misconfigured channel (need a database ...)
+	for (int i=0;i!=nu;i++){
+	  auto it = find(ided_rc_uplane.begin(),ided_rc_uplane.end(),i);
+	  if (it == ided_rc_uplane.end()){
+	    zigzag_removal(hu[i],0,i);
+	  }else{
+	    zigzag_removal(hu[i],0,i,0);
+	  }
+	}
+	for (int i=0;i!=nv;i++){
+	  auto it = find(ided_rc_vplane.begin(),ided_rc_vplane.end(),i);
+	  if (it == ided_rc_vplane.end()){
+	    zigzag_removal(hv[i],1,i);
+	  }else{
+	    zigzag_removal(hv[i],1,i,0);
+	  }
+	}
+	for (int i=0;i!=nw;i++){
+	  auto it = find(ided_rc_wplane.begin(),ided_rc_wplane.end(),i);
+	  if (it == ided_rc_wplane.end()){
+	    zigzag_removal(hw[i],2,i);
+	  }else{
+	    zigzag_removal(hw[i],2,i,0);
+	  }
 	}
       }
-      for (int i=0;i!=nv;i++){
-	auto it = find(ided_rc_vplane.begin(),ided_rc_vplane.end(),i);
-	if (it == ided_rc_vplane.end()){
-	  zigzag_removal(hv[i],1,i);
-	}else{
-	  zigzag_removal(hv[i],1,i,0);
-	}
-      }
-      for (int i=0;i!=nw;i++){
-	auto it = find(ided_rc_wplane.begin(),ided_rc_wplane.end(),i);
-	if (it == ided_rc_wplane.end()){
-	  zigzag_removal(hw[i],2,i);
-	}else{
-	  zigzag_removal(hw[i],2,i,0);
-	}
-      }
-
+      
       
       // // put RC into adaptive baseline group  ... 
       // for (int i=0;i!=ided_rc_uplane.size();i++){

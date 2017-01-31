@@ -22,7 +22,7 @@ namespace WireCellSst {
       //WireCellSst::RootEvent event;
 
       public:
-	DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
+      DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600, int flag_add_noise = 0);
 	DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds);
 
 	virtual ~DatauBooNEFrameDataSource();
@@ -56,6 +56,7 @@ namespace WireCellSst {
 	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
 	void RemovePMTSignalCollection(TH1F *hist, float rms);
 
+	void Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel);
 
 	int get_run_no(){return run_no;};
 	int get_subrun_no(){return subrun_no;};
@@ -72,6 +73,8 @@ namespace WireCellSst {
 	std::set<int>& get_lf_noisy_channels(){return lf_noisy_channels;};
 
     private:
+	int flag_add_noise;
+
 	const WireCell::GeomDataSource& gds;
 	const char* root_file;
 	int nwire_u, nwire_v, nwire_w;
