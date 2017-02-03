@@ -108,6 +108,9 @@ namespace WireCellSst {
 	TH1 *hm_1us, *hp_1us;
 	TH1F *h_2us;
 	TH1 *hm_2us, *hp_2us;
+
+	/* TH1F *hu_resp; */
+	/* TH1F *hv_resp; */
     };
 
     
