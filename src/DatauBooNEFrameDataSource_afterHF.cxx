@@ -332,13 +332,24 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::zigzag_removal(TH1F *h1, in
   // need to restore the incorrectly set ASICs gain and shaping time ... 
   int flag_restore = 0;
   if (plane == 0){ // U-plane only    could be time-dependent 
-    if (channel_no >=2016 && channel_no <= 2095 
-	|| channel_no >=2192 && channel_no <=2303 
-	|| channel_no >= 2352 && channel_no <2400)
+    if (channel_no >= 768 && channel_no<864 || 
+	channel_no >=2016 && channel_no < 2160 || 
+	channel_no >=2176 && channel_no <2400)
       {
 	if (flag_mis_config)
 	  flag_restore = 1;
       }
+  }else if (plane == 1){
+    if (channel_no >= 1440 && channel_no<1536)
+      {
+	if (flag_mis_config)
+	  flag_restore = 1;
+      }
+  }else if (plane == 2){
+    if (channel_no>=1536 && channel_no < 1728){
+      if (flag_mis_config)
+	flag_restore = 1;
+    }
   }
 
 
@@ -944,26 +955,26 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::NoisyFilterAlg(TH1F *hist, 
   //  if (channel_no>2080 && planeNum==0) std::cout << "Xin: " << channel_no << " " << rmsVal << std::endl;
 
   if (planeNum == 0){
-    if (channel_no < 100){
+    if (channel_no < 600){
       maxRMSCut[0] = 5;
-      minRMSCut[0] = 1;
-    }else if (channel_no >= 100 && channel_no<2000){
+      minRMSCut[0] = 1+(1.7-1)/600.*channel_no;
+    }else if (channel_no >= 600 && channel_no<1800){
       maxRMSCut[0] = 11; // increase the threshold slightly ... 
-      minRMSCut[0] = 1.9;
-    }else if (channel_no >= 2000 && channel_no < 2400){
+      minRMSCut[0] = 1.7;
+    }else if (channel_no >= 1800 && channel_no < 2400){
       maxRMSCut[0] = 5;
-      minRMSCut[0] = 0.9; // take into account FT-1 channel ... 
+      minRMSCut[0] = 1+ (1.7-1)/600.*(2399-channel_no); // take into account FT-1 channel ... 
     }
   }else if (planeNum == 1){
-    if (channel_no <290){
+    if (channel_no <600){
       maxRMSCut[1] = 5;
-      minRMSCut[1] = 1;
-    }else if (channel_no>=290 && channel_no < 2200){
+      minRMSCut[1] = 0.8+(1.7-0.8)/600.*channel_no;
+    }else if (channel_no>=600 && channel_no < 1800){
       maxRMSCut[1] = 11;
-      minRMSCut[1] = 1.9;
-    }else if (channel_no >=2200){
+      minRMSCut[1] = 1.7;
+    }else if (channel_no >=1800){
       maxRMSCut[1] = 5;
-      minRMSCut[1] = 1;
+      minRMSCut[1] = 0.8+ (1.7-0.8)/600.*(2399-channel_no); 
     }
   }else if (planeNum == 2){
     maxRMSCut[2] = 8;
@@ -1164,6 +1175,10 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
     if (flag_add_noise)
       flag_mis_config = 0;
 
+    // for the run in 9000 level, make
+    if (run_no > 9000) flag_mis_config = 1;
+
+
     
     if (siz > 0 && frame_number < siz) {
       
@@ -1331,7 +1346,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	for (int i=0;i!=nw;i++){
 	  bool isCut = 0;
 	  int chan = i;
-	  if (chan >=7136 - 4800 && chan <=7263 - 4800){
+	  if (chan >=7136 - 4800 && chan <=7263 - 4800||chan==6392-4800){
 	    if (chan != 7200- 4800 && chan!=7215 - 4800)
 	      isCut = 1;
 	  }
@@ -1345,6 +1360,25 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	    }
 	  }
 	}
+
+	// U plane, 300, 310, 
+	for (int i=0;i!=nu;i++){
+	  bool isCut = 0;
+	  int chan = i;
+	  if (i==300||i==310||i==438||i==336||i==337){
+	      isCut = 1;
+	  }
+	  if( isCut){
+	    if (uchirp_map.find(i) == uchirp_map.end()){
+	      std::pair<int,int> abc(0, bins_per_frame-1);
+	      uchirp_map[i] = abc;
+	    }else{
+	      uchirp_map[i].first = 0;
+	      uchirp_map[i].second = bins_per_frame-1;
+	    }
+	  }
+	}
+	
       }
 
       if (1){
@@ -1362,13 +1396,22 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 
       for (int i=2016; i<2400;i++){
 	int channel_no = i;
-	if (channel_no >=2016 && channel_no <= 2095 
-	    || channel_no >=2192 && channel_no <=2303 
-	    || channel_no >= 2352 && channel_no <2400){
+	if (channel_no >= 768 && channel_no<864 || 
+	    channel_no >=2016 && channel_no < 2160 || 
+	    channel_no >=2176 && channel_no <2400){
 	  if (flag_mis_config)
 	    hu[i]->Scale(14./4.7); // assume 4.7 mV/fC gain
 	}
       }
+      for (int channel_no = 1440 ; channel_no < 1536; channel_no ++){
+	  if (flag_mis_config)
+	    hv[channel_no]->Scale(14./4.7); // assume 4.7 mV/fC gain
+      }
+      for (int channel_no=1536; channel_no < 1728; channel_no ++){
+	if (flag_mis_config)
+	    hw[channel_no]->Scale(14./4.7); // assume 4.7 mV/fC gain
+      }
+      
 
 	
 
@@ -1389,12 +1432,20 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
       
       for (int i=2016; i<2400;i++){
 	int channel_no = i;
-	if (channel_no >=2016 && channel_no <= 2095 
-	    || channel_no >=2192 && channel_no <=2303 
-	    || channel_no >= 2352 && channel_no <2400){
+	if (channel_no >= 768 && channel_no<864 || 
+	    channel_no >=2016 && channel_no < 2160 || 
+	    channel_no >=2176 && channel_no <2400){
 	  if (flag_mis_config)
 	    hu[i]->Scale(4.7/14.); // assume 4.7 mV/fC gain
 	}
+      }
+      for (int channel_no = 1440; channel_no<1536; channel_no++){
+	if (flag_mis_config)
+	  hv[channel_no]->Scale(4.7/14);
+      }
+      for (int channel_no=1536; channel_no < 1728; channel_no ++){
+	if (flag_mis_config)
+	  hw[channel_no]->Scale(4.7/14);
       }
 
       
