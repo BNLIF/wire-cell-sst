@@ -55,8 +55,10 @@ namespace WireCellSst {
 	void RemoveFilterFlags(TH1F *hist);
 	void RawAdaptiveBaselineAlg(TH1F *hist);
 	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
+	
 	void RemovePMTSignalCollection(TH1F *hist, float rms, int channel);
 	void IDPMTSignalInduction(TH1F *hist, float rms, int plane, int channel);
+	void RemovePMTSignalInduction(TH1F *hist, int start_bin, int end_bin);
 
 	void Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel);
 

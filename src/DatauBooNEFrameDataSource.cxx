@@ -2465,19 +2465,29 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       }
       
       for (int i=0;i!=PMT_ROIs.size();i++){
-	PMT_ROIs.at(i)->sort_wires(5);
+	PMT_ROIs.at(i)->sort_wires(4);
 	
-	if (PMT_ROIs.at(i)->get_sorted_uwires().size() > 0 && PMT_ROIs.at(i)->get_sorted_vwires().size() > 0 && PMT_ROIs.at(i)->get_sorted_uwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size()&& PMT_ROIs.at(i)->get_sorted_vwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size() ){
-	  // for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_uwires().size();j++){
-	  //   std::cout << i << " U " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_uwires().at(j) << std::endl;
-	  // }
-	  // for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_vwires().size();j++){
-	  //   std::cout << i << " V " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_vwires().at(j) << std::endl;
-	  // }
-	  std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " <<  PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_uwires().size() << " " << PMT_ROIs.at(i)->get_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_wwires().size() << " " << PMT_ROIs.at(i)->get_average_wwires_peak_height() << std::endl;
+	if (PMT_ROIs.at(i)->get_sorted_uwires().size() > 0 && PMT_ROIs.at(i)->get_sorted_vwires().size() > 0 && 
+	    PMT_ROIs.at(i)->get_sorted_uwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size()&& PMT_ROIs.at(i)->get_sorted_vwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size() && 
+	    PMT_ROIs.at(i)->get_average_uwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_average_wwires_peak_height() && PMT_ROIs.at(i)->get_average_vwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_average_wwires_peak_height()){
+	  
+	  for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_uwires().size();j++){
+	    //   std::cout << i << " U " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_uwires().at(j) << std::endl;
+	    RemovePMTSignalInduction(hu[PMT_ROIs.at(i)->get_sorted_uwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+	  }
+	  for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_vwires().size();j++){
+	    //   std::cout << i << " V " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_vwires().at(j) << std::endl;
+	    RemovePMTSignalInduction(hv[PMT_ROIs.at(i)->get_sorted_vwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+	  }
+
+
+	  std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " <<  PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_uwires().size() << " " << PMT_ROIs.at(i)->get_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_wwires().size() << " " << PMT_ROIs.at(i)->get_average_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_wwires_peak_height() << std::endl;
+		   
 	}
 	  //	
+	delete PMT_ROIs.at(i);
       }
+      PMT_ROIs.clear();
 
       
 
@@ -2667,6 +2677,35 @@ void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, fl
 	}
       }
     }
+  }
+}
+
+void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalInduction(TH1F* hist, int start_bin, int end_bin){
+  int pad_window = 5;
+  
+  int flag_start = 0;
+	    
+  //adaptive baseline
+  float start_content = hist->GetBinContent(start_bin+1);
+  for (int j=start_bin;j>=start_bin - pad_window;j--){
+    if (j<0) continue;
+    if (fabs(hist->GetBinContent(j+1)) < fabs(start_content)){
+      start_bin = j;
+      start_content = hist->GetBinContent(start_bin+1);
+    }
+  }
+  float end_content = hist->GetBinContent(end_bin+1);
+  for (int j=end_bin; j<=end_bin+pad_window;j++){
+    if (j>=hist->GetNbinsX()) continue;
+    if (fabs(hist->GetBinContent(j+1)) < fabs(end_content)){
+      end_bin = j;
+      end_content = hist->GetBinContent(end_bin+1);
+    }
+  }
+  
+  for (int j=start_bin;j<=end_bin;j++){
+    float content = start_content + (end_content - start_content) * (j - start_bin) / (end_bin - start_bin*1.0);
+    hist->SetBinContent(j+1,content);
   }
 }
 
