@@ -2503,9 +2503,44 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 
 
       // deal with the w plane to remove the PMT signal (negative pulse ...)
-      for (int i=0;i!=nwire_w;i++){
-      	//RemovePMTSignalCollection(hw[i],wrms_map[i]);
+       for (int i=0;i!=nwire_w;i++){
+	//std::cout << i << std::endl;
+      	RemovePMTSignalCollection(hw[i],wrms_map[i],i);
       }
+      for (int i=0;i!=nwire_u;i++){
+	IDPMTSignalInduction(hu[i],urms_map[i],0,i);
+      }
+      for (int i=0;i!=nwire_v;i++){
+	IDPMTSignalInduction(hv[i],vrms_map[i],1,i);
+      }
+      
+      for (int i=0;i!=PMT_ROIs.size();i++){
+	PMT_ROIs.at(i)->sort_wires(4);
+	
+	if (PMT_ROIs.at(i)->get_sorted_uwires().size() > 0 && PMT_ROIs.at(i)->get_sorted_vwires().size() > 0 && 
+	PMT_ROIs.at(i)->get_sorted_uwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size()&& PMT_ROIs.at(i)->get_sorted_vwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size() && 
+	((PMT_ROIs.at(i)->get_average_uwires_peak_height() < 2.0 * PMT_ROIs.at(i)->get_average_wwires_peak_height() && PMT_ROIs.at(i)->get_average_vwires_peak_height() < 2.0 * PMT_ROIs.at(i)->get_average_wwires_peak_height()) || 
+	(PMT_ROIs.at(i)->get_max_uwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_max_wwires_peak_height() && PMT_ROIs.at(i)->get_max_vwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_max_wwires_peak_height()))){
+      //	if (PMT_ROIs.at(i)->get_sorted_uwires().size() > 0 || PMT_ROIs.at(i)->get_sorted_vwires().size() > 0 ){
+	
+	  
+	  for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_uwires().size();j++){
+	    //   std::cout << i << " U " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_uwires().at(j) << std::endl;
+	    RemovePMTSignalInduction(hu[PMT_ROIs.at(i)->get_sorted_uwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+	  }
+	  for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_vwires().size();j++){
+	    //   std::cout << i << " V " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_vwires().at(j) << std::endl;
+	    RemovePMTSignalInduction(hv[PMT_ROIs.at(i)->get_sorted_vwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+	  }
+
+
+	  //std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " <<  PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_uwires().size() << " " << PMT_ROIs.at(i)->get_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_wwires().size() << " " << PMT_ROIs.at(i)->get_average_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_wwires_peak_height() << std::endl;
+		   
+	}
+	  //	
+	delete PMT_ROIs.at(i);
+      }
+      PMT_ROIs.clear();
       
 
 
@@ -2653,9 +2688,89 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
       return -1;
     }
 }
+void WireCellSst::DatauBooNEFrameDataSource_afterHF::IDPMTSignalInduction(TH1F* hist, float rms, int plane, int channel){
+  float rms1 = 0;
+  float rms2 = 0;
+  
+  for (int i=0;i!=hist->GetNbinsX();i++){
+    float content = hist->GetBinContent(i+1);
+    if (fabs(content) < 3*rms){
+      rms1 += content*content;
+      rms2 ++;
+    }
+  }
+  if (rms2 >0){
+    rms1 = sqrt(rms1/rms2);
+    for (int i=0;i!=PMT_ROIs.size();i++){
+      WireCell::PMTNoiseROI* ROI= PMT_ROIs.at(i);
+      for (int j=0;j!= ROI->get_peaks().size();j++){
+	int peak = ROI->get_peaks().at(j);
+	int peak_m1 = peak - 1; if (peak_m1 <0) peak_m1 = 0;
+	int peak_m2 = peak - 2; if (peak_m2 <0) peak_m2 = 0;
+	int peak_m3 = peak - 3; if (peak_m3 <0) peak_m3 = 0;
+	int peak_p1 = peak + 1; if (peak_p1 >= hist->GetNbinsX()) peak_p1 = hist->GetNbinsX()-1;
+	int peak_p2 = peak + 2; if (peak_p2 >= hist->GetNbinsX()) peak_p2 = hist->GetNbinsX()-1;
+	int peak_p3 = peak + 3; if (peak_p3 >= hist->GetNbinsX()) peak_p3 = hist->GetNbinsX()-1;
+	if (fabs(hist->GetBinContent(peak+1))> 5 * rms1 && 
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_m2+1)) + fabs(hist->GetBinContent(peak+1)) &&
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_p1+1)) + fabs(hist->GetBinContent(peak_p2+1)) + fabs(hist->GetBinContent(peak+1)) && 
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_m2+1)) + fabs(hist->GetBinContent(peak_m3+1)) + fabs(hist->GetBinContent(peak_m1+1)) && 
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_p2+1)) + fabs(hist->GetBinContent(peak_p3+1)) + fabs(hist->GetBinContent(peak_p1+1)) ){
+
+	  //	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m2+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p1+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p2+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p3+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m3+1)) 
+	  // ){
+	  if (plane == 0 ){
+	    ROI->insert_uwires(channel,fabs(hist->GetBinContent(peak+1)));
+	    break;
+	  }else{
+	    ROI->insert_vwires(channel,fabs(hist->GetBinContent(peak+1)));
+	    break;
+	  }
+	}
+      }
+    }
+  }
+}
+
+void WireCellSst::DatauBooNEFrameDataSource_afterHF::RemovePMTSignalInduction(TH1F* hist, int start_bin, int end_bin){
+  int pad_window = 5;
+  
+  int flag_start = 0;
+	    
+  //adaptive baseline
+  float start_content = hist->GetBinContent(start_bin+1);
+  for (int j=start_bin;j>=start_bin - pad_window;j--){
+    if (j<0) continue;
+    if (fabs(hist->GetBinContent(j+1)) < fabs(start_content)){
+      start_bin = j;
+      start_content = hist->GetBinContent(start_bin+1);
+    }
+  }
+  float end_content = hist->GetBinContent(end_bin+1);
+  for (int j=end_bin; j<=end_bin+pad_window;j++){
+    if (j>=hist->GetNbinsX()) continue;
+    if (fabs(hist->GetBinContent(j+1)) < fabs(end_content)){
+      end_bin = j;
+      end_content = hist->GetBinContent(end_bin+1);
+    }
+  }
+  
+  for (int j=start_bin;j<=end_bin;j++){
+    float content = start_content + (end_content - start_content) * (j - start_bin) / (end_bin - start_bin*1.0);
+    hist->SetBinContent(j+1,content);
+  }
+}
 
 
-void WireCellSst::DatauBooNEFrameDataSource_afterHF::RemovePMTSignalCollection(TH1F* hist, float rms){
+void WireCellSst::DatauBooNEFrameDataSource_afterHF::RemovePMTSignalCollection(TH1F* hist, float rms, int channel){
+
+  int pad_window = 5;
+  int min_window_length = 4;
+  
   float rms1 = 0;
   float rms2 = 0;
   
@@ -2669,15 +2784,88 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::RemovePMTSignalCollection(T
   
   if (rms2 >0){
     rms1 = sqrt(rms1/rms2);
+    int flag_start = 0;
+    int start_bin;
+    int end_bin;
+    int peak_bin;
+    
     for (int i=0;i!=hist->GetNbinsX();i++){
       float content = hist->GetBinContent(i+1);
-      if (content < -3 *rms1){
-	hist->SetBinContent(i+1,0);
+
+      if (flag_start == 0){
+	if (content < -5 *rms1){
+	  start_bin = i;
+	  flag_start = 1;
+	}	
+      }else{
+	if (content >= -5 * rms1){
+	  end_bin = i-1;
+	  if (end_bin > start_bin+min_window_length){
+	    float min = hist->GetBinContent(start_bin+1);
+	    peak_bin = start_bin;
+	    for (int j=start_bin+1;j!=end_bin;j++){
+	      if (hist->GetBinContent(j+1) < min)
+		peak_bin = j;
+	    }
+	  	 
+	    WireCell::PMTNoiseROI *ROI = new WireCell::PMTNoiseROI(start_bin,end_bin,peak_bin,channel,hist->GetBinContent(peak_bin+1));
+	    
+	    //std::cout << start_bin << " " << end_bin << std::endl;
+	    if (PMT_ROIs.size()==0){
+	      PMT_ROIs.push_back(ROI);
+	    }else{
+	      bool flag_merge = false;
+	      for (int i=0;i!=PMT_ROIs.size();i++){
+		flag_merge = PMT_ROIs.at(i)->merge_ROI(*ROI);
+		if (flag_merge){
+		  delete ROI;
+		  break;
+		}
+	      }
+	      if (!flag_merge){
+		PMT_ROIs.push_back(ROI);
+	      }
+	    }
+	    // std::cout << "h " << PMT_ROIs.size() << std::endl;
+	    
+	    flag_start = 0;
+	    
+	    //adaptive baseline
+	    float start_content = hist->GetBinContent(start_bin+1);
+	    for (int j=start_bin;j>=start_bin - pad_window;j--){
+	      if (j<0) continue;
+	      if (fabs(hist->GetBinContent(j+1)) < fabs(start_content)){
+		start_bin = j;
+		start_content = hist->GetBinContent(start_bin+1);
+	      }
+	    }
+	    float end_content = hist->GetBinContent(end_bin+1);
+	    for (int j=end_bin; j<=end_bin+pad_window;j++){
+	      if (j>=hist->GetNbinsX()) continue;
+	      if (fabs(hist->GetBinContent(j+1)) < fabs(end_content)){
+		end_bin = j;
+		end_content = hist->GetBinContent(end_bin+1);
+	      }
+	    }
+	    
+	    for (int j=start_bin;j<=end_bin;j++){
+	      float content = start_content + (end_content - start_content) * (j - start_bin) / (end_bin - start_bin*1.0);
+	      hist->SetBinContent(j+1,content);
+	    }
+	    
+	  }
+	}
       }
+      
+
     }
+    
+
   }
   
 }
+
+
 
 bool WireCellSst::DatauBooNEFrameDataSource_afterHF::chirp_check(double rms, int plane, int channel){
   if (plane == 0){
