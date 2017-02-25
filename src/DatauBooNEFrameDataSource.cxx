@@ -2468,8 +2468,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	PMT_ROIs.at(i)->sort_wires(4);
 	
 	if (PMT_ROIs.at(i)->get_sorted_uwires().size() > 0 && PMT_ROIs.at(i)->get_sorted_vwires().size() > 0 && 
-	    PMT_ROIs.at(i)->get_sorted_uwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size()&& PMT_ROIs.at(i)->get_sorted_vwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size() && 
-	    PMT_ROIs.at(i)->get_average_uwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_average_wwires_peak_height() && PMT_ROIs.at(i)->get_average_vwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_average_wwires_peak_height()){
+	PMT_ROIs.at(i)->get_sorted_uwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size()&& PMT_ROIs.at(i)->get_sorted_vwires().size() <= PMT_ROIs.at(i)->get_sorted_wwires().size() && 
+	((PMT_ROIs.at(i)->get_average_uwires_peak_height() < 2.0 * PMT_ROIs.at(i)->get_average_wwires_peak_height() && PMT_ROIs.at(i)->get_average_vwires_peak_height() < 2.0 * PMT_ROIs.at(i)->get_average_wwires_peak_height()) || 
+	(PMT_ROIs.at(i)->get_max_uwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_max_wwires_peak_height() && PMT_ROIs.at(i)->get_max_vwires_peak_height() < 1.5 * PMT_ROIs.at(i)->get_max_wwires_peak_height()))){
+      //	if (PMT_ROIs.at(i)->get_sorted_uwires().size() > 0 || PMT_ROIs.at(i)->get_sorted_vwires().size() > 0 ){
+	
 	  
 	  for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_uwires().size();j++){
 	    //   std::cout << i << " U " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_sorted_uwires().at(j) << std::endl;
@@ -2481,7 +2484,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  }
 
 
-	  std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " <<  PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_uwires().size() << " " << PMT_ROIs.at(i)->get_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_wwires().size() << " " << PMT_ROIs.at(i)->get_average_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_wwires_peak_height() << std::endl;
+	  //std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " <<  PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_uwires().size() << " " << PMT_ROIs.at(i)->get_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_wwires().size() << " " << PMT_ROIs.at(i)->get_average_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_wwires_peak_height() << std::endl;
 		   
 	}
 	  //	
@@ -2659,14 +2662,19 @@ void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, fl
 	int peak_m3 = peak - 3; if (peak_m3 <0) peak_m3 = 0;
 	int peak_p1 = peak + 1; if (peak_p1 >= hist->GetNbinsX()) peak_p1 = hist->GetNbinsX()-1;
 	int peak_p2 = peak + 2; if (peak_p2 >= hist->GetNbinsX()) peak_p2 = hist->GetNbinsX()-1;
-	int peak_p3 = peak + 2; if (peak_p3 >= hist->GetNbinsX()) peak_p3 = hist->GetNbinsX()-1;
+	int peak_p3 = peak + 3; if (peak_p3 >= hist->GetNbinsX()) peak_p3 = hist->GetNbinsX()-1;
 	if (fabs(hist->GetBinContent(peak+1))> 5 * rms1 && 
-	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m1+1)) && 
-	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m2+1)) && 
-	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p1+1)) && 
-	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p2+1)) && 
-	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p3+1)) && 
-	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m3+1)) ){
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_m2+1)) + fabs(hist->GetBinContent(peak+1)) &&
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_p1+1)) + fabs(hist->GetBinContent(peak_p2+1)) + fabs(hist->GetBinContent(peak+1)) && 
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_m2+1)) + fabs(hist->GetBinContent(peak_m3+1)) + fabs(hist->GetBinContent(peak_m1+1)) && 
+	    fabs(hist->GetBinContent(peak+1)) + fabs(hist->GetBinContent(peak_m1+1)) + fabs(hist->GetBinContent(peak_p1+1)) > fabs(hist->GetBinContent(peak_p2+1)) + fabs(hist->GetBinContent(peak_p3+1)) + fabs(hist->GetBinContent(peak_p1+1)) ){
+
+	  //	    fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m2+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p1+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p2+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_p3+1)) && 
+	  // fabs(hist->GetBinContent(peak+1))>= fabs(hist->GetBinContent(peak_m3+1)) 
+	  // ){
 	  if (plane == 0 ){
 	    ROI->insert_uwires(channel,fabs(hist->GetBinContent(peak+1)));
 	    break;
