@@ -5,6 +5,7 @@
 #include "WireCellSst/RootEvent.h"
 #include "WireCellNav/GeomDataSource.h"
 #include "WireCellData/GeomWire.h"
+#include "WireCellData/PMTNoiseROI.h"
 
 #include "TTree.h"
 #include "TH1F.h"
@@ -54,7 +55,8 @@ namespace WireCellSst {
 	void RemoveFilterFlags(TH1F *hist);
 	void RawAdaptiveBaselineAlg(TH1F *hist);
 	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
-	void RemovePMTSignalCollection(TH1F *hist, float rms);
+	void RemovePMTSignalCollection(TH1F *hist, float rms, int channel);
+	void IDPMTSignalInduction(TH1F *hist, float rms, int plane, int channel);
 
 	void Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel);
 
@@ -73,6 +75,8 @@ namespace WireCellSst {
 	std::set<int>& get_lf_noisy_channels(){return lf_noisy_channels;};
 
     private:
+	std::vector<WireCell::PMTNoiseROI*> PMT_ROIs;
+	
 	int flag_add_noise;
 
 	const WireCell::GeomDataSource& gds;
