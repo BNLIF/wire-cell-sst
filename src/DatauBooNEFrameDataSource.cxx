@@ -1786,21 +1786,21 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    for (int j=0;j!=nbin;j++){
 	      float content = fb->GetBinContent(j+1);
 	      if ((content-mean)>std::max(protection_factor*rms,upper_decon_limit)){
-		int time_bin = j + uplane_time_shift;
-		if (time_bin >= nbin) time_bin -= nbin;
-		h44->SetBinContent(time_bin+1,0);
-		signalsBool.at(time_bin) = 1;
+	    	int time_bin = j + uplane_time_shift;
+	    	if (time_bin >= nbin) time_bin -= nbin;
+	    	h44->SetBinContent(time_bin+1,0);
+	    	signalsBool.at(time_bin) = 1;
 	     	// add the front and back padding
 	     	for (int k=0;k!=pad_window_ub;k++){
-		  int bin = time_bin+k+1;
+	    	  int bin = time_bin+k+1;
 	     	  if (bin > nbin-1) bin = nbin-1;
 	     	  signalsBool.at(bin) = 1;
-		}
+	    	}
 	     	for (int k=0;k!=pad_window_uf;k++){
 	     	  int bin = time_bin-k-1;
 	     	  if (bin <0) bin = 0;
 	     	  signalsBool.at(bin) = 1;
-		}
+	    	}
 	      }
 	    }
 
