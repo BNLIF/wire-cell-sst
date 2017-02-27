@@ -267,15 +267,22 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* ro
     h_1us->SetBinContent(i+1,f1->Eval(x));
     h_2us->SetBinContent(i+1,f2->Eval(x));
   }
+
+ 
+  
   hm_rc = h_rc->FFT(0,"MAG");
   hp_rc = h_rc->FFT(0,"PH");
+  //std::cout << "test1 " << std::endl;
   
+
   hm_1us = h_1us->FFT(0,"MAG");
   hp_1us = h_1us->FFT(0,"PH");
+  //std::cout << "test2 " << std::endl;
 
+  
   hm_2us = h_2us->FFT(0,"MAG");
   hp_2us = h_2us->FFT(0,"PH");
-
+  //std::cout << "test3 " << std::endl;
   delete f1;
   delete f2;
 }
@@ -1207,8 +1214,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	hu_resp->SetBinContent(i+1,hu_res_array[i]);
 	hv_resp->SetBinContent(i+1,hv_res_array[i]);
       }
+
+     
       TH1 *hmr_u = hu_resp->FFT(0,"MAG");
       TH1 *hpr_u = hu_resp->FFT(0,"PH");
+      
       TH1 *hmr_v = hv_resp->FFT(0,"MAG");
       TH1 *hpr_v = hv_resp->FFT(0,"PH");
       double value_re[9600];
