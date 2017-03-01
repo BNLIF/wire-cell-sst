@@ -13,6 +13,15 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , flag(0)
     , gds_flag(0)
     , gds(0)
+    , nwire_u(0)
+    , nwire_v(0)
+    , nwire_w(0)
+    , threshold_u(0)
+    , threshold_v(0)
+    , threshold_w(0)
+    , threshold_ug(0)
+    , threshold_vg(0)
+    , threshold_wg(0)
 {
     update_slices_bounds();
 }
@@ -35,8 +44,8 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     , threshold_vg(th_vg)
     , threshold_wg(th_wg)
     , flag(1)
-    , nwire_u(nwire_u)
-    , nwire_v(nwire_v)
+  , nwire_u(nwire_u)
+  , nwire_v(nwire_v)
   , nwire_w(nwire_w)
   , uplane_rms(uplane_rms)
   , vplane_rms(vplane_rms)
@@ -144,7 +153,7 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
     }
 
 
-    int saved_signal[8256];
+    int saved_signal[8256]={0};
     for (int i=0;i!=8256;i++){
       saved_signal[i] = 0;
     }
@@ -223,7 +232,7 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	
 	// Save association of a channel ID and its charge.
 	int q = trace.charge[slice_tbin];
-	int q_next, q_prev;
+	int q_next=0, q_prev=0;
 	int q1 = trace1.charge[slice_tbin];
 	// int q1_next, q1_prev;
 	saved_signal[trace.chid] = q1;
@@ -245,7 +254,7 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	  // q1_prev = trace1.charge[slice_tbin -1];
 	}
 
-	float threshold_g;
+	float threshold_g=0;
 
 	if (uplane_rms ==0 && vplane_rms ==0 && wplane_rms == 0 ){
 
@@ -387,10 +396,10 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
       // require an up to 5 empty channels?
       // require both end has fired channels
       int step_limit = 5;
-      int counter[172];
-      for (int i=0;i!=172;i++){
-	counter[i] = 0;
-      }
+      int counter[172]={0};
+      // for (int i=0;i!=172;i++){
+      // 	counter[i] = 0;
+      // }
       for (auto it = fired_channels.begin();it!=fired_channels.end();it++){
 	int count = int(*it/48);
 	counter[count]++;
