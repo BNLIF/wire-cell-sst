@@ -60,7 +60,7 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::Simu_Noise_uBooNE_Empirical
   Double_t y[14]={2.43326,2.211, 2.04155,1.9036,1.72,1.55, 1.44, 1.34,1.27, 1.22,1.19,1.15,1.076,1.048};
   TGraph *g4 = new TGraph(14,y,x);
 
-  Double_t params[1];
+  Double_t params[1]={0.0};
   
   
   //to be updated ... 
@@ -74,11 +74,11 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::Simu_Noise_uBooNE_Empirical
   Double_t fitpar[5]={4.74264e+01,1.35048e+02,3.25547e-01,1.61809e-06,1.93925e+00};
   f1->SetParameters(fitpar);
 
-  Double_t value_re[10000], value_im[10000];
+  Double_t value_re[10000]={0.0}, value_im[10000]={0.0};
   Int_t n = h1->GetNbinsX();
   
   for (Int_t i=0;i!=n;i++){
-    Double_t freq;
+    Double_t freq=0;
     if (i<n/2.){
       freq = (i)*2./n; // assume 2 MHz digitization 
     }else{
@@ -115,6 +115,22 @@ WireCellSst::DatauBooNEFrameDataSource_afterHF::DatauBooNEFrameDataSource_afterH
     : WireCell::FrameDataSource()
     , root_file(0)
     , gds(gds)
+    , nwire_u(0)
+    , nwire_v(0)
+    , nwire_w(0)
+    , flag_mis_config(0)
+    , run_no(0)
+    , subrun_no(0)
+    , event_no(0)
+    , h_rc(0)
+    , hm_rc(0)
+    , hp_rc(0)
+    , h_1us(0)
+    , hm_1us(0)
+    , hp_1us(0)
+    , h_2us(0)
+    , hp_2us(0)
+    , hm_2us(0)
 {
   load_results_from_file = true;
 
@@ -134,8 +150,8 @@ WireCellSst::DatauBooNEFrameDataSource_afterHF::DatauBooNEFrameDataSource_afterH
   Trun->GetEntry(0);
   
   // fill chirp_map 
-  Int_t chid, plane;
-  Int_t start_time, end_time;
+  Int_t chid=0, plane=0;
+  Int_t start_time=0, end_time=0;
   T_bad->SetBranchAddress("chid",&chid);
   T_bad->SetBranchAddress("plane",&plane);
   T_bad->SetBranchAddress("start_time",&start_time);
@@ -234,6 +250,21 @@ WireCellSst::DatauBooNEFrameDataSource_afterHF::DatauBooNEFrameDataSource_afterH
     , gds(gds)
     , load_results_from_file(false)
     , flag_add_noise(flag_add_noise)
+    , nwire_u(0)
+    , nwire_v(0)
+    , nwire_w(0)
+    , run_no(0)
+    , subrun_no(0)
+    , event_no(0)
+    , h_rc(0)
+    , hm_rc(0)
+    , hp_rc(0)
+    , h_1us(0)
+    , hm_1us(0)
+    , hp_1us(0)
+    , h_2us(0)
+    , hp_2us(0)
+    , hm_2us(0)
 {
   bins_per_frame = bins_per_frame1;
   
@@ -312,14 +343,14 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::Save(){
 
 
 void WireCellSst::DatauBooNEFrameDataSource_afterHF::zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC){
-  TVirtualFFT *ifft;
-  double value_re[9600],value_im[9600];
+  TVirtualFFT *ifft=0;
+  double value_re[9600]={0.0},value_im[9600]={0.0};
   
   int n = bins_per_frame;
   int nbin = bins_per_frame;
   
   TF1 *f1 = new TF1("f1","gaus");
-  double par[3];
+  double par[3]={0.0};
 
   TH1 *hm = 0;
   TH1 *hp = 0;
@@ -503,7 +534,7 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::chirp_id(TH1F *hist, int pl
   const int maxTicks =bins_per_frame ;
 
   int counter = 0;
-  double ADCval;
+  double ADCval=0;
   double runningAmpMean = 0.0;
   double runningAmpRMS = 0.0;
   int numLowRMS = 0;
@@ -650,7 +681,7 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::SignalFilter(TH1F *hist){
   double rmsVal = CalcRMSWithFlags(hist);
   double sigThreshold = sigFactor*rmsVal;
   
-  double ADCval;
+  double ADCval=0;
   std::vector<bool> signalRegions;
   int numBins = hist->GetNbinsX();
 
@@ -686,7 +717,7 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::SignalFilter(TH1F *hist){
 }
 
 double WireCellSst::DatauBooNEFrameDataSource_afterHF::CalcRMSWithFlags(TH1F *hist){
-  double ADCval;
+  double ADCval=0;
   double theMean = 0.0;
   double theRMS = 0.0;
   int waveformSize = hist->GetNbinsX();
@@ -707,7 +738,7 @@ double WireCellSst::DatauBooNEFrameDataSource_afterHF::CalcRMSWithFlags(TH1F *hi
 	}
     }
 
-  double par[3];
+  double par[3]={0.0};
   if (hrmsc->GetSum()>0){
     double xq = 0.5-0.34;
     hrmsc->GetQuantiles(1,&par[0],&xq);
@@ -783,6 +814,10 @@ void  WireCellSst::DatauBooNEFrameDataSource_afterHF::RawAdaptiveBaselineAlg(TH1
   
   double baselineVec[numBins];
   bool isFilledVec[numBins];
+  for (int i=0;i!=numBins;i++){
+    baselineVec[i] = 0.;
+    isFilledVec[i] = false;
+  }
   
   int numFlaggedBins = 0;
   for(int j = 0; j < numBins; j++)
@@ -796,8 +831,8 @@ void  WireCellSst::DatauBooNEFrameDataSource_afterHF::RawAdaptiveBaselineAlg(TH1
   
   double baselineVal = 0.0;
   int windowBins = 0;
-  int index;
-  double ADCval;
+  int index=0;
+  double ADCval=0;
   for(int j = 0; j <= windowSize/2; j++)
     {
       ADCval = filtHist->GetBinContent(j+1);
@@ -855,10 +890,10 @@ void  WireCellSst::DatauBooNEFrameDataSource_afterHF::RawAdaptiveBaselineAlg(TH1
 	isFilledVec[j] = true;
     }
   
-  int downIndex;
-  int upIndex;
-  bool downFlag;
-  bool upFlag;
+  int downIndex=0;
+  int upIndex=0;
+  bool downFlag=false;
+  bool upFlag=false;
   for(int j = 0; j < numBins; j++)
     {
       downFlag = false;
@@ -1047,7 +1082,7 @@ bool WireCellSst::DatauBooNEFrameDataSource_afterHF::ID_lf_noisy(TH1F *h1){
   }
 
   if (h2->GetSum()>0){
-    Double_t par[3];
+    Double_t par[3]={0.};
     double xq = 0.5;
     h2->GetQuantiles(1,&par[0],&xq);
     xq = 0.5 - 0.34;
@@ -1088,7 +1123,7 @@ bool WireCellSst::DatauBooNEFrameDataSource_afterHF::ID_RC(TH1F *h1, int plane, 
   bool flag = false;
   TH1 *htemp_m = h1->FFT(0,"MAG");
 
-  Double_t content[5];
+  Double_t content[5]={0.};
   for (int i=0;i!=5;i++){
     content[i] = htemp_m->GetBinContent(i+2);
   }
@@ -1182,9 +1217,9 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
     
     if (siz > 0 && frame_number < siz) {
       
-      TH1F **hu;
-      TH1F **hv;
-      TH1F **hw;
+      TH1F **hu=0;
+      TH1F **hv=0;
+      TH1F **hw=0;
       
       hu = new TH1F*[nwire_u];
       hv = new TH1F*[nwire_v];
@@ -1225,8 +1260,8 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
       TH1 *hpr_u = hu_resp->FFT(0,"PH");
       TH1 *hmr_v = hv_resp->FFT(0,"MAG");
       TH1 *hpr_v = hv_resp->FFT(0,"PH");
-      double value_re[9600];
-      double value_im[9600];
+      double value_re[9600]={0.};
+      double value_im[9600]={0.};
       
       TF1 *filter_time = new TF1("filter_time","(x>0.0)*exp(-0.5*pow(x/[0],[1]))");
       double par[2]={1.43555e+01/200.*2.,4.95096e+00};
@@ -1254,8 +1289,8 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
 	//trace.charge.resize(bins_per_frame, 0.0);
 
-	TH1F *htemp;
-	float threshold;
+	TH1F *htemp=0;
+	float threshold=0;
 
 	
 	if (trace.chid < nwire_u){
@@ -1790,7 +1825,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	    TH1 *hp = h44->FFT(0,"PH");
 	    
 	    for (Int_t j=0;j!=nbin;j++){
-	      double freq;
+	      double freq=0;
 	      if (j < nbin/2.){
 		freq = j/(1.*nbin)*2.;
 	      }else{
@@ -2064,7 +2099,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	  TH1 *hp = h44->FFT(0,"PH");
 	  
 	  for (Int_t j=0;j!=nbin;j++){
-	    double freq;
+	    double freq=0;
 	    if (j < nbin/2.){
 	      freq = j/(1.*nbin)*2.;
 	    }else{
@@ -2221,7 +2256,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
       	    //  if (prev_bin>0) prev_bin --;
       	    // if (next_bin<nbin-1) next_bin++; 
 
-      	    float prev_content, next_content;
+      	    float prev_content=0, next_content=0;
       	    // if (prev_bin >=4){
       	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
       	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
@@ -2611,7 +2646,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
       // load the stuff back to the frame ... 
       
       for (size_t ind=0; ind < nchannels; ++ind) {
-	TH1F* signal;
+	TH1F* signal=0;
 	WireCell::Trace trace;
 	trace.chid = channelid->at(ind);
 	
@@ -2798,9 +2833,9 @@ void WireCellSst::DatauBooNEFrameDataSource_afterHF::RemovePMTSignalCollection(T
   if (rms2 >0){
     rms1 = sqrt(rms1/rms2);
     int flag_start = 0;
-    int start_bin;
-    int end_bin;
-    int peak_bin;
+    int start_bin=0;
+    int end_bin=0;
+    int peak_bin=0;
     
     for (int i=0;i!=hist->GetNbinsX();i++){
       float content = hist->GetBinContent(i+1);
