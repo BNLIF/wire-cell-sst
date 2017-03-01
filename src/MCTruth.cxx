@@ -2,6 +2,7 @@
 #include "TLorentzVector.h"
 
 WireCellSst::MCTruth::MCTruth(std::string rootfile)
+  : mcTree(0)
 {
   TFile *file = new TFile(rootfile.c_str(), "read");
   mcTree = (TTree*)file->Get("/Event/Sim");
@@ -246,7 +247,7 @@ void WireCellSst::MCTruth::GetEntry(int i)
 
 void WireCellSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_center, float rotate_angle, float x_shift, float y_shift, float z_shift){
 
-  Double_t temp_x, temp_y, temp_z;
+  Double_t temp_x=0, temp_y=0, temp_z=0;
   for (int i=0;i!=mc_Ntrack;i++){
     //mc_startXYZT
     temp_x = mc_startXYZT[i][0];
