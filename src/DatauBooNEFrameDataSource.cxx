@@ -351,7 +351,7 @@ void WireCellSst::DatauBooNEFrameDataSource::Save(){
 }
 
 
-void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC){
+void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC, int flag_restore){
   TVirtualFFT *ifft=0;
   double value_re[9600]={0.0},value_im[9600]={0.0};
   
@@ -369,17 +369,17 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
   hp = h1->FFT(0,"PH");
   
 
-  // need to restore the incorrectly set ASICs gain and shaping time ... 
-  int flag_restore = 0;
-  if (plane == 0){ // U-plane only    could be time-dependent 
-    if (channel_no >=2016 && channel_no <= 2095 
-	|| channel_no >=2192 && channel_no <=2303 
-	|| channel_no >= 2352 && channel_no <2400)
-      {
-	if (flag_mis_config)
-	  flag_restore = 1;
-      }
-  }
+  // // need to restore the incorrectly set ASICs gain and shaping time ... 
+  // int flag_restore = 0;
+  // if (plane == 0){ // U-plane only    could be time-dependent 
+  //   if ((channel_no >=2016 && channel_no <= 2095 
+  // 	 || channel_no >=2192 && channel_no <=2303 
+  // 	 || channel_no >= 2352 && channel_no <2400))
+  //     {
+  // 	if (flag_mis_config)
+  // 	  flag_restore = 1;
+  //     }
+  // }
 
 
   for (int j=0;j!=nbin;j++){
@@ -1200,8 +1200,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     flag_mis_config = 1; 
 
     //when is it configued correctly
-    if (run_no>=5114 && run_no <= 5281 ||
-	run_no > 6700){
+    if (run_no>=4952 && run_no <= 5281 ||
+	run_no > 6998){
       flag_mis_config = 0;
     }
 
@@ -1409,9 +1409,17 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       for (int i=2016; i<2400;i++){
 	int channel_no = i;
-	if (channel_no >=2016 && channel_no <= 2095 
-	    || channel_no >=2192 && channel_no <=2303 
-	    || channel_no >= 2352 && channel_no <2400){
+	if (((channel_no >=2016 && channel_no <= 2095 
+	      || channel_no >=2192 && channel_no <=2303 
+	      || channel_no >= 2352 && channel_no <2400)&&run_no<4952)||
+	    ((channel_no>=2016&&channel_no<=2111 || 
+	      channel_no>=2176&&channel_no<=2303 ||
+	      channel_no>=2352&&channel_no>=2383)&&run_no>=5282&&run_no<=5810) ||
+	    ((channel_no>=2016&&channel_no<=2111 ||
+	      channel_no>=2128&&channel_no<=2303 ||
+	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
+	    ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998)
+	    ){
 	  if (flag_mis_config)
 	    hu[i]->Scale(14./4.7); // assume 4.7 mV/fC gain
 	}
@@ -1436,9 +1444,17 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       
       for (int i=2016; i<2400;i++){
 	int channel_no = i;
-	if (channel_no >=2016 && channel_no <= 2095 
-	    || channel_no >=2192 && channel_no <=2303 
-	    || channel_no >= 2352 && channel_no <2400){
+	if (((channel_no >=2016 && channel_no <= 2095 
+	      || channel_no >=2192 && channel_no <=2303 
+	      || channel_no >= 2352 && channel_no <2400)&&run_no<4952)||
+	    ((channel_no>=2016&&channel_no<=2111 || 
+	      channel_no>=2176&&channel_no<=2303 ||
+	      channel_no>=2352&&channel_no>=2383)&&run_no>=5282&&run_no<=5810) ||
+	    ((channel_no>=2016&&channel_no<=2111 ||
+	      channel_no>=2128&&channel_no<=2303 ||
+	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
+	    ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998)
+	    ){
 	  if (flag_mis_config)
 	    hu[i]->Scale(4.7/14.); // assume 4.7 mV/fC gain
 	}
@@ -1507,10 +1523,26 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	// correct misconfigured channel (need a database ...)
 	for (int i=0;i!=nu;i++){
 	  auto it = find(ided_rc_uplane.begin(),ided_rc_uplane.end(),i);
+
+	  int flag_restore = 0;
+	  int channel_no = i;
+	  if (((channel_no >=2016 && channel_no <= 2095 
+	      || channel_no >=2192 && channel_no <=2303 
+	      || channel_no >= 2352 && channel_no <2400)&&run_no<4952)||
+	    ((channel_no>=2016&&channel_no<=2111 || 
+	      channel_no>=2176&&channel_no<=2303 ||
+	      channel_no>=2352&&channel_no>=2383)&&run_no>=5282&&run_no<=5810) ||
+	    ((channel_no>=2016&&channel_no<=2111 ||
+	      channel_no>=2128&&channel_no<=2303 ||
+	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
+	      ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998)){
+	    flag_restore = 1;
+	  }
+
 	  if (it == ided_rc_uplane.end()){
-	    zigzag_removal(hu[i],0,i);
+	    zigzag_removal(hu[i],0,i,flag_restore);
 	  }else{
-	    zigzag_removal(hu[i],0,i,0);
+	    zigzag_removal(hu[i],0,i,0,flag_restore);
 	  }
 	}
 	for (int i=0;i!=nv;i++){

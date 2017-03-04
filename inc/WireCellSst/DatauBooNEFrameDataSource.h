@@ -41,7 +41,7 @@ namespace WireCellSst {
 	double correlation1(TH1F *h1, TH1F *h2);
 	
  	void GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut);
-	void zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC = 1);
+	void zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC = 1, int flag_restore=0);
 	bool ID_RC(TH1F *h1, int plane, int channel_no);
 
 	bool ID_lf_noisy(TH1F *h1);
