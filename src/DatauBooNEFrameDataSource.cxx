@@ -1155,8 +1155,10 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, int chan
 int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 {
   
-  // return frame_number;
+  //  frame.clear();
+  //return frame_number;
 
+  
   if (load_results_from_file) return frame_number;
 
     if (frame.index == frame_number) {
