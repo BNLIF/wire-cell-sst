@@ -381,6 +381,7 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
   //     }
   // }
 
+  //  std::cout << plane << " " << channel_no << " " << flag_restore << std::endl;
 
   for (int j=0;j!=nbin;j++){
     
@@ -1427,7 +1428,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	}
       }
 
-	
+
 
 
       std::cout << "Identify Chirping" << std::endl;
@@ -1541,8 +1542,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    flag_restore = 1;
 	  }
 
+	  //std::cout << run_no << " " << flag_mis_config << " " << channel_no << " " << flag_restore << std::endl;
+
 	  if (it == ided_rc_uplane.end()){
-	    zigzag_removal(hu[i],0,i,flag_restore);
+	    zigzag_removal(hu[i],0,i,1,flag_restore);
 	  }else{
 	    zigzag_removal(hu[i],0,i,0,flag_restore);
 	  }
@@ -1550,7 +1553,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	for (int i=0;i!=nv;i++){
 	  auto it = find(ided_rc_vplane.begin(),ided_rc_vplane.end(),i);
 	  if (it == ided_rc_vplane.end()){
-	    zigzag_removal(hv[i],1,i);
+	    zigzag_removal(hv[i],1,i,1);
 	  }else{
 	    zigzag_removal(hv[i],1,i,0);
 	  }
@@ -1558,7 +1561,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	for (int i=0;i!=nw;i++){
 	  auto it = find(ided_rc_wplane.begin(),ided_rc_wplane.end(),i);
 	  if (it == ided_rc_wplane.end()){
-	    zigzag_removal(hw[i],2,i);
+	    zigzag_removal(hw[i],2,i,1);
 	  }else{
 	    zigzag_removal(hw[i],2,i,0);
 	  }

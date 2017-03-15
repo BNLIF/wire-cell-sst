@@ -1547,7 +1547,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	for (int i=0;i!=nu;i++){
 	  auto it = find(ided_rc_uplane.begin(),ided_rc_uplane.end(),i);
 	  if (it == ided_rc_uplane.end()){
-	    zigzag_removal(hu[i],0,i);
+	    zigzag_removal(hu[i],0,i,1);
 	  }else{
 	    zigzag_removal(hu[i],0,i,0);
 	  }
@@ -1555,7 +1555,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	for (int i=0;i!=nv;i++){
 	  auto it = find(ided_rc_vplane.begin(),ided_rc_vplane.end(),i);
 	  if (it == ided_rc_vplane.end()){
-	    zigzag_removal(hv[i],1,i);
+	    zigzag_removal(hv[i],1,i,1);
 	  }else{
 	    zigzag_removal(hv[i],1,i,0);
 	  }
@@ -1563,7 +1563,7 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
 	for (int i=0;i!=nw;i++){
 	  auto it = find(ided_rc_wplane.begin(),ided_rc_wplane.end(),i);
 	  if (it == ided_rc_wplane.end()){
-	    zigzag_removal(hw[i],2,i);
+	    zigzag_removal(hw[i],2,i,1);
 	  }else{
 	    zigzag_removal(hw[i],2,i,0);
 	  }
