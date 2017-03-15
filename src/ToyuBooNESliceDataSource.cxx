@@ -99,6 +99,7 @@ void WireCellSst::ToyuBooNESliceDataSource::update_slices_bounds() const
 {
     const Frame& frame = _fds.get();
 
+    
     if (frame.index < 0) {	// no frames
 	return;
     }
