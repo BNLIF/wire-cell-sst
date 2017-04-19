@@ -36,6 +36,8 @@ namespace WireCellSst {
 
 	/// Explicitly set the "frame" (event) to process.  Frame number returned or -1 on error.
 	virtual int jump(int frame_number);
+
+    // Dummy noise filter for processing simulation w/o noise
 	virtual int jump_no_noise(int frame_number);
 
 	bool chirp_check(double rms, int plane, int channel);
