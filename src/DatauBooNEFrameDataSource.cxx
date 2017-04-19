@@ -2736,6 +2736,286 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     }
 }
 
+int WireCellSst::DatauBooNEFrameDataSource::jump_no_noise(int frame_number)
+{
+  
+  //  frame.clear();
+  //return frame_number;
+
+  
+  if (load_results_from_file) return frame_number;
+
+    if (frame.index == frame_number) {
+	return frame_number;
+    }
+
+    frame.clear();		// win or lose, we start anew
+
+    if (frame_number < 0) {	// underflow
+	return frame_number;
+    }
+
+    const char* tpath = "/Event/Sim";
+    TFile tfile(root_file,"read");
+    TTree* tree = dynamic_cast<TTree*>(tfile.Get(tpath));
+
+    // sigh, we can't do things this simply because the ttree does not
+    // have a single branch.  
+    // tree->SetBranchAddress(name, &event);
+    
+    tree->SetBranchStatus("*",0);
+    
+    tree->SetBranchStatus("eventNo",1);
+    tree->SetBranchAddress("eventNo" , &event_no);
+    tree->SetBranchStatus("runNo",1);
+    tree->SetBranchAddress("runNo"   , &run_no);
+    tree->SetBranchStatus("subRunNo",1);
+    tree->SetBranchAddress("subRunNo", &subrun_no);
+    
+    std::vector<int> *channelid = new std::vector<int>;
+    TClonesArray* esignal = new TClonesArray;
+          
+    tree->SetBranchStatus("raw_channelId",1);
+    tree->SetBranchAddress("raw_channelId", &channelid);
+    tree->SetBranchStatus("raw_wf",1);
+    tree->SetBranchAddress("raw_wf", &esignal);
+    
+    int siz = tree->GetEntry(frame_number);
+    
+    // default is non-misconfigued
+    flag_mis_config = 0; 
+
+    if (siz > 0 && frame_number < siz) {
+      
+      TH1F **hu=0;
+      TH1F **hv=0;
+      TH1F **hw=0;
+      
+      hu = new TH1F*[nwire_u];
+      hv = new TH1F*[nwire_v];
+      hw = new TH1F*[nwire_w];
+      
+      for (int i=0;i!=nwire_u;i++){
+	hu[i] = new TH1F(Form("U2_%d",i),Form("U2_%d",i),bins_per_frame,0,bins_per_frame);
+      }
+      for (int i=0;i!=nwire_v;i++){
+	hv[i] = new TH1F(Form("V2_%d",i),Form("V2_%d",i),bins_per_frame,0,bins_per_frame);
+      }
+      for (int i=0;i!=nwire_w;i++){
+	hw[i] = new TH1F(Form("W2_%d",i),Form("W2_%d",i),bins_per_frame,0,bins_per_frame);
+      }
+      
+      
+      // initialize the response function
+      Double_t hu_res_array[120]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.364382, 0.387949, 0.411053, 0.433979, 0.456863, 0.479746, 0.502641, 0.52554, 0.548441, 0.57134, 0.591765, 0.609448, 0.626848, 0.644094, 0.661364, 0.678859, 0.695231, 0.710462, 0.726147, 0.742373, 0.761332, 0.783313, 0.806325, 0.830412, 0.857676, 0.888412, 0.920705, 0.954624, 0.990242, 1.02766, 1.06121, 1.09027, 1.12037, 1.15157, 1.18392, 1.21748, 1.25229, 1.28824, 1.32509, 1.36256, 1.40051, 1.43907, 1.47857, 1.51933, 1.56134, 1.60404, 1.72665, 1.94005, 2.16994, 2.42041, 2.69475, 3.07222, 3.67375, 4.60766, 5.91864, 7.30178, 8.3715, 8.94736, 8.93705, 8.40339, 7.2212, 5.76382, 3.8931, 1.07893, -3.52481, -11.4593, -20.4011, -29.1259, -34.9544, -36.9358, -35.3303, -31.2068, -25.8614, -20.3613, -15.3794, -11.2266, -7.96091, -5.50138, -3.71143, -2.44637, -1.57662, -0.99733, -0.62554, -0.393562, -0.249715, -0.15914, -0.100771, -0.062443, -0.037283, -0.0211508, -0.0112448, -0.00552085, -0.00245133, -0.000957821, -0.000316912, -8.51679e-05, -2.21299e-05, -1.37496e-05, -1.49806e-05, -1.36935e-05, -9.66758e-06, -5.20773e-06, -7.4787e-07, 3.71199e-06, 8.17184e-06, 1.26317e-05, 1.70916e-05, 2.15514e-05, 2.60113e-05, 3.04711e-05};
+      Double_t hv_res_array[120]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0865303, 0.0925559, 0.0983619, 0.104068, 0.109739, 0.115403, 0.121068, 0.126735, 0.132403, 0.138072, 0.143739, 0.149408, 0.155085, 0.160791, 0.166565, 0.172454, 0.178514, 0.184795, 0.191341, 0.198192, 0.205382, 0.212944, 0.220905, 0.229292, 0.238129, 0.247441, 0.257256, 0.267601, 0.278502, 0.28999, 0.298745, 0.304378, 0.310105, 0.315921, 0.321818, 0.327796, 0.333852, 0.339967, 0.346098, 0.352169, 0.358103, 0.363859, 0.36945, 0.374915, 0.380261, 0.385401, 0.39016, 0.394378, 0.39804, 0.401394, 0.405145, 0.410714, 0.4205, 0.437951, 0.467841, 0.516042, 0.587738, 0.694157, 0.840763, 1.01966, 1.22894, 1.5612, 2.12348, 3.31455, 5.59355, 9.10709, 14.1756, 18.4603, 19.9517, 17.4166, 10.6683, 1.40656, -10.0638, -19.034, -23.654, -24.0558, -21.4418, -17.3229, -12.9485, -9.08912, -6.05941, -3.86946, -2.38669, -1.43678, -0.853335, -0.503951, -0.296551, -0.173029, -0.0990099, -0.0547172, -0.0287882, -0.0142758, -0.00661815, -0.00284757, -0.00115702, -0.000456456, -0.000183439, -8.04214e-05, -4.20533e-05, -2.62903e-05, -1.64098e-05, -6.68039e-06, 3.04903e-06, 1.27784e-05, 2.25079e-05, 3.22373e-05, 4.19667e-05, 5.16961e-05, 6.14255e-05, 7.11549e-05};
+      
+      TH1F *hu_resp = new TH1F("hu_resp","hu_resp",bins_per_frame,0,bins_per_frame);
+      TH1F *hv_resp = new TH1F("hv_resp","hv_resp",bins_per_frame,0,bins_per_frame);
+      for (Int_t i=0;i!=120;i++){
+	hu_resp->SetBinContent(i+1,hu_res_array[i]);
+	hv_resp->SetBinContent(i+1,hv_res_array[i]);
+      }
+
+     
+      TH1 *hmr_u = hu_resp->FFT(0,"MAG");
+      TH1 *hpr_u = hu_resp->FFT(0,"PH");
+      
+      TH1 *hmr_v = hv_resp->FFT(0,"MAG");
+      TH1 *hpr_v = hv_resp->FFT(0,"PH");
+      double value_re[9600]={0.0};
+      double value_im[9600]={0.0};
+      
+      TF1 *filter_time = new TF1("filter_time","(x>0.0)*exp(-0.5*pow(x/[0],[1]))");
+      double par[2]={1.43555e+01/200.*2.,4.95096e+00};
+      filter_time->SetParameters(par);
+      TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,2))");
+      
+      
+
+      std::cout << "Load Data " << std::endl;
+      // load into frame
+      int nchannels = channelid->size();
+      
+      for (size_t ind=0; ind < nchannels; ++ind) {
+	TH1F* signal = dynamic_cast<TH1F*>(esignal->At(ind));
+	if (!signal) continue;
+	
+	
+	WireCell::Trace trace;
+	trace.chid = channelid->at(ind);
+	
+	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+	//trace.charge.resize(bins_per_frame, 0.0);
+
+	TH1F *htemp=0;
+	float threshold=0;
+
+	
+	if (trace.chid < nwire_u){
+	  htemp = hu[trace.chid];
+	}else if (trace.chid < nwire_u + nwire_v){
+	  htemp = hv[trace.chid - nwire_u];
+	}else{
+	  htemp = hw[trace.chid - nwire_u - nwire_v];
+	}
+	
+	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1));
+	  }
+    }
+      
+      int nu = 2400, nv = 2400, nw = 3456;
+      int ntotal = nu + nv + nw;
+      
+      if (0){
+
+      std::cout << "Identify Chirping" << std::endl;
+      // deal with the chirping ... set chirping part > 10000
+      for (int i=0;i!=nu;i++){
+      	chirp_id(hu[i],0,i);
+      }
+      for (int i=0;i!=nv;i++){
+      	chirp_id(hv[i],1,i);
+      }
+      for (int i=0;i!=nw;i++){
+      	chirp_id(hw[i],2,i);
+      }
+
+      std::cout << "ID RC channels!" << std::endl;
+      
+      std::vector<int> ided_rc_uplane;
+      std::vector<int> ided_rc_vplane;
+      std::vector<int> ided_rc_wplane;
+
+      for (int i=0;i!=nu;i++){
+      	if (ID_RC(hu[i],0,i)){
+	  ided_rc_uplane.push_back(i);
+	  //std::cout << "U: " << i << std::endl;
+	}
+      }
+      for (int i=0;i!=nv;i++){
+	if (ID_RC(hv[i],0,i)){
+	  ided_rc_vplane.push_back(i);
+	  //std::cout << "V: " << i << std::endl;
+	}
+      }
+      for (int i=0;i!=nw;i++){
+	if (ID_RC(hw[i],0,i)){
+	  ided_rc_wplane.push_back(i);
+	  //std::cout << "W: " << i << std::endl;
+	}
+      }
+
+
+      std::cout << "Adaptive Baseline " << uchirp_map.size() << " " << 
+      	vchirp_map.size() << " " << wchirp_map.size() << std::endl;
+      // do the adaptive baseline ... 
+
+
+      // do the adaptive baseline for the bad RC channels ... 
+      
+      
+      std::cout << "Noisy Channel " << std::endl;
+      // deal with the noisy signal, and put them into chirping map 
+
+      }
+
+      
+      // load the stuff back to the frame ... 
+      
+      for (size_t ind=0; ind < nchannels; ++ind) {
+	TH1F* signal;
+	WireCell::Trace trace;
+	trace.chid = channelid->at(ind);
+	
+	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
+	trace.charge.resize(bins_per_frame, 0.0);
+	
+	//int flag = 0;
+	if (trace.chid < nwire_u){
+	  signal = hu[trace.chid];
+	  //	if (uplane_map.find(trace.chid)==uplane_map.end()) flag = 1;
+	}else if (trace.chid < nwire_u + nwire_v){
+	  signal = hv[trace.chid - nwire_u];
+	  //if (vplane_map.find(trace.chid-nwire_u)==vplane_map.end()) flag = 1;
+	}else{
+	  signal = hw[trace.chid - nwire_u - nwire_v];
+	  //if (wplane_map.find(trace.chid-nwire_u-nwire_v)==wplane_map.end()) flag = 1;
+	}
+	
+	
+	
+	//      if (flag ==0){
+	for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	  trace.charge.at(ibin) = signal->GetBinContent(ibin+1);
+	}
+	//}else{
+	//crazy stuff
+	//flag = 1
+	//	for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	//	  trace.charge.at(ibin) = 0.;//signal->GetBinContent(ibin+1);
+	//	}
+	//}
+	
+	frame.traces.push_back(trace);
+      }
+
+      delete hmr_u;
+      delete hmr_v;
+      delete hpr_u;
+      delete hpr_v;
+      delete hu_resp;
+      delete hv_resp;
+      delete filter_time;
+      delete filter_low;
+      
+      // TFile *file = new TFile("temp_data.root","RECREATE");
+      // for (int i=0;i!=nwire_u;i++){
+      //   TH1F *huu = (TH1F*)hu[i]->Clone(Form("U1_%d",i));
+      // }
+      // for (int i=0;i!=nwire_v;i++){
+      //   TH1F *hvv = (TH1F*)hv[i]->Clone(Form("V1_%d",i));
+      // }
+      // for (int i=0;i!=nwire_w;i++){
+      //   TH1F *hww = (TH1F*)hw[i]->Clone(Form("W1_%d",i));
+      // }
+      // file->Write();
+      // file->Close();
+      // std::cout << "Saved file" << std::endl;
+      
+      for (int i=0;i!=nwire_u;i++){
+	delete hu[i] ;
+      }
+      delete [] hu;
+      for (int i=0;i!=nwire_v;i++){
+	delete hv[i] ;
+      }
+      delete [] hv;
+      for (int i=0;i!=nwire_w;i++){
+	delete hw[i] ;
+      }
+      delete [] hw;
+      
+      
+      tfile.Close();
+      esignal->Clear("D");
+      delete channelid;
+      delete esignal;
+      
+      frame.index = frame_number;
+      return frame.index;
+    }else{
+      
+      tfile.Close();
+      esignal->Clear("D");
+      delete channelid;
+      delete esignal;
+
+      return -1;
+    }
+}
+
 void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, float rms, int plane, int channel){
   float rms1 = 0;
   float rms2 = 0;
