@@ -1313,6 +1313,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  }
 	}
 	
+	fix_ADC_shift(trace.chid,signal);
+	
 	if (flag_add_noise){
 	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
 	    // pure noise to be fixed
@@ -1323,6 +1325,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
 	  }
 	}	
+	
       }
       delete hnoise;
       
@@ -2736,6 +2739,138 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     }
 }
 
+
+void WireCellSst::DatauBooNEFrameDataSource::fix_ADC_shift(int chid, TH1F *h1){
+  // judge if there is a shift
+  //  std::cout << chid << std::endl;
+  std::vector<int> counter(12,0);
+  std::vector<int> s,s1(12,0);
+  int nbin = 500;
+  for (int i=0;i!=nbin;i++){
+    int x = h1->GetBinContent(i+1);
+    
+    //if (chid ==1152) std::cout << i << " " << x << std::endl;
+
+    s.clear();
+    do
+      {
+	s.push_back( (x & 1));
+      } while (x >>= 1);
+    s.resize(12);
+    
+    for (int j=0;j!=12;j++){
+      counter.at(j) += abs(s.at(j) - s1.at(j));
+    }
+    s1=s;
+  }
+  int nshift = 0;
+  for (int i=0;i!=12;i++){
+    if (counter.at(i) < nbin/2. - nbin/2. *sqrt(1./nbin) * 7.5){
+      nshift ++;
+    }else{
+      break;
+    }
+  }
+  // if (chid ==1152) std::cout << chid << " " << nshift << std::endl;
+  
+  if (nshift !=0 && nshift<11){ // difficult to do it if shift by 11 bins ... 
+    std::cout << chid << " " << "ADC shifted " << nshift << " bits" << std::endl;
+    
+
+    // copy the data, and do the shift back
+    const int nl = bins_per_frame;//h1->GetNbinsX();
+    int x[nl], x_orig[nl];
+    for (int i=0;i!=nl;i++){
+      x_orig[i] = h1->GetBinContent(i+1);
+      x[i] = h1->GetBinContent(i+1);
+    }
+
+    std::set<int> fillings;
+    int exp_diff = pow(2,12-nshift)*0.8;
+      
+    int filling;// = lowest_bits(x[0], nshift);
+    int mean = 0;
+    for (int i=0;i!=nl;i++){
+      filling = lowest_bits(x_orig[i], nshift);
+      int y = shift_right(x_orig[i], nshift, filling, 12);
+      fillings.insert(filling);
+      // cout << y << " ";
+      // filling = lowest_bits(x[i], nshift);
+      // filling = x[i] & int(pow(2, nshift)-1);
+      x[i] = y;
+      mean += x[i];
+    }
+    mean = mean/nl;
+    
+    // if (chid == 1281){
+    //   std::cout << nl << " " << nshift << " " << mean << " " << exp_diff << " " << fillings.size() << std::endl;
+    //   for (auto it = fillings.begin(); it!=fillings.end();it++){
+    // 	std::cout << (*it) << std::endl;
+    //   }
+    // }
+
+    // examine the results ... 
+    int prev1_bin_content = mean;
+    int prev_bin_content = mean;
+    int next_bin_content = mean;
+    int next1_bin_content = mean;
+    int curr_bin_content;
+    
+    for (Int_t i=0;i<nl;i=i+1){
+      curr_bin_content = x[i];
+      // when to judge if one is likely bad ... 
+      if (abs(curr_bin_content-mean)>exp_diff && 
+	  (abs(curr_bin_content - prev_bin_content) > exp_diff ||
+	   abs(curr_bin_content - next_bin_content) > exp_diff)
+	  ){
+	Int_t exp_value = ( (2*prev_bin_content - prev1_bin_content) +
+			    (prev_bin_content + next_bin_content)/2. + 
+			    (prev_bin_content * 2./3. + next1_bin_content/3.))/3.;
+	for (auto it = fillings.begin(); it!=fillings.end(); it++){
+	  int y = shift_right(x_orig[i], nshift, (*it), 12);
+	  // when to switch ... 
+	  if (fabs(y-exp_value) < fabs(x[i] - exp_value)){
+	    x[i] = y;//hs->SetBinContent(i+1,y);
+	  }
+	}
+      }
+      // if (chid == 1281 && i < 10){
+      // 	std::cout <<x_orig[i] << " " << x[i] << std::endl;
+      // }
+      //hs->SetBinContent(i+1,mean);
+      
+      prev1_bin_content = prev_bin_content;
+      prev_bin_content = x[i];
+      if (i+2 < nl){
+	next_bin_content = x[i+2];
+      }else{
+	next_bin_content = mean;
+      }
+      if (i+3 < nl){
+	next1_bin_content = x[i+3];
+      }else{
+	next1_bin_content = mean;
+      }
+    }
+
+
+    // change the histogram ...
+    for (int i=0;i!=nl;i++){
+      h1->SetBinContent(i+1,x[i]);
+    }
+  }
+}
+
+int WireCellSst::DatauBooNEFrameDataSource::shift_right(int value, int n, int filling, int totalBit)
+{
+  return (value >> n) | (filling << (totalBit-n));
+}
+
+int  WireCellSst::DatauBooNEFrameDataSource::lowest_bits(int value, int n)
+{
+  return ( value & ((1 << n) - 1) );
+}
+
 int WireCellSst::DatauBooNEFrameDataSource::jump_no_noise(int frame_number)
 {
   
@@ -2860,10 +2995,13 @@ int WireCellSst::DatauBooNEFrameDataSource::jump_no_noise(int frame_number)
 	  htemp = hw[trace.chid - nwire_u - nwire_v];
 	}
 	
-	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
-	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1));
-	  }
-    }
+	for (int ibin=0; ibin != bins_per_frame; ibin++) {
+	  htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1));
+	}
+	
+	//	fix_ADC_shift(htemp);
+
+      }
       
       int nu = 2400, nv = 2400, nw = 3456;
       int ntotal = nu + nv + nw;
