@@ -286,8 +286,8 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* ro
 
   TF1 *f1 = new TF1("func1",response,0,10,2);
   TF1 *f2 = new TF1("func2",response,0,10,2);
-  f1->SetParameters(47.*1.012,1.0);
-  f2->SetParameters(140.*1.012,2.0);
+  f1->SetParameters(47.*1.012,1.1); // correction 1.10 us
+  f2->SetParameters(140.*1.012,2.2); // correction 2.2 us
 
 
   double x0 = h_rc->GetBinCenter(1)/2.;
