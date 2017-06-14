@@ -294,6 +294,10 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* ro
   for (Int_t i=0;i!=bins_per_frame;i++){
     double x = h_rc->GetBinCenter(i+1)/2.; // convert to us, assume 2 MHz digitization
     Double_t content = -1.0/2./1000 * exp(-(x-x0)/1000.); // 1 ms RC time
+    // double a = 0.5 * (3-sqrt(5.));
+    // double b = 0.5 * (3+sqrt(5.));
+    // Double_t content = +0.5 /sqrt(5.) / 1000. * (pow(a,2)*exp(-a*x/1000.)
+    // 						 - pow(b,2)*exp(-b*x/1000.));// RC in series
     if (x==x0) content +=1;
     h_rc->SetBinContent(i+1,content);
     h_1us->SetBinContent(i+1,f1->Eval(x));
@@ -392,10 +396,12 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
       // need to remove RC+RC shapings
       if (hm_rc->GetBinContent(j+1)>0){
 	rho = rho/pow(hm_rc->GetBinContent(j+1),2);
+	//rho = rho/pow(hm_rc->GetBinContent(j+1),1);
       }else{
 	rho = 0;
       }
       phi = phi - 2*hp_rc->GetBinContent(j+1);
+      //phi = phi - hp_rc->GetBinContent(j+1);
     }    
 
     // need to restore the incorrectly set ASICs gain and shaping time ... 
