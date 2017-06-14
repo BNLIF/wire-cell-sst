@@ -1400,6 +1400,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	}
       }
 
+
+      std::vector<int> ided_rc_uplane;
+      std::vector<int> ided_rc_vplane;
+      std::vector<int> ided_rc_wplane;
+
       if (1){
       // if (uchirp_map.find(1517)!=uchirp_map.end()){
       // 	std::cout << "Xin Channel Status!" << std::endl;
@@ -1491,9 +1496,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       std::cout << "ID RC channels!" << std::endl;
       
-      std::vector<int> ided_rc_uplane;
-      std::vector<int> ided_rc_vplane;
-      std::vector<int> ided_rc_wplane;
+     
 
       for (int i=0;i!=nu;i++){
       	if (ID_RC(hu[i],0,i)){
@@ -2638,6 +2641,17 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  lf_noisy_channels.insert(channel);
 	}
       }
+      
+      for (auto it = ided_rc_uplane.begin(); it!= ided_rc_uplane.end(); it++){
+	int channel = *it;
+	lf_noisy_channels.insert(channel);
+      }
+      for (auto it = ided_rc_vplane.begin(); it!= ided_rc_vplane.end(); it++){
+	int channel = *it+nwire_u;
+	lf_noisy_channels.insert(channel);
+      }
+     
+
       // Try to ID  lf noisy channels
       for (int i=0;i!=nwire_u;i++){
 	if (ID_lf_noisy(hu[i])) lf_noisy_channels.insert(i);
