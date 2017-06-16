@@ -39,6 +39,12 @@ namespace WireCellSst {
 	/// Explicitly set the "frame" (event) to process.  Frame number returned or -1 on error.
 	virtual int jump(int frame_number);
 
+	void fix_ADC_shift(int chid, TH1F *h1);
+	int shift_right(int value, int n, int filling, int totalBit);
+	int lowest_bits(int value, int n);
+
+
+
 	bool chirp_check(double rms, int plane, int channel);
 	double correlation1(TH1F *h1, TH1F *h2);
 	
