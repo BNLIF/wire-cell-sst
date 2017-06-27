@@ -551,7 +551,10 @@ void WireCellSst::DatauBooNEFrameDataSource::chirp_id(TH1F *hist, int plane, int
   double RMSthird = 0.0;
   int numNormalNeighbors = 0;
   int numBins = hist->GetNbinsX();
-   
+
+  
+  // std::cout << maxTicks << " " << numBins << std::endl;
+  
   for(int i = 0; i < numBins; i++)
     {
       ADCval = hist->GetBinContent(i+1);
@@ -630,6 +633,9 @@ void WireCellSst::DatauBooNEFrameDataSource::chirp_id(TH1F *hist, int plane, int
 	  firstLowRMSBin = 1;
 	  lastLowRMSBin = numBins;
 	}
+
+      // if (plane ==0 && channel_no==1943)
+      // 	std::cout << chirpFrac << " " << firstLowRMSBin << " " << lastLowRMSBin << std::endl;
       
       // remove this part and put the function inside the a different function ... 
       // for(int i = 0; i < numBins; i++)
@@ -1096,6 +1102,9 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
     h2->GetQuantiles(1,&par[2],&xq);
     Double_t rms = sqrt((pow(par[2]-par[0],2) + pow(par[1]-par[0],2))/2.);
     Double_t mean = par[0];
+
+    //std::cout << mean << " " << rms << " ";
+    
     for (Int_t j=0;j!=h1->GetNbinsX();j++){
       if (fabs(h1->GetBinContent(j+1)-mean)>3.5*rms){
 	for (int k=-5;k!=5;k++){
@@ -1114,6 +1123,8 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
     }
   delete hm;
   }
+
+  // std::cout << content << " " << valid << std::endl;
   
   delete h1_copy;
   
@@ -2349,7 +2360,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	}
       	// if (max_rms<10) max_rms = 10;
 	
-      	//std::cout << "W " << i << " " << wplane_all.size() << std::endl;
+      	//std::cout << "W " << i << " " << wplane_all.at(i).at(0) << " ";
+	
       	TH1F *h3 = new TH1F("h3","h3",int(12*max_rms),-6*max_rms,6*max_rms);
       	TH1F *h44 = new TH1F("h44","h44",nbin,0,nbin);
       	if (wplane_all.at(i).size()>0){
@@ -2389,6 +2401,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  
       	  mean = h55->GetMean();
       	  rms = h55->GetRMS();
+
+	  //std::cout << mean << " " << rms << " " << std::endl;
 	  
 	  //std::cout << 2 << " " << i << " " << rms << std::endl;
 
@@ -2660,6 +2674,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       // Try to ID  lf noisy channels
       for (int i=0;i!=nwire_u;i++){
+	//std::cout << i << " ";
 	if (ID_lf_noisy(hu[i])) lf_noisy_channels.insert(i);
 	if (ID_lf_noisy(hv[i])) lf_noisy_channels.insert(nwire_u+i);
       }
@@ -3274,6 +3289,8 @@ void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalCollection(TH1F* his
     int start_bin=0;
     int end_bin=0;
     int peak_bin=0;
+
+    //std::cout << channel << " " << rms1 << std::endl;
     
     for (int i=0;i!=hist->GetNbinsX();i++){
       float content = hist->GetBinContent(i+1);
