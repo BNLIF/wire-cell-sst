@@ -2564,7 +2564,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // deal with the w plane to remove the PMT signal (negative pulse ...)
       for (int i=0;i!=nwire_w;i++){
 	//std::cout << i << std::endl;
-      	RemovePMTSignalCollection(hw[i],wrms_map[i],i);
+      	IDPMTSignalCollection(hw[i],wrms_map[i],i);
       }
       for (int i=0;i!=nwire_u;i++){
       	IDPMTSignalInduction(hu[i],urms_map[i],0,i);
@@ -2584,7 +2584,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		){
 	      flag_qx = 1;
 	      for (int k=0;k!=PMT_ROIs.at(i)->get_sorted_uwires().at(j).size();k++){
-		RemovePMTSignalInduction(hu[PMT_ROIs.at(i)->get_sorted_uwires().at(j).at(k)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+		RemovePMTSignal(hu[PMT_ROIs.at(i)->get_sorted_uwires().at(j).at(k)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
 	      }
 
 	      // std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().at(j).size() << " " << j << " " << PMT_ROIs.at(i)->get_average_uwires_peak_height(j) << " " <<   PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_uwires_peak_height(j) << " " <<  PMT_ROIs.at(i)->get_max_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_sorted_uwires().at(j).size() << " " <<  PMT_ROIs.at(i)->get_sorted_wwires().size() << std::endl;
@@ -2601,12 +2601,20 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		){
 	      flag_qx = 1;
 	      for (int k=0;k!=PMT_ROIs.at(i)->get_sorted_vwires().at(j).size();k++){
-		RemovePMTSignalInduction(hv[PMT_ROIs.at(i)->get_sorted_vwires().at(j).at(k)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+		RemovePMTSignal(hv[PMT_ROIs.at(i)->get_sorted_vwires().at(j).at(k)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
 	      }
 
 	      //  std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " << PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().at(j).size() << " " << j << " " << PMT_ROIs.at(i)->get_average_vwires_peak_height(j) << " " <<   PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_vwires_peak_height(j) << " " <<  PMT_ROIs.at(i)->get_max_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_sorted_vwires().at(j).size() << " " <<  PMT_ROIs.at(i)->get_sorted_wwires().size() << std::endl;
 	    }
 	  }
+
+	  if (PMT_ROIs.at(i)->get_sorted_wwires().size() >=6){
+	    for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_wwires().size();j++){
+	      //	    std::cout << PMT_ROIs.at(i)->get_sorted_wwires().size() << std::endl;
+	      RemovePMTSignal(hw[PMT_ROIs.at(i)->get_sorted_wwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+	    }
+	  }
+	  
      
        	  //if (flag_qx == 1) std::cout << i << " " <<  PMT_ROIs.at(i)->get_peaks().at(0) << " " <<  PMT_ROIs.at(i)->get_peaks().size() << " " << PMT_ROIs.at(i)->get_uwires().size() << " " << PMT_ROIs.at(i)->get_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_uwires().size() << " " << PMT_ROIs.at(i)->get_sorted_vwires().size() << " " << PMT_ROIs.at(i)->get_sorted_wwires().size() << " " << PMT_ROIs.at(i)->get_average_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_average_wwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_uwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_vwires_peak_height() << " " << PMT_ROIs.at(i)->get_max_wwires_peak_height() << std::endl;
       	}
@@ -3237,7 +3245,7 @@ void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, fl
   }
 }
 
-void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalInduction(TH1F* hist, int start_bin, int end_bin){
+void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int start_bin, int end_bin){
   int pad_window = 5;
   
   int flag_start = 0;
@@ -3267,7 +3275,7 @@ void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalInduction(TH1F* hist
 }
 
 
-void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalCollection(TH1F* hist, float rms, int channel){
+void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalCollection(TH1F* hist, float rms, int channel){
 
   int pad_window = 5;
   int min_window_length = 4;
@@ -3333,28 +3341,27 @@ void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignalCollection(TH1F* his
 	    
 	    flag_start = 0;
 	    
-	    //adaptive baseline
-	    float start_content = hist->GetBinContent(start_bin+1);
-	    for (int j=start_bin;j>=start_bin - pad_window;j--){
-	      if (j<0) continue;
-	      if (fabs(hist->GetBinContent(j+1)) < fabs(start_content)){
-		start_bin = j;
-		start_content = hist->GetBinContent(start_bin+1);
-	      }
-	    }
-	    float end_content = hist->GetBinContent(end_bin+1);
-	    for (int j=end_bin; j<=end_bin+pad_window;j++){
-	      if (j>=hist->GetNbinsX()) continue;
-	      if (fabs(hist->GetBinContent(j+1)) < fabs(end_content)){
-		end_bin = j;
-		end_content = hist->GetBinContent(end_bin+1);
-	      }
-	    }
-	    
-	    for (int j=start_bin;j<=end_bin;j++){
-	      float content = start_content + (end_content - start_content) * (j - start_bin) / (end_bin - start_bin*1.0);
-	      hist->SetBinContent(j+1,content);
-	    }
+	    // //adaptive baseline
+	    // float start_content = hist->GetBinContent(start_bin+1);
+	    // for (int j=start_bin;j>=start_bin - pad_window;j--){
+	    //   if (j<0) continue;
+	    //   if (fabs(hist->GetBinContent(j+1)) < fabs(start_content)){
+	    // 	start_bin = j;
+	    // 	start_content = hist->GetBinContent(start_bin+1);
+	    //   }
+	    // }
+	    // float end_content = hist->GetBinContent(end_bin+1);
+	    // for (int j=end_bin; j<=end_bin+pad_window;j++){
+	    //   if (j>=hist->GetNbinsX()) continue;
+	    //   if (fabs(hist->GetBinContent(j+1)) < fabs(end_content)){
+	    // 	end_bin = j;
+	    // 	end_content = hist->GetBinContent(end_bin+1);
+	    //   }
+	    // }
+	    // for (int j=start_bin;j<=end_bin;j++){
+	    //   float content = start_content + (end_content - start_content) * (j - start_bin) / (end_bin - start_bin*1.0);
+	    //   hist->SetBinContent(j+1,content);
+	    // }
 	    
 	  }
 	}
