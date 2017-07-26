@@ -66,7 +66,7 @@ namespace WireCellSst {
 	
 	void IDPMTSignalCollection(TH1F *hist, float rms, int channel);
 	void IDPMTSignalInduction(TH1F *hist, float rms, int plane, int channel);
-	void RemovePMTSignal(TH1F *hist, int start_bin, int end_bin);
+	void RemovePMTSignal(TH1F *hist, int start_bin, int end_bin, int flag=0);
 	
 	void Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel);
 

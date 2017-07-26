@@ -2611,7 +2611,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  if (PMT_ROIs.at(i)->get_sorted_wwires().size() >=6){
 	    for (int j=0;j!=PMT_ROIs.at(i)->get_sorted_wwires().size();j++){
 	      //	    std::cout << PMT_ROIs.at(i)->get_sorted_wwires().size() << std::endl;
-	      RemovePMTSignal(hw[PMT_ROIs.at(i)->get_sorted_wwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin());
+	      RemovePMTSignal(hw[PMT_ROIs.at(i)->get_sorted_wwires().at(j)],PMT_ROIs.at(i)->get_start_bin(),PMT_ROIs.at(i)->get_end_bin(),1);
 	    }
 	  }
 	  
@@ -3245,7 +3245,7 @@ void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, fl
   }
 }
 
-void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int start_bin, int end_bin){
+void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int start_bin, int end_bin, int flag){
   int pad_window = 5;
   
   int flag_start = 0;
@@ -3270,7 +3270,12 @@ void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int sta
   
   for (int j=start_bin;j<=end_bin;j++){
     float content = start_content + (end_content - start_content) * (j - start_bin) / (end_bin - start_bin*1.0);
-    hist->SetBinContent(j+1,content);
+    if (flag==0){
+      hist->SetBinContent(j+1,content);
+    }else{
+      if (hist->GetBinContent(j+1)<0)
+	hist->SetBinContent(j+1,content);
+    }
   }
 }
 
