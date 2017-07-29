@@ -494,7 +494,8 @@ void WireCellSst::DatauBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane,
 
   TH1F h2("h2","h2",100,mean-10*rms,mean+10*rms);
   for (int j=0;j!=nbin;j++){
-    h2.Fill(h1->GetBinContent(j+1));
+    if (fabs(h1->GetBinContent(j+1)-mean)<6*rms)
+      h2.Fill(h1->GetBinContent(j+1));
   }
   
   // double xq = 0.5;
