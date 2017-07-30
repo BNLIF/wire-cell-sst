@@ -1971,64 +1971,102 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    
 	    
 	    
-	    for (int j=0;j!=nbin;j++)
-	      if( signalsBool.at(j) == 1 )
-		signals.push_back(j);
+	  //   for (int j=0;j!=nbin;j++)
+	  //     if( signalsBool.at(j) == 1 )
+	  // 	signals.push_back(j);
 	    
 	    
-	    // adaptive baseline 
-	    for (int j=0;j!=signals.size();j++){
-	      int bin = signals.at(j);
-	      int prev_bin=bin;
-	      int next_bin=bin;
+	  //   // adaptive baseline 
+	  //   for (int j=0;j!=signals.size();j++){
+	  //     int bin = signals.at(j);
+	  //     int prev_bin=bin;
+	  //     int next_bin=bin;
 	      
-	      int flag = 1;
-	      while(flag){
-		prev_bin--;
-		if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-		  flag = 0;
+	  //     int flag = 1;
+	  //     while(flag){
+	  // 	prev_bin--;
+	  // 	if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+	  // 	  flag = 0;
+	  // 	}
+	  //     }
+	      
+      	  //   // prev_bin = prev_bin - pad_window;
+      	  //   // if (prev_bin <0) prev_bin = 0;
+
+      	  //   flag =1;
+      	  //   while(flag){
+      	  //     next_bin++;
+      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+      	  // 	flag = 0;
+      	  //     }
+      	  //   }
+	    
+      	  //   // next_bin = next_bin + pad_window;
+      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
+	    
+      	  //   // if (prev_bin>0) prev_bin --;
+      	  //   // if (next_bin<nbin-1) next_bin++; 
+
+
+      	  //   float prev_content=0, next_content=0;
+      	  //   // if (prev_bin >=4){
+      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+      	  //   // }else{
+      	  //   prev_content = h44->GetBinContent(prev_bin+1);
+      	  //   // }
+      	  //   // if (next_bin <= nbin-5){
+      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+      	  //   // }else{
+      	  //   next_content = h44->GetBinContent(next_bin+1);
+      	  //   // }
+	    
+
+      	  //   //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+      	  //   float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+      	  //     * (next_content - prev_content);
+      	  //   h44->SetBinContent(bin+1,content);
+      	  // }
+	       {
+	      // partition waveform indices into consecutive regions with
+	      // signalsBool true.
+	      std::vector< std::vector<int> > rois;
+	      bool inside = false;
+	      for (int ind=0; ind<nbin; ++ind) {
+		if (inside) {
+		  if (signalsBool[ind]) { // still inside
+                    rois.back().push_back(ind);
+		  }else{
+		    inside = false;
+		  }
+		}
+		else {                  // outside the Rio
+		  if (signalsBool[ind]) { // just entered ROI
+                    std::vector<int> roi;
+                    roi.push_back(ind);
+                    rois.push_back(roi);
+		    inside = true;
+		  }
 		}
 	      }
-	      
-      	    // prev_bin = prev_bin - pad_window;
-      	    // if (prev_bin <0) prev_bin = 0;
-
-      	    flag =1;
-      	    while(flag){
-      	      next_bin++;
-      	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  	flag = 0;
-      	      }
-      	    }
-	    
-      	    // next_bin = next_bin + pad_window;
-      	    // if (next_bin > nbin-1) next_bin = nbin-1; 
-	    
-      	    // if (prev_bin>0) prev_bin --;
-      	    // if (next_bin<nbin-1) next_bin++; 
-
-
-      	    float prev_content=0, next_content=0;
-      	    // if (prev_bin >=4){
-      	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	    // }else{
-      	    prev_content = h44->GetBinContent(prev_bin+1);
-      	    // }
-      	    // if (next_bin <= nbin-5){
-      	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	    // }else{
-      	    next_content = h44->GetBinContent(next_bin+1);
-      	    // }
-	    
-
-      	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	      * (next_content - prev_content);
-      	    h44->SetBinContent(bin+1,content);
-      	  }
-
+	      // Replace medians for above regions with interpolation on values
+	      // just outside each region.
+	      for (auto roi : rois) {
+		// original code used the bins just outside the ROI
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
+		const double mf = h44->GetBinContent(binf+1);//medians[binf];
+		const double roi_run = binf - bin0;
+		const double roi_rise = mf - m0;
+		for (auto bin : roi) {
+		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		  h44->SetBinContent(bin+1,m);
+		  //medians.at(bin) = m;
+		}
+	      }
+	    }
 	  
       	  // calculate scaling coefficient ... 
       	  double ave_coef = 0;
@@ -2243,63 +2281,104 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  }
 
 	    
-      	  for (int j=0;j!=nbin;j++)
-      		if( signalsBool.at(j) == 1 )
-      			signals.push_back(j);
+      	  // for (int j=0;j!=nbin;j++)
+      	  // 	if( signalsBool.at(j) == 1 )
+      	  // 		signals.push_back(j);
 	  
-      	  // adaptive baseline 
-      	  for (int j=0;j!=signals.size();j++){
-      	    int bin = signals.at(j);
-      	    int prev_bin=bin;
-      	    int next_bin=bin;
+      	  // // adaptive baseline 
+      	  // for (int j=0;j!=signals.size();j++){
+      	  //   int bin = signals.at(j);
+      	  //   int prev_bin=bin;
+      	  //   int next_bin=bin;
 	    
-      	    int flag = 1;
-      	    while(flag){
-      	      prev_bin--;
-      	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-      	  	flag = 0;
-      	      }
-      	    }
+      	  //   int flag = 1;
+      	  //   while(flag){
+      	  //     prev_bin--;
+      	  //     if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+      	  // 	flag = 0;
+      	  //     }
+      	  //   }
 
-      	    // prev_bin = prev_bin - pad_window;
-      	    // if (prev_bin <0) prev_bin = 0;
+      	  //   // prev_bin = prev_bin - pad_window;
+      	  //   // if (prev_bin <0) prev_bin = 0;
 
-      	    flag =1;
-      	    while(flag){
-      	      next_bin++;
-      	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  	flag = 0;
-      	      }
-      	    }
+      	  //   flag =1;
+      	  //   while(flag){
+      	  //     next_bin++;
+      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+      	  // 	flag = 0;
+      	  //     }
+      	  //   }
 	    
-      	    //  next_bin = next_bin + pad_window;
-      	    // if (next_bin > nbin-1) next_bin = nbin-1; 
+      	  //   //  next_bin = next_bin + pad_window;
+      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
 
-      	    //  if (prev_bin>0) prev_bin --;
-      	    // if (next_bin<nbin-1) next_bin++; 
+      	  //   //  if (prev_bin>0) prev_bin --;
+      	  //   // if (next_bin<nbin-1) next_bin++; 
 
-      	    float prev_content, next_content;
-      	    // if (prev_bin >=4){
-      	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	    // }else{
-      	      prev_content = h44->GetBinContent(prev_bin+1);
-      	    // }
-      	    // if (next_bin <= nbin-5){
-      	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	    // }else{
-      	      next_content = h44->GetBinContent(next_bin+1);
-      	    // }
-	    
+      	  //   float prev_content, next_content;
+      	  //   // if (prev_bin >=4){
+      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+      	  //   // }else{
+      	  //     prev_content = h44->GetBinContent(prev_bin+1);
+      	  //   // }
+      	  //   // if (next_bin <= nbin-5){
+      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+      	  //   // }else{
+      	  //     next_content = h44->GetBinContent(next_bin+1);
+      	  //   // }
 
-      	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	      * (next_content - prev_content);
+	  //     // if (next_bin-prev_bin <20)
+	  //     // 	std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
 
-      	    h44->SetBinContent(bin+1,content);
-      	  }
+	  //     float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+      	  //     * (next_content - prev_content);
 
+      	  //   h44->SetBinContent(bin+1,content);
+      	  // }
+
+	     {
+	      // partition waveform indices into consecutive regions with
+	      // signalsBool true.
+	      std::vector< std::vector<int> > rois;
+	      bool inside = false;
+	      for (int ind=0; ind<nbin; ++ind) {
+		if (inside) {
+		  if (signalsBool[ind]) { // still inside
+                    rois.back().push_back(ind);
+		  }else{
+		    inside = false;
+		  }
+		}
+		else {                  // outside the Rio
+		  if (signalsBool[ind]) { // just entered ROI
+                    std::vector<int> roi;
+                    roi.push_back(ind);
+                    rois.push_back(roi);
+		    inside = true;
+		  }
+		}
+	      }
+	      // Replace medians for above regions with interpolation on values
+	      // just outside each region.
+	      for (auto roi : rois) {
+		// original code used the bins just outside the ROI
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
+		const double mf = h44->GetBinContent(binf+1);//medians[binf];
+		const double roi_run = binf - bin0;
+		const double roi_rise = mf - m0;
+		for (auto bin : roi) {
+		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		  h44->SetBinContent(bin+1,m);
+		  //medians.at(bin) = m;
+		}
+	      }
+	    }
+	  
 
       	  // calculate scaling coefficient ... 
       	  double ave_coef = 0;
@@ -2438,64 +2517,102 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	      }
       	    }
       	  }
-      	  for (int j=0;j!=nbin;j++)
-      		if( signalsBool.at(j) == 1 )
-      			signals.push_back(j);
+      	  // for (int j=0;j!=nbin;j++)
+      	  // 	if( signalsBool.at(j) == 1 )
+      	  // 		signals.push_back(j);
 	  
-      	  // adaptive baseline 
-      	  for (int j=0;j!=signals.size();j++){
-      	    int bin = signals.at(j);
-      	    int prev_bin=bin;
-      	    int next_bin=bin;
+      	  // // adaptive baseline 
+      	  // for (int j=0;j!=signals.size();j++){
+      	  //   int bin = signals.at(j);
+      	  //   int prev_bin=bin;
+      	  //   int next_bin=bin;
 	    
-      	    int flag = 1;
-      	    while(flag){
-      	      prev_bin--;
-      	      if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-      	  	flag = 0;
-      	      }
-      	    }
+      	  //   int flag = 1;
+      	  //   while(flag){
+      	  //     prev_bin--;
+      	  //     if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
+      	  // 	flag = 0;
+      	  //     }
+      	  //   }
 
-      	    // prev_bin = prev_bin - pad_window;
-      	    // if (prev_bin <0) prev_bin = 0;
+      	  //   // prev_bin = prev_bin - pad_window;
+      	  //   // if (prev_bin <0) prev_bin = 0;
 
-      	    flag =1;
-      	    while(flag){
-      	      next_bin++;
-      	      if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  	flag = 0;
-      	      }
-      	    }
+      	  //   flag =1;
+      	  //   while(flag){
+      	  //     next_bin++;
+      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
+      	  // 	flag = 0;
+      	  //     }
+      	  //   }
 
-      	    // next_bin = next_bin + pad_window;
-      	    // if (next_bin > nbin-1) next_bin = nbin-1; 
+      	  //   // next_bin = next_bin + pad_window;
+      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
 
 
-      	    // if (prev_bin>0) prev_bin --;
-      	    // if (next_bin<nbin-1) next_bin++; 
+      	  //   // if (prev_bin>0) prev_bin --;
+      	  //   // if (next_bin<nbin-1) next_bin++; 
 
-      	    float prev_content, next_content;
-      	    // if (prev_bin >=4){
-      	    //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	    // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	    // }else{
-      	      prev_content = h44->GetBinContent(prev_bin+1);
-      	    // }
-      	    // if (next_bin <= nbin-5){
-      	    //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	    // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	    // }else{
-      	      next_content = h44->GetBinContent(next_bin+1);
-      	    // }
+      	  //   float prev_content, next_content;
+      	  //   // if (prev_bin >=4){
+      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
+      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
+      	  //   // }else{
+      	  //     prev_content = h44->GetBinContent(prev_bin+1);
+      	  //   // }
+      	  //   // if (next_bin <= nbin-5){
+      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
+      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
+      	  //   // }else{
+      	  //     next_content = h44->GetBinContent(next_bin+1);
+      	  //   // }
 	    
 
-      	    //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	    float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	      * (next_content - prev_content);
+      	  //   //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
+      	  //   float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
+      	  //     * (next_content - prev_content);
 
-      	    h44->SetBinContent(bin+1,content);
-      	  }
-
+      	  //   h44->SetBinContent(bin+1,content);
+      	  // }
+	  	    {
+	      // partition waveform indices into consecutive regions with
+	      // signalsBool true.
+	      std::vector< std::vector<int> > rois;
+	      bool inside = false;
+	      for (int ind=0; ind<nbin; ++ind) {
+		if (inside) {
+		  if (signalsBool[ind]) { // still inside
+                    rois.back().push_back(ind);
+		  }else{
+		    inside = false;
+		  }
+		}
+		else {                  // outside the Rio
+		  if (signalsBool[ind]) { // just entered ROI
+                    std::vector<int> roi;
+                    roi.push_back(ind);
+                    rois.push_back(roi);
+		    inside = true;
+		  }
+		}
+	      }
+	      // Replace medians for above regions with interpolation on values
+	      // just outside each region.
+	      for (auto roi : rois) {
+		// original code used the bins just outside the ROI
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
+		const double mf = h44->GetBinContent(binf+1);//medians[binf];
+		const double roi_run = binf - bin0;
+		const double roi_rise = mf - m0;
+		for (auto bin : roi) {
+		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		  h44->SetBinContent(bin+1,m);
+		  //medians.at(bin) = m;
+		}
+	      }
+	    }
 
       	  // calculate scaling coefficient ... 
       	  double ave_coef = 0;
