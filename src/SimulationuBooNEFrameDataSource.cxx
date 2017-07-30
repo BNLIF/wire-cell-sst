@@ -2016,62 +2016,6 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	    }
 	    
 	    
-	  //   for (int j=0;j!=nbin;j++)
-	  //     if( signalsBool.at(j) == 1 )
-	  // 	signals.push_back(j);
-	    //   // adaptive baseline 
-	  //   for (int j=0;j!=signals.size();j++){
-	  //     int bin = signals.at(j);
-	  //     int prev_bin=bin;
-	  //     int next_bin=bin;
-	      
-	  //     int flag = 1;
-	  //     while(flag){
-	  // 	prev_bin--;
-	  // 	if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-	  // 	  flag = 0;
-	  // 	}
-	  //     }
-	      
-      	  //   // prev_bin = prev_bin - pad_window;
-      	  //   // if (prev_bin <0) prev_bin = 0;
-
-      	  //   flag =1;
-      	  //   while(flag){
-      	  //     next_bin++;
-      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-	    
-      	  //   // next_bin = next_bin + pad_window;
-      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
-	    
-      	  //   // if (prev_bin>0) prev_bin --;
-      	  //   // if (next_bin<nbin-1) next_bin++; 
-
-	  //   //std::cout << 3 << " " << bin << " " << prev_bin << " " << next_bin << std::endl;
-	      
-      	  //   float prev_content=0, next_content=0;
-      	  //   // if (prev_bin >=4){
-      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	  //   // }else{
-      	  //   prev_content = h44->GetBinContent(prev_bin+1);
-      	  //   // }
-      	  //   // if (next_bin <= nbin-5){
-      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	  //   // }else{
-      	  //   next_content = h44->GetBinContent(next_bin+1);
-      	  //   // }
-	    
-
-      	  //   //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	  //   float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	  //     * (next_content - prev_content);
-      	  //   h44->SetBinContent(bin+1,content);
-      	  // }
 
 	  
       	  // calculate scaling coefficient ... 
@@ -2328,62 +2272,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	  }
-      	  // for (int j=0;j!=nbin;j++)
-      	  // 	if( signalsBool.at(j) == 1 )
-      	  // 		signals.push_back(j);
-	  
-      	  // // adaptive baseline 
-      	  // for (int j=0;j!=signals.size();j++){
-      	  //   int bin = signals.at(j);
-      	  //   int prev_bin=bin;
-      	  //   int next_bin=bin;
-	    
-      	  //   int flag = 1;
-      	  //   while(flag){
-      	  //     prev_bin--;
-      	  //     if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-
-      	  //   // prev_bin = prev_bin - pad_window;
-      	  //   // if (prev_bin <0) prev_bin = 0;
-
-      	  //   flag =1;
-      	  //   while(flag){
-      	  //     next_bin++;
-      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-	    
-      	  //   //  next_bin = next_bin + pad_window;
-      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
-
-      	  //   //  if (prev_bin>0) prev_bin --;
-      	  //   // if (next_bin<nbin-1) next_bin++; 
-
-      	  //   float prev_content, next_content;
-      	  //   // if (prev_bin >=4){
-      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	  //   // }else{
-      	  //     prev_content = h44->GetBinContent(prev_bin+1);
-      	  //   // }
-      	  //   // if (next_bin <= nbin-5){
-      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	  //   // }else{
-      	  //     next_content = h44->GetBinContent(next_bin+1);
-      	  //   // }
-	    
-
-      	  //   //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	  //   float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	  //     * (next_content - prev_content);
-
-      	  //   h44->SetBinContent(bin+1,content);
-      	  // }
+      	 
 
 
       	  // calculate scaling coefficient ... 
@@ -2563,63 +2452,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	  }
-      	  // for (int j=0;j!=nbin;j++)
-      	  // 	if( signalsBool.at(j) == 1 )
-      	  // 		signals.push_back(j);
-	  
-      	  // // adaptive baseline 
-      	  // for (int j=0;j!=signals.size();j++){
-      	  //   int bin = signals.at(j);
-      	  //   int prev_bin=bin;
-      	  //   int next_bin=bin;
-	    
-      	  //   int flag = 1;
-      	  //   while(flag){
-      	  //     prev_bin--;
-      	  //     if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-
-      	  //   // prev_bin = prev_bin - pad_window;
-      	  //   // if (prev_bin <0) prev_bin = 0;
-
-      	  //   flag =1;
-      	  //   while(flag){
-      	  //     next_bin++;
-      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-
-      	  //   // next_bin = next_bin + pad_window;
-      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
-
-
-      	  //   // if (prev_bin>0) prev_bin --;
-      	  //   // if (next_bin<nbin-1) next_bin++; 
-
-      	  //   float prev_content, next_content;
-      	  //   // if (prev_bin >=4){
-      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	  //   // }else{
-      	  //     prev_content = h44->GetBinContent(prev_bin+1);
-      	  //   // }
-      	  //   // if (next_bin <= nbin-5){
-      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	  //   // }else{
-      	  //     next_content = h44->GetBinContent(next_bin+1);
-      	  //   // }
-	    
-
-      	  //   //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	  //   float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	  //     * (next_content - prev_content);
-
-      	  //   h44->SetBinContent(bin+1,content);
-      	  // }
+      	 
 
 
       	  // calculate scaling coefficient ... 
