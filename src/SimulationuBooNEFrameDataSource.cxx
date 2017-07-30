@@ -1727,8 +1727,8 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	int protection_factor = 5.0;
 	float min_adc_limit = 50;
 
-	float upper_adc_limit = 15 ;
-	float upper_decon_limit = 0.05 ;
+	float upper_adc_limit = 15 * 1;
+	float upper_decon_limit = 0.05 * 1;
 	
 	
 	int pad_window_uf = 20;
@@ -1828,7 +1828,8 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	      }
 	      h44->SetBinContent(j+1,par[1]);
 	    }
-	    
+
+	    //	    std::cout << "a: " << h44->GetSum() << std::endl;
 	    
 	    // add the code to 
 	    std::vector<int> signals;
@@ -1879,7 +1880,9 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    mean = h55->GetMean();
-	    rms = h55->GetRMS();
+	    if (h55->GetRMS()>0){
+	      rms = h55->GetRMS();
+	    }
 	    //  std::cout << 0 << " " << i << " " << rms << std::endl;
 	    delete h55;
 
@@ -1912,8 +1915,8 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 
-
-
+	    //	    std::cout << "b: " << h44->GetSum() << std::endl;
+	    
 	    delete ifft;
 	    delete fb;
 	    delete hm;
@@ -1938,11 +1941,12 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	    }
 	    
 	    mean = h55->GetMean();
-	    rms = h55->GetRMS();
-	    
+	    if (h55->GetRMS()>0){
+	      rms = h55->GetRMS();
+	    }
 	    delete h55;
 
-	    //	      std::cout << i << " aa " << rms << " " << mean << " " << protection_factor << " " << upper_decon_limit << std::endl;
+	    //	    std::cout << i << " aa " << rms << " " << mean << " " << protection_factor << " " << upper_decon_limit << std::endl;
 	    
 	    // remove +- 3sigma one
 	    for (int j=0;j!=nbin;j++){
@@ -2015,7 +2019,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
-	    
+	    //	    std::cout << h44->GetSum() << std::endl;
 
 	  
       	  // calculate scaling coefficient ... 
@@ -2054,21 +2058,29 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 
       	  //h44->Reset();
 
-      	  for (int j=0;j!=nbin;j++){
-      	    for (int k=0;k!=uplane_all.at(i).size();k++){
+      	 
+	  for (int k=0;k!=uplane_all.at(i).size();k++){
+	    double scaling=0;
+	    if (ave_coef!=0)
+	      scaling = coef_all.at(k)/ave_coef;
+	    if (scaling < 0) scaling = 0;
+	    if (scaling > 1.5) scaling = 1.5;
+	    
+	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * coef_all.at(k)/ave_coef);
+		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * scaling);
 	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,h44->GetBinContent(j+1) );
       	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
+	    //std::cout << "U: " << hu[uplane_all.at(i).at(k)]->GetSum() << " " << scaling << " " << h44->GetSum() << std::endl;
       	  }
 
-
-      	}
+	  
+	  }
 
       	delete h3;
       	delete h44;
-      }
+	}
 
 
 	std::cout << "Coherent V" << std::endl;
@@ -2151,7 +2163,9 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	    }
 	  }
 	  mean = h55->GetMean();
-	  rms = h55->GetRMS();
+	  if (h55->GetRMS()>0){
+	    rms = h55->GetRMS();
+	  }
 	  //  std::cout << 0 << " " << i << " " << rms << std::endl;
 	  delete h55;
 	    
@@ -2199,7 +2213,9 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
       	  }
 	  
       	  mean = h55->GetMean();
-      	  rms = h55->GetRMS();
+	  if (h55->GetRMS()>0){
+	    rms = h55->GetRMS();
+	  }
 	  
 	  // std::cout << 1 << " " << i << " " << rms << std::endl;
 
@@ -2273,7 +2289,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	    }
 	  }
       	 
-
+	  //std::cout << h44->GetSum() << std::endl;
 
       	  // calculate scaling coefficient ... 
       	  double ave_coef = 0;
@@ -2314,13 +2330,20 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 
       	  //h44->Reset();
 
-      	  for (int j=0;j!=nbin;j++){
-      	    for (int k=0;k!=vplane_all.at(i).size();k++){
+      	 
+	  for (int k=0;k!=vplane_all.at(i).size();k++){
+	    double scaling = 0;
+	    if (ave_coef != 0)
+	      coef_all.at(k)/ave_coef;
+	    if (scaling < 0) scaling = 0;
+	    if (scaling > 1.5) scaling = 1.5;
+	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
+      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* scaling);
 	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,h44->GetBinContent(j+1));
       	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
+	    //std::cout << "V: " << hv[vplane_all.at(i).at(k)]->GetSum() << std::endl;
       	  }
 
       	}
@@ -2377,7 +2400,9 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
       	  }
 	  
       	  mean = h55->GetMean();
-      	  rms = h55->GetRMS();
+	  if (h55->GetRMS()>0){
+	    rms = h55->GetRMS();
+	  }
 	  
 	  //std::cout << 2 << " " << i << " " << rms << std::endl;
 
@@ -2453,8 +2478,8 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	    }
 	  }
       	 
-
-
+	  //std::cout << h44->GetSum() << std::endl;
+	  
       	  // calculate scaling coefficient ... 
       	  double ave_coef = 0;
       	  double ave_coef1 = 0;
@@ -2490,12 +2515,20 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 
       	  //h44->Reset();
 	   
-      	  for (int j=0;j!=nbin;j++){
-      	    for (int k=0;k!=wplane_all.at(i).size();k++){
+      	  
+	    
+	  for (int k=0;k!=wplane_all.at(i).size();k++){
+	    double scaling = 0;
+	    if (ave_coef!=0)
+	      scaling = coef_all.at(k)/ave_coef;
+	    if (scaling < 0) scaling = 0;
+	    if (scaling > 1.5) scaling = 1.5;
+	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
       		//hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
+	    // std::cout << "W: " << hw[wplane_all.at(i).at(k)]->GetSum() << std::endl;
       	  }
 
       	}

@@ -1886,7 +1886,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    mean = h55->GetMean();
-	    rms = h55->GetRMS();
+	    if (h55->GetRMS()>0)
+	      rms = h55->GetRMS();
 	    //  std::cout << 0 << " " << i << " " << rms << std::endl;
 	    delete h55;
 	    
@@ -1937,7 +1938,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    }
 	    
 	    mean = h55->GetMean();
-	    rms = h55->GetRMS();
+	    if (h55->GetRMS()>0)
+	      rms = h55->GetRMS();
 	    
 	    delete h55;
 	    // remove +- 3sigma one
@@ -2104,10 +2106,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  //h44->Reset();
 
-      	  for (int j=0;j!=nbin;j++){
-      	    for (int k=0;k!=uplane_all.at(i).size();k++){
+      	  
+	  for (int k=0;k!=uplane_all.at(i).size();k++){
+	    double scaling=0;
+	    if (ave_coef!=0)
+	      scaling = coef_all.at(k)/ave_coef;
+	    if (scaling < 0) scaling = 0;
+	    if (scaling > 1.5) scaling = 1.5;
+	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * coef_all.at(k)/ave_coef);
+      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * scaling);
       	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
       	  }
@@ -2198,7 +2206,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    }
 	  }
 	  mean = h55->GetMean();
-	  rms = h55->GetRMS();
+	  if (h55->GetRMS()>0)
+	    rms = h55->GetRMS();
 	  //  std::cout << 0 << " " << i << " " << rms << std::endl;
 	  delete h55;
 	    
@@ -2246,7 +2255,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  }
 	  
       	  mean = h55->GetMean();
-      	  rms = h55->GetRMS();
+	  if (h55->GetRMS()>0)
+	    rms = h55->GetRMS();
 	  
 	  // std::cout << 1 << " " << i << " " << rms << std::endl;
 
@@ -2419,10 +2429,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  //h44->Reset();
 
-      	  for (int j=0;j!=nbin;j++){
-      	    for (int k=0;k!=vplane_all.at(i).size();k++){
+      	 
+	  for (int k=0;k!=vplane_all.at(i).size();k++){
+	    double scaling=0;
+	    if (ave_coef!=0)
+	      scaling = coef_all.at(k)/ave_coef;
+	    if (scaling < 0) scaling = 0;
+	    if (scaling > 1.5) scaling = 1.5;
+	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
+      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* scaling);
       	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
       	  }
@@ -2480,7 +2496,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  }
 	  
       	  mean = h55->GetMean();
-      	  rms = h55->GetRMS();
+	  if (h55->GetRMS()>0)
+	    rms = h55->GetRMS();
 
 	  //std::cout << mean << " " << rms << " " << std::endl;
 	  
@@ -2649,10 +2666,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  //h44->Reset();
 	   
-      	  for (int j=0;j!=nbin;j++){
-      	    for (int k=0;k!=wplane_all.at(i).size();k++){
+      	  
+	  for (int k=0;k!=wplane_all.at(i).size();k++){
+	    double scaling=0;
+	    if (ave_coef!=0)
+	      scaling = coef_all.at(k)/ave_coef;
+	    if (scaling < 0) scaling = 0;
+	    if (scaling > 1.5) scaling = 1.5;
+	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hw[wplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* coef_all.at(k)/ave_coef);
+      		hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* scaling);
       		//hw[wplane_all.at(i).at(k)]->SetBinContent(j+1,hw[wplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
       	    }
       	  }
