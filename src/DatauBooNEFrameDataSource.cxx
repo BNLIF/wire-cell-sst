@@ -1737,8 +1737,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	int protection_factor = 5.0;
 	float min_adc_limit = 50;
 
-	float upper_adc_limit_ind = 23;
-	//	float upper_adc_limit_col = 0;
+	float upper_adc_limit = 15;
 	float upper_decon_limit = 0.05;
 	
 	
@@ -1946,7 +1945,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    // remove +- 3sigma one
 	    for (int j=0;j!=nbin;j++){
 	      float content = h44->GetBinContent(j+1);
-	      if (fabs(content-mean)>std::min(std::max(protection_factor*rms,upper_adc_limit_ind),min_adc_limit)){
+	      if (fabs(content-mean)>std::min(std::max(protection_factor*rms,upper_adc_limit),min_adc_limit)){
 	    	h44->SetBinContent(j+1,0);
 	    	//signals.push_back(j);
 	    	signalsBool.at(j) = 1;
@@ -2266,7 +2265,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  
       	  for (int j=0;j!=nbin;j++){
       	    float content = h44->GetBinContent(j+1);
-      	    if (fabs(content-mean)>std::min(std::max(protection_factor*rms,upper_adc_limit_ind),min_adc_limit)){
+      	    if (fabs(content-mean)>std::min(std::max(protection_factor*rms,upper_adc_limit),min_adc_limit)){
       	      h44->SetBinContent(j+1,0);
       	      //signals.push_back(j);
       	      signalsBool.at(j) = 1;
