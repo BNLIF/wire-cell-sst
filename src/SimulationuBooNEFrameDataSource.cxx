@@ -1727,7 +1727,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	int protection_factor = 5.0;
 	float min_adc_limit = 50;
 
-	float upper_adc_limit = 15 * 0;
+	float upper_adc_limit = 23 * 0;
 	float upper_decon_limit = 0.05 * 0;
 	
 	

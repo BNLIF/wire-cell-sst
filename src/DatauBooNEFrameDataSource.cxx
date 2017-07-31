@@ -1738,7 +1738,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	float min_adc_limit = 50;
 
 	float upper_adc_limit_ind = 23;
-	//	float upper_adc_limit_col = 15;
+	//	float upper_adc_limit_col = 0;
 	float upper_decon_limit = 0.05;
 	
 	
