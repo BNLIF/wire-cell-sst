@@ -285,9 +285,10 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 	  }
 
 	}else{
+	  // Note: we did not consider the rebin here, so the threshold is effectively low ... 
 	  if (gds_flag == 0){
 	    if (trace.chid < nwire_u){
-	      threshold = 3.6 * (*uplane_rms).at(trace.chid);
+	      threshold = 3.6 * (*uplane_rms).at(trace.chid); // 3.6 sigma?
 	      threshold_g = threshold_ug;
 	      if (threshold == 0 ) threshold = threshold_u;
 	    }else if (trace.chid < nwire_u + nwire_v){
@@ -315,7 +316,7 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
 
 	}
 
-	//	std::cout << q << " " << q1 << " " << threshold << std::endl;
+	//std::cout << q << " " << q1 << " " << threshold << std::endl;
 
 	if (q>threshold){
 	  slice_group.push_back(Channel::Charge(trace.chid, q1));
