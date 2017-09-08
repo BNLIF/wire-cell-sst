@@ -1443,7 +1443,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      || channel_no >= 2352 && channel_no <2400)&&run_no<5112)||
 	    ((channel_no>=2016&&channel_no<=2111 || 
 	      channel_no>=2176&&channel_no<=2303 ||
-	      channel_no>=2352&&channel_no>=2383)&&run_no>=5282&&run_no<=5810) ||
+	      channel_no>=2352&&channel_no<=2383)&&run_no>=5282&&run_no<=5810) ||
 	    ((channel_no>=2016&&channel_no<=2111 ||
 	      channel_no>=2128&&channel_no<=2303 ||
 	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
