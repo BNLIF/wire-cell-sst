@@ -1221,8 +1221,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     flag_mis_config = 1; 
 
     //when is it configued correctly
-    if (run_no>=5112 && run_no <= 5281 ||
-	run_no > 6998){
+    if (run_no>=5112 && run_no <= 5281 ){
       flag_mis_config = 0;
     }
 
@@ -1447,7 +1446,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    ((channel_no>=2016&&channel_no<=2111 ||
 	      channel_no>=2128&&channel_no<=2303 ||
 	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
-	    ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998)
+	    ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998) ||
+	    ((channel_no>=2048&&channel_no<=2079||channel_no>=2240&&channel_no<=2255)&&run_no>6998)
 	    ){
 	  if (flag_mis_config)
 	    hu[i]->Scale(14./4.7); // assume 4.7 mV/fC gain
@@ -1482,8 +1482,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    ((channel_no>=2016&&channel_no<=2111 ||
 	      channel_no>=2128&&channel_no<=2303 ||
 	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
-	    ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998)
-	    ){
+	    ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998) ||
+	    (channel_no>=2048&&channel_no<=2079||channel_no>=2240&&channel_no<=2255)&&run_no>6998){
 	  if (flag_mis_config)
 	    hu[i]->Scale(4.7/14.); // assume 4.7 mV/fC gain
 	}
@@ -1562,7 +1562,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    ((channel_no>=2016&&channel_no<=2111 ||
 	      channel_no>=2128&&channel_no<=2303 ||
 	      channel_no>=2320&&channel_no<=2383)&&run_no>=5811&&run_no<=6699) ||
-	      ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998)){
+	      ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998) ||
+	      (channel_no>=2048&&channel_no<=2079||channel_no>=2240&&channel_no<=2255)&&run_no>6998){
 	    flag_restore = 1;
 	  }
 
