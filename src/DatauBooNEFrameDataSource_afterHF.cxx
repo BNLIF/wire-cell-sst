@@ -1210,8 +1210,8 @@ int WireCellSst::DatauBooNEFrameDataSource_afterHF::jump(int frame_number)
     if (flag_add_noise)
       flag_mis_config = 0;
 
-    // for the run in 9000 level, make
-    if (run_no > 9000) flag_mis_config = 1;
+    // for the run in 8000 level, make
+    if (run_no > 8000) flag_mis_config = 1;
 
 
     
