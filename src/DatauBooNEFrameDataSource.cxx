@@ -2926,6 +2926,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 
 void WireCellSst::DatauBooNEFrameDataSource::fix_ADC_shift(int chid, TH1F *h1){
+  
   // judge if there is a shift
   //  std::cout << chid << std::endl;
   std::vector<int> counter(12,0);
@@ -3388,6 +3389,10 @@ void WireCellSst::DatauBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, fl
 }
 
 void WireCellSst::DatauBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int start_bin, int end_bin, int flag){
+
+  //  return;
+
+  
   int pad_window = 5;
   
   int flag_start = 0;
