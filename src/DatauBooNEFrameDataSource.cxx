@@ -1092,7 +1092,7 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
       valid ++;
     }
   }
-
+  Double_t rms, mean;
   if (h2->GetSum()>0){
     Double_t par[3]={0.0};
     double xq = 0.5;
@@ -1101,8 +1101,8 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
     h2->GetQuantiles(1,&par[1],&xq);
     xq = 0.5 + 0.34;
     h2->GetQuantiles(1,&par[2],&xq);
-    Double_t rms = sqrt((pow(par[2]-par[0],2) + pow(par[1]-par[0],2))/2.);
-    Double_t mean = par[0];
+    rms = sqrt((pow(par[2]-par[0],2) + pow(par[1]-par[0],2))/2.);
+    mean = par[0];
 
     //std::cout << mean << " " << rms << " ";
     
@@ -1130,6 +1130,7 @@ bool WireCellSst::DatauBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
   delete h1_copy;
   
   if (valid >0){
+    // std::cout << mean << " " << rms << " " << content << " " << valid << std::endl;
     if (content/valid>14) return true;
   }
   
@@ -2824,7 +2825,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       // Try to ID  lf noisy channels
       for (int i=0;i!=nwire_u;i++){
-	//std::cout << i << " ";
+	//std::cout << i << std::endl;
 	if (ID_lf_noisy(hu[i])) lf_noisy_channels.insert(i);
 	if (ID_lf_noisy(hv[i])) lf_noisy_channels.insert(nwire_u+i);
       }
