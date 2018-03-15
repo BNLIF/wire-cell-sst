@@ -1284,7 +1284,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       TF1 *filter_time = new TF1("filter_time","(x>0.0)*exp(-0.5*pow(x/[0],[1]))");
       double par[2]={1.43555e+01/200.*2.,4.95096e+00};
       filter_time->SetParameters(par);
+      // original one
       TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,2))");
+      // new test ... 
+      // TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,6))");
       
       
 
@@ -1741,6 +1744,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	float upper_adc_limit = 15;
 	float upper_decon_limit = 0.05;
+	// new cut possibility ...  
+	// float upper_decon_limit = 0.02;
 	
 	
 	int pad_window_uf = 20;
@@ -2118,7 +2123,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
       		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * scaling);
-      	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+      	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,h44->GetBinContent(j+1)*scaling);
       	    }
       	  }
 
@@ -2440,8 +2445,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    if (scaling > 1.5) scaling = 1.5;
 	    for (int j=0;j!=nbin;j++){
       	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* scaling);
-      	      //hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1));
+		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* scaling);
+		//		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,h44->GetBinContent(j+1)*scaling);
       	    }
       	  }
 
