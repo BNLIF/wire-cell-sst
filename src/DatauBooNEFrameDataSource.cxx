@@ -1285,7 +1285,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       double par[2]={1.43555e+01/200.*2.,4.95096e+00};
       filter_time->SetParameters(par);
       // original one
-      TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,2))");
+      TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.08,8))");
       // new test ... 
       // TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,6))");
       
@@ -1743,7 +1743,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	float min_adc_limit = 50;
 
 	float upper_adc_limit = 15;
-	float upper_decon_limit = 0.05;
+	float upper_decon_limit = 0.02;
 	// new cut possibility ...  
 	// float upper_decon_limit = 0.02;
 	
