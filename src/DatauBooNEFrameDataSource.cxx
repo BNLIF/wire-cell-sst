@@ -1285,10 +1285,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       double par[2]={1.43555e+01/200.*2.,4.95096e+00};
       filter_time->SetParameters(par);
       // original one
-      TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.08,8))");
+      TF1 *filter_low = new TF1("filter_low","(1-exp(-pow(x/0.08,8)))*(x<=0.177||x>=0.18)*(x<=0.2143||x>=0.215)*(x<=0.106||x>=0.109)*(x<=0.25||x>=0.251)"); // Xiangpan's filter .... 
       // new test ... 
       // TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,6))");
-      
+      TF1 *filter_low_loose = new TF1("filter_low_loose","1-exp(-pow(x/0.005,2))"); // loose filter ... 
       
 
       std::cout << "Load Data " << std::endl;
@@ -1743,7 +1743,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	float min_adc_limit = 50;
 
 	float upper_adc_limit = 15;
-	float upper_decon_limit = 0.02;
+	float upper_decon_limit = 0.02; // same for U and V???
+	float upper_decon_limit1 = 0.08; // same for U and V???
 	// new cut possibility ...  
 	// float upper_decon_limit = 0.02;
 	
@@ -1864,7 +1865,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      double rho = hm->GetBinContent(j+1)/hmr_u->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low->Eval(freq);
 	      double phi = hp->GetBinContent(j+1) - hpr_u->GetBinContent(j+1);
 	      
-	      //   if(freq < 0.03) rho = 0;
+	      
 	      if (j==0) rho = 0;
 	      value_re[j] = rho*cos(phi)/nbin;
 	      value_im[j] = rho*sin(phi)/nbin;
@@ -1977,67 +1978,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    }
 	    
 	    
-	    
-	    
-	    
-	  //   for (int j=0;j!=nbin;j++)
-	  //     if( signalsBool.at(j) == 1 )
-	  // 	signals.push_back(j);
-	    
-	    
-	  //   // adaptive baseline 
-	  //   for (int j=0;j!=signals.size();j++){
-	  //     int bin = signals.at(j);
-	  //     int prev_bin=bin;
-	  //     int next_bin=bin;
-	      
-	  //     int flag = 1;
-	  //     while(flag){
-	  // 	prev_bin--;
-	  // 	if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-	  // 	  flag = 0;
-	  // 	}
-	  //     }
-	      
-      	  //   // prev_bin = prev_bin - pad_window;
-      	  //   // if (prev_bin <0) prev_bin = 0;
-
-      	  //   flag =1;
-      	  //   while(flag){
-      	  //     next_bin++;
-      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-	    
-      	  //   // next_bin = next_bin + pad_window;
-      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
-	    
-      	  //   // if (prev_bin>0) prev_bin --;
-      	  //   // if (next_bin<nbin-1) next_bin++; 
-
-
-      	  //   float prev_content=0, next_content=0;
-      	  //   // if (prev_bin >=4){
-      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	  //   // }else{
-      	  //   prev_content = h44->GetBinContent(prev_bin+1);
-      	  //   // }
-      	  //   // if (next_bin <= nbin-5){
-      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	  //   // }else{
-      	  //   next_content = h44->GetBinContent(next_bin+1);
-      	  //   // }
-	    
-
-      	  //   //std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-      	  //   float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	  //     * (next_content - prev_content);
-      	  //   h44->SetBinContent(bin+1,content);
-      	  // }
-	       {
+	    {
 	      // partition waveform indices into consecutive regions with
 	      // signalsBool true.
 	      std::vector< std::vector<int> > rois;
@@ -2105,13 +2046,6 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  if (ave_coef1>0)
       	    ave_coef = ave_coef / ave_coef1;
 	  
-      	  // for (int k=0;k!=uplane_all.at(i).size();k++){
-      	  //   std::cout << "U " << uplane_all.at(i).at(k) << " " <<  coef_all.at(k) << " " << ave_coef << " " << coef_all.at(k)/ave_coef << std::endl;
-      	  //   //std::cout << "U Ave: " << ave_coef << std::endl;
-      	  // }
-      	  //  
-
-      	  //h44->Reset();
 
       	  
 	  for (int k=0;k!=uplane_all.at(i).size();k++){
@@ -2298,103 +2232,46 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  }
 
 	    
-      	  // for (int j=0;j!=nbin;j++)
-      	  // 	if( signalsBool.at(j) == 1 )
-      	  // 		signals.push_back(j);
-	  
-      	  // // adaptive baseline 
-      	  // for (int j=0;j!=signals.size();j++){
-      	  //   int bin = signals.at(j);
-      	  //   int prev_bin=bin;
-      	  //   int next_bin=bin;
-	    
-      	  //   int flag = 1;
-      	  //   while(flag){
-      	  //     prev_bin--;
-      	  //     if (find(signals.begin(),signals.end(),prev_bin)==signals.end() || prev_bin <=0){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
 
-      	  //   // prev_bin = prev_bin - pad_window;
-      	  //   // if (prev_bin <0) prev_bin = 0;
-
-      	  //   flag =1;
-      	  //   while(flag){
-      	  //     next_bin++;
-      	  //     if (find(signals.begin(),signals.end(),next_bin)==signals.end() || next_bin >=nbin-1){
-      	  // 	flag = 0;
-      	  //     }
-      	  //   }
-	    
-      	  //   //  next_bin = next_bin + pad_window;
-      	  //   // if (next_bin > nbin-1) next_bin = nbin-1; 
-
-      	  //   //  if (prev_bin>0) prev_bin --;
-      	  //   // if (next_bin<nbin-1) next_bin++; 
-
-      	  //   float prev_content, next_content;
-      	  //   // if (prev_bin >=4){
-      	  //   //   prev_content = (h44->GetBinContent(prev_bin+1) + h44->GetBinContent(prev_bin) + h44->GetBinContent(prev_bin-1) + 
-      	  //   // 		      h44->GetBinContent(prev_bin-2) + h44->GetBinContent(prev_bin-3))/5.;
-      	  //   // }else{
-      	  //     prev_content = h44->GetBinContent(prev_bin+1);
-      	  //   // }
-      	  //   // if (next_bin <= nbin-5){
-      	  //   //   next_content = (h44->GetBinContent(next_bin+1) + h44->GetBinContent(next_bin+2) + h44->GetBinContent(next_bin+3)+
-      	  //   // 		      h44->GetBinContent(next_bin+4) + h44->GetBinContent(next_bin+5))/5.;
-      	  //   // }else{
-      	  //     next_content = h44->GetBinContent(next_bin+1);
-      	  //   // }
-
-	  //     // if (next_bin-prev_bin <20)
-	  //     // 	std::cout << prev_bin << " " << bin << " " << next_bin << " " << signals.size() << std::endl;
-
-	  //     float content = prev_content + (bin - prev_bin)/ (next_bin - prev_bin*1.0) 
-      	  //     * (next_content - prev_content);
-
-      	  //   h44->SetBinContent(bin+1,content);
-      	  // }
-
-	     {
-	      // partition waveform indices into consecutive regions with
-	      // signalsBool true.
-	      std::vector< std::vector<int> > rois;
-	      bool inside = false;
-	      for (int ind=0; ind<nbin; ++ind) {
-		if (inside) {
-		  if (signalsBool[ind]) { // still inside
-                    rois.back().push_back(ind);
-		  }else{
-		    inside = false;
-		  }
+	  {
+	    // partition waveform indices into consecutive regions with
+	    // signalsBool true.
+	    std::vector< std::vector<int> > rois;
+	    bool inside = false;
+	    for (int ind=0; ind<nbin; ++ind) {
+	      if (inside) {
+		if (signalsBool[ind]) { // still inside
+		  rois.back().push_back(ind);
+		}else{
+		  inside = false;
 		}
-		else {                  // outside the Rio
-		  if (signalsBool[ind]) { // just entered ROI
-                    std::vector<int> roi;
+	      }
+	      else {                  // outside the Rio
+		if (signalsBool[ind]) { // just entered ROI
+		  std::vector<int> roi;
                     roi.push_back(ind);
                     rois.push_back(roi);
 		    inside = true;
-		  }
-		}
-	      }
-	      // Replace medians for above regions with interpolation on values
-	      // just outside each region.
-	      for (auto roi : rois) {
-		// original code used the bins just outside the ROI
-		const int bin0 = std::max(roi.front()-1, 0);
-		const int binf = std::min(roi.back()+1, nbin-1);
-		const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
-		const double mf = h44->GetBinContent(binf+1);//medians[binf];
-		const double roi_run = binf - bin0;
-		const double roi_rise = mf - m0;
-		for (auto bin : roi) {
-		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
-		  h44->SetBinContent(bin+1,m);
-		  //medians.at(bin) = m;
 		}
 	      }
 	    }
+	    // Replace medians for above regions with interpolation on values
+	    // just outside each region.
+	    for (auto roi : rois) {
+	      // original code used the bins just outside the ROI
+	      const int bin0 = std::max(roi.front()-1, 0);
+	      const int binf = std::min(roi.back()+1, nbin-1);
+	      const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
+	      const double mf = h44->GetBinContent(binf+1);//medians[binf];
+	      const double roi_run = binf - bin0;
+	      const double roi_rise = mf - m0;
+	      for (auto bin : roi) {
+		const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		h44->SetBinContent(bin+1,m);
+		//medians.at(bin) = m;
+	      }
+	    }
+	  }
 	  
 
       	  // calculate scaling coefficient ... 
