@@ -2007,7 +2007,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      {
 		// use ROI to get a new waveform ...
 		TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
-		h44->Reset();
+		h44_temp->Reset();
 		for (auto roi: rois){
 		  const int bin0 = std::max(roi.front()-1, 0);
 		  const int binf = std::min(roi.back()+1, nbin-1);
@@ -2066,7 +2066,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		    }
 		  }
 		  
-		  //std::cout << "Xin: " << upper_decon_limit1 << std::endl;
+		  //std::cout << "Xin: " << upper_decon_limit1 << " " << max_val << std::endl;
 		  
 		  if ( max_val > upper_decon_limit1)
 		    flag_replace[roi.front()] = true;
@@ -2353,7 +2353,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    {
 	      // use ROI to get a new waveform ...
 	      TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
-	      h44->Reset();
+	      h44_temp->Reset();
 	      for (auto roi: rois){
 		const int bin0 = std::max(roi.front()-1, 0);
 		const int binf = std::min(roi.back()+1, nbin-1);
@@ -2397,7 +2397,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		
 		// to be modified ... 
 		for (int i=bin0; i<=binf; i++){
-		  int time_bin = i-vplane_time_shift;
+		  int time_bin = i - vplane_time_shift;
 		  if (time_bin <0) time_bin += nbin;
 		  if (time_bin >=nbin) time_bin -= nbin;
 		  
