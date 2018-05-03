@@ -1286,8 +1286,6 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       filter_time->SetParameters(par);
       // original one
       TF1 *filter_low = new TF1("filter_low","(1-exp(-pow(x/0.08,8)))*(x<=0.177||x>=0.18)*(x<=0.2143||x>=0.215)*(x<=0.106||x>=0.109)*(x<=0.25||x>=0.251)"); // Xiangpan's filter .... 
-      // new test ... 
-      // TF1 *filter_low = new TF1("filter_low","1-exp(-pow(x/0.06,6))");
       TF1 *filter_low_loose = new TF1("filter_low_loose","1-exp(-pow(x/0.005,2))"); // loose filter ... 
       
 
@@ -1904,7 +1902,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      if ((content-mean)>std::max(protection_factor*rms,upper_decon_limit)){
 	    	int time_bin = j + uplane_time_shift;
 	    	if (time_bin >= nbin) time_bin -= nbin;
-	    	h44->SetBinContent(time_bin+1,0);
+		//	h44->SetBinContent(time_bin+1,0);
 	    	signalsBool.at(time_bin) = 1;
 	     	// add the front and back padding
 	     	for (int k=0;k!=pad_window_ub;k++){
@@ -1954,7 +1952,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    for (int j=0;j!=nbin;j++){
 	      float content = h44->GetBinContent(j+1);
 	      if (fabs(content-mean)>std::min(std::max(protection_factor*rms,upper_adc_limit),min_adc_limit)){
-	    	h44->SetBinContent(j+1,0);
+		//	    	h44->SetBinContent(j+1,0);
 	    	//signals.push_back(j);
 	    	signalsBool.at(j) = 1;
 	    	// add the front and back padding
@@ -2000,20 +1998,105 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		  }
 		}
 	      }
+	      std::map<int, bool> flag_replace;
+	      for (auto roi: rois){
+		flag_replace[roi.front()] = true;
+	      }
+
+	      // new deconvolution ...
+	      {
+		// use ROI to get a new waveform ...
+		TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
+		h44->Reset();
+		for (auto roi: rois){
+		  const int bin0 = std::max(roi.front()-1, 0);
+		  const int binf = std::min(roi.back()+1, nbin-1);
+		  const double m0 = h44->GetBinContent(bin0+1);
+		  const double mf = h44->GetBinContent(binf+1);
+		  const double roi_run = binf - bin0;
+		  const double roi_rise = mf - m0;
+		  for (auto bin : roi) {
+		    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		    h44_temp->SetBinContent(bin+1,h44->GetBinContent(bin+1)- m);
+		  }
+		}
+		// do the deconvolution with a very loose low-frequency filter
+		TH1 *hm = h44_temp->FFT(0,"MAG");
+		TH1 *hp = h44_temp->FFT(0,"PH");
+		for (Int_t j=0;j!=nbin;j++){
+		  double freq=0;
+		  if (j < nbin/2.){
+		    freq = j/(1.*nbin)*2.;
+		  }else{
+		    freq = (nbin - j)/(1.*nbin)*2.;
+		  }
+		  double rho = hm->GetBinContent(j+1)/hmr_u->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
+		  double phi = hp->GetBinContent(j+1) - hpr_u->GetBinContent(j+1);
+		  value_re[j] = rho*cos(phi)/nbin;
+		  value_im[j] = rho*sin(phi)/nbin;
+		}
+		Int_t n = nbin;
+		TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
+		ifft->SetPointsComplex(value_re,value_im);
+		ifft->Transform();
+		TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
+		
+		for (auto roi: rois){
+		  const int bin0 = std::max(roi.front()-1, 0);
+		  const int binf = std::min(roi.back()+1, nbin-1);
+		  flag_replace[roi.front()] = false;
+		  
+		  double max_val=0;
+		  
+		  
+		  // to be modified ... 
+		  for (int i=bin0; i<=binf; i++){
+	    	    int time_bin = i-uplane_time_shift;
+	    	    if (time_bin <0) time_bin += nbin;
+		    if (time_bin >=nbin) time_bin -= nbin;
+		    
+		    if (i==bin0){
+		      max_val = fb->GetBinContent(time_bin+1);
+		      // max_adc_val = medians.at(i);
+		      // min_adc_val = medians.at(i);
+		    }else{
+		      if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
+		      // if (medians.at(i) > max_adc_val) max_adc_val = medians.at(i);
+		      // if (medians.at(i) < min_adc_val) min_adc_val = medians.at(i);
+		    }
+		  }
+		  
+		  //std::cout << "Xin: " << upper_decon_limit1 << std::endl;
+		  
+		  if ( max_val > upper_decon_limit1)
+		    flag_replace[roi.front()] = true;
+		  
+		}
+		
+		//judge if a roi is good or not, shrink things back properly ...
+		delete h44_temp;
+		delete hm;
+		delete hp;
+		delete fb;
+		delete ifft;
+	      }
+	      
 	      // Replace medians for above regions with interpolation on values
 	      // just outside each region.
 	      for (auto roi : rois) {
 		// original code used the bins just outside the ROI
 		const int bin0 = std::max(roi.front()-1, 0);
 		const int binf = std::min(roi.back()+1, nbin-1);
-		const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
-		const double mf = h44->GetBinContent(binf+1);//medians[binf];
-		const double roi_run = binf - bin0;
-		const double roi_rise = mf - m0;
-		for (auto bin : roi) {
-		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
-		  h44->SetBinContent(bin+1,m);
-		  //medians.at(bin) = m;
+		if (flag_replace[roi.front()]){
+		  const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
+		  const double mf = h44->GetBinContent(binf+1);//medians[binf];
+		  const double roi_run = binf - bin0;
+		  const double roi_rise = mf - m0;
+		  for (auto bin : roi) {
+		    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		    h44->SetBinContent(bin+1,m);
+		    //medians.at(bin) = m;
+		  }
 		}
 	      }
 	    }
@@ -2157,7 +2240,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    if ((content-mean)>std::max(protection_factor*rms,upper_decon_limit)){
 	      int time_bin = j + vplane_time_shift;
 	      if (time_bin >= nbin) time_bin -= nbin;
-	      h44->SetBinContent(time_bin+1,0);
+	      //h44->SetBinContent(time_bin+1,0);
 	      signalsBool.at(time_bin) = 1;
 	      // add the front and back padding
 	      for (int k=0;k!=pad_window_vb;k++){
@@ -2207,7 +2290,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  for (int j=0;j!=nbin;j++){
       	    float content = h44->GetBinContent(j+1);
       	    if (fabs(content-mean)>std::min(std::max(protection_factor*rms,upper_adc_limit),min_adc_limit)){
-      	      h44->SetBinContent(j+1,0);
+	      //      	      h44->SetBinContent(j+1,0);
       	      //signals.push_back(j);
       	      signalsBool.at(j) = 1;
 	    
@@ -2231,7 +2314,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	    }
       	  }
 
-	    
+
+
+	  
+
+	  
 
 	  {
 	    // partition waveform indices into consecutive regions with
@@ -2255,20 +2342,110 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		}
 	      }
 	    }
+
+	    std::map<int, bool> flag_replace;
+	    
+	    for (auto roi: rois){
+	      flag_replace[roi.front()] = true;
+	    }
+	    
+	    // new deconvolution ... 
+	    {
+	      // use ROI to get a new waveform ...
+	      TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
+	      h44->Reset();
+	      for (auto roi: rois){
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		const double m0 = h44->GetBinContent(bin0+1);
+		const double mf = h44->GetBinContent(binf+1);
+		const double roi_run = binf - bin0;
+		const double roi_rise = mf - m0;
+		for (auto bin : roi) {
+		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		  h44_temp->SetBinContent(bin+1,h44->GetBinContent(bin+1)- m);
+		}
+	      }
+	      // do the deconvolution with a very loose low-frequency filter
+	      TH1 *hm = h44_temp->FFT(0,"MAG");
+	      TH1 *hp = h44_temp->FFT(0,"PH");
+	      for (Int_t j=0;j!=nbin;j++){
+		double freq=0;
+		if (j < nbin/2.){
+		  freq = j/(1.*nbin)*2.;
+		}else{
+		  freq = (nbin - j)/(1.*nbin)*2.;
+		}
+		double rho = hm->GetBinContent(j+1)/hmr_v->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
+		double phi = hp->GetBinContent(j+1) - hpr_v->GetBinContent(j+1);
+		value_re[j] = rho*cos(phi)/nbin;
+		value_im[j] = rho*sin(phi)/nbin;
+	      }
+	      Int_t n = nbin;
+	      TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
+	      ifft->SetPointsComplex(value_re,value_im);
+	      ifft->Transform();
+	      TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
+	      
+	      for (auto roi: rois){
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		flag_replace[roi.front()] = false;
+		
+		double max_val=0;
+		
+		
+		// to be modified ... 
+		for (int i=bin0; i<=binf; i++){
+		  int time_bin = i-vplane_time_shift;
+		  if (time_bin <0) time_bin += nbin;
+		  if (time_bin >=nbin) time_bin -= nbin;
+		  
+		  if (i==bin0){
+		    max_val = fb->GetBinContent(time_bin+1);
+		    // max_adc_val = medians.at(i);
+		    // min_adc_val = medians.at(i);
+		  }else{
+		    if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
+		    // if (medians.at(i) > max_adc_val) max_adc_val = medians.at(i);
+		    // if (medians.at(i) < min_adc_val) min_adc_val = medians.at(i);
+		  }
+		}
+		
+		//std::cout << "Xin: " << upper_decon_limit1 << std::endl;
+		
+		if ( max_val > upper_decon_limit1)
+		  flag_replace[roi.front()] = true;
+		
+	      }
+	      
+	      //judge if a roi is good or not, shrink things back properly ...
+	      delete h44_temp;
+	      delete hm;
+	      delete hp;
+	      delete fb;
+	      delete ifft;
+	    }
+	    
+
+
+	    
 	    // Replace medians for above regions with interpolation on values
 	    // just outside each region.
 	    for (auto roi : rois) {
 	      // original code used the bins just outside the ROI
 	      const int bin0 = std::max(roi.front()-1, 0);
 	      const int binf = std::min(roi.back()+1, nbin-1);
-	      const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
-	      const double mf = h44->GetBinContent(binf+1);//medians[binf];
-	      const double roi_run = binf - bin0;
-	      const double roi_rise = mf - m0;
-	      for (auto bin : roi) {
-		const double m = m0 + (bin - bin0)/roi_run*roi_rise;
-		h44->SetBinContent(bin+1,m);
-		//medians.at(bin) = m;
+	      if (flag_replace[roi.front()]){
+		const double m0 = h44->GetBinContent(bin0+1);//medians[bin0];
+		const double mf = h44->GetBinContent(binf+1);//medians[binf];
+		const double roi_run = binf - bin0;
+		const double roi_rise = mf - m0;
+		for (auto bin : roi) {
+		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		  h44->SetBinContent(bin+1,m);
+		  //medians.at(bin) = m;
+		}
 	      }
 	    }
 	  }
@@ -2397,7 +2574,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	  for (int j=0;j!=nbin;j++){
       	    float content = h44->GetBinContent(j+1);
       	    if (fabs(content-mean)>std::min(protection_factor*rms,min_adc_limit)){
-      	      h44->SetBinContent(j+1,0);
+	      //      	      h44->SetBinContent(j+1,0);
       	      //signals.push_back(j);
       	      signalsBool.at(j) = 1;
 	    
