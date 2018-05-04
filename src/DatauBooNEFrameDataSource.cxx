@@ -1742,7 +1742,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	float upper_adc_limit = 15;
 	float upper_decon_limit = 0.02; // same for U and V???
-	float upper_decon_limit1 = 0.08; // same for U and V???
+	float upper_decon_limit1 = 0.09; // same for U and V???
 	// new cut possibility ...  
 	// float upper_decon_limit = 0.02;
 	
