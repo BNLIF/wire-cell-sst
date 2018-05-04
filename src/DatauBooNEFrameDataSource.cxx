@@ -1975,16 +1975,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      }
 	    }
 	    
-	    
+	    std::vector< std::vector<int> > rois_u;
 	    {
 	      // partition waveform indices into consecutive regions with
 	      // signalsBool true.
-	      std::vector< std::vector<int> > rois;
+	      
 	      bool inside = false;
 	      for (int ind=0; ind<nbin; ++ind) {
 		if (inside) {
 		  if (signalsBool[ind]) { // still inside
-                    rois.back().push_back(ind);
+                    rois_u.back().push_back(ind);
 		  }else{
 		    inside = false;
 		  }
@@ -1993,97 +1993,97 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		  if (signalsBool[ind]) { // just entered ROI
                     std::vector<int> roi;
                     roi.push_back(ind);
-                    rois.push_back(roi);
+                    rois_u.push_back(roi);
 		    inside = true;
 		  }
 		}
 	      }
 	      std::map<int, bool> flag_replace;
-	      for (auto roi: rois){
-		flag_replace[roi.front()] = true;
+	      for (auto roi: rois_u){
+		flag_replace[roi.front()] = false;
 	      }
 
-	      // new deconvolution ...
-	      {
-		// use ROI to get a new waveform ...
-		TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
-		h44_temp->Reset();
-		for (auto roi: rois){
-		  const int bin0 = std::max(roi.front()-1, 0);
-		  const int binf = std::min(roi.back()+1, nbin-1);
-		  const double m0 = h44->GetBinContent(bin0+1);
-		  const double mf = h44->GetBinContent(binf+1);
-		  const double roi_run = binf - bin0;
-		  const double roi_rise = mf - m0;
-		  for (auto bin : roi) {
-		    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
-		    h44_temp->SetBinContent(bin+1,h44->GetBinContent(bin+1)- m);
-		  }
-		}
-		// do the deconvolution with a very loose low-frequency filter
-		TH1 *hm = h44_temp->FFT(0,"MAG");
-		TH1 *hp = h44_temp->FFT(0,"PH");
-		for (Int_t j=0;j!=nbin;j++){
-		  double freq=0;
-		  if (j < nbin/2.){
-		    freq = j/(1.*nbin)*2.;
-		  }else{
-		    freq = (nbin - j)/(1.*nbin)*2.;
-		  }
-		  double rho = hm->GetBinContent(j+1)/hmr_u->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
-		  double phi = hp->GetBinContent(j+1) - hpr_u->GetBinContent(j+1);
-		  value_re[j] = rho*cos(phi)/nbin;
-		  value_im[j] = rho*sin(phi)/nbin;
-		}
-		Int_t n = nbin;
-		TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
-		ifft->SetPointsComplex(value_re,value_im);
-		ifft->Transform();
-		TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
+	      // // new deconvolution ...
+	      // {
+	      // 	// use ROI to get a new waveform ...
+	      // 	TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
+	      // 	h44_temp->Reset();
+	      // 	for (auto roi: rois){
+	      // 	  const int bin0 = std::max(roi.front()-1, 0);
+	      // 	  const int binf = std::min(roi.back()+1, nbin-1);
+	      // 	  const double m0 = h44->GetBinContent(bin0+1);
+	      // 	  const double mf = h44->GetBinContent(binf+1);
+	      // 	  const double roi_run = binf - bin0;
+	      // 	  const double roi_rise = mf - m0;
+	      // 	  for (auto bin : roi) {
+	      // 	    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+	      // 	    h44_temp->SetBinContent(bin+1,h44->GetBinContent(bin+1)- m);
+	      // 	  }
+	      // 	}
+	      // 	// do the deconvolution with a very loose low-frequency filter
+	      // 	TH1 *hm = h44_temp->FFT(0,"MAG");
+	      // 	TH1 *hp = h44_temp->FFT(0,"PH");
+	      // 	for (Int_t j=0;j!=nbin;j++){
+	      // 	  double freq=0;
+	      // 	  if (j < nbin/2.){
+	      // 	    freq = j/(1.*nbin)*2.;
+	      // 	  }else{
+	      // 	    freq = (nbin - j)/(1.*nbin)*2.;
+	      // 	  }
+	      // 	  double rho = hm->GetBinContent(j+1)/hmr_u->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
+	      // 	  double phi = hp->GetBinContent(j+1) - hpr_u->GetBinContent(j+1);
+	      // 	  value_re[j] = rho*cos(phi)/nbin;
+	      // 	  value_im[j] = rho*sin(phi)/nbin;
+	      // 	}
+	      // 	Int_t n = nbin;
+	      // 	TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
+	      // 	ifft->SetPointsComplex(value_re,value_im);
+	      // 	ifft->Transform();
+	      // 	TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
 		
-		for (auto roi: rois){
-		  const int bin0 = std::max(roi.front()-1, 0);
-		  const int binf = std::min(roi.back()+1, nbin-1);
-		  flag_replace[roi.front()] = false;
+	      // 	for (auto roi: rois){
+	      // 	  const int bin0 = std::max(roi.front()-1, 0);
+	      // 	  const int binf = std::min(roi.back()+1, nbin-1);
+	      // 	  flag_replace[roi.front()] = false;
 		  
-		  double max_val=0;
+	      // 	  double max_val=0;
 		  
 		  
-		  // to be modified ... 
-		  for (int i=bin0; i<=binf; i++){
-	    	    int time_bin = i-uplane_time_shift;
-	    	    if (time_bin <0) time_bin += nbin;
-		    if (time_bin >=nbin) time_bin -= nbin;
+	      // 	  // to be modified ... 
+	      // 	  for (int i=bin0; i<=binf; i++){
+	      // 	    int time_bin = i-uplane_time_shift;
+	      // 	    if (time_bin <0) time_bin += nbin;
+	      // 	    if (time_bin >=nbin) time_bin -= nbin;
 		    
-		    if (i==bin0){
-		      max_val = fb->GetBinContent(time_bin+1);
-		      // max_adc_val = medians.at(i);
-		      // min_adc_val = medians.at(i);
-		    }else{
-		      if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
-		      // if (medians.at(i) > max_adc_val) max_adc_val = medians.at(i);
-		      // if (medians.at(i) < min_adc_val) min_adc_val = medians.at(i);
-		    }
-		  }
+	      // 	    if (i==bin0){
+	      // 	      max_val = fb->GetBinContent(time_bin+1);
+	      // 	      // max_adc_val = medians.at(i);
+	      // 	      // min_adc_val = medians.at(i);
+	      // 	    }else{
+	      // 	      if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
+	      // 	      // if (medians.at(i) > max_adc_val) max_adc_val = medians.at(i);
+	      // 	      // if (medians.at(i) < min_adc_val) min_adc_val = medians.at(i);
+	      // 	    }
+	      // 	  }
 		  
-		  //std::cout << "Xin: " << upper_decon_limit1 << " " << max_val << std::endl;
+	      // 	  //std::cout << "Xin: " << upper_decon_limit1 << " " << max_val << std::endl;
 		  
-		  if ( max_val > upper_decon_limit1)
-		    flag_replace[roi.front()] = true;
+	      // 	  if ( max_val > upper_decon_limit1)
+	      // 	    flag_replace[roi.front()] = true;
 		  
-		}
+	      // 	}
 		
-		//judge if a roi is good or not, shrink things back properly ...
-		delete h44_temp;
-		delete hm;
-		delete hp;
-		delete fb;
-		delete ifft;
-	      }
+	      // 	//judge if a roi is good or not, shrink things back properly ...
+	      // 	delete h44_temp;
+	      // 	delete hm;
+	      // 	delete hp;
+	      // 	delete fb;
+	      // 	delete ifft;
+	      // }
 	      
 	      // Replace medians for above regions with interpolation on values
 	      // just outside each region.
-	      for (auto roi : rois) {
+	      for (auto roi : rois_u) {
 		// original code used the bins just outside the ROI
 		const int bin0 = std::max(roi.front()-1, 0);
 		const int binf = std::min(roi.back()+1, nbin-1);
@@ -2137,11 +2137,109 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      scaling = coef_all.at(k)/ave_coef;
 	    if (scaling < 0) scaling = 0;
 	    if (scaling > 1.5) scaling = 1.5;
-	    for (int j=0;j!=nbin;j++){
-      	      if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-      		hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1) * scaling);
-      	      //hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,h44->GetBinContent(j+1)*scaling);
-      	    }
+
+	    
+	    // new protection ... 
+	    {
+	      TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
+	      h44_temp->Reset();
+	      
+	      for (auto roi: rois_u){
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+	      	  const double m0 = hu[uplane_all.at(i).at(k)]->GetBinContent(bin0+1);
+	      	  const double mf = hu[uplane_all.at(i).at(k)]->GetBinContent(binf+1);
+	      	  const double roi_run = binf - bin0;
+	      	  const double roi_rise = mf - m0;
+	      	  for (auto bin : roi) {
+	      	    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+	      	    h44_temp->SetBinContent(bin+1,hu[uplane_all.at(i).at(k)]->GetBinContent(bin+1) - m);
+	      	  }
+	      }
+	      // do the deconvolution ....
+	      TH1 *hm = h44_temp->FFT(0,"MAG");
+	      TH1 *hp = h44_temp->FFT(0,"PH");
+	      for (Int_t j=0;j!=nbin;j++){
+		double freq=0;
+		if (j < nbin/2.){
+		  freq = j/(1.*nbin)*2.;
+		}else{
+		  freq = (nbin - j)/(1.*nbin)*2.;
+		}
+		double rho = hm->GetBinContent(j+1)/hmr_u->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
+		double phi = hp->GetBinContent(j+1) - hpr_u->GetBinContent(j+1);
+		value_re[j] = rho*cos(phi)/nbin;
+		value_im[j] = rho*sin(phi)/nbin;
+	      }
+	      Int_t n = nbin;
+	      TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
+	      ifft->SetPointsComplex(value_re,value_im);
+	      ifft->Transform();
+	      TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
+
+	      std::map<int, bool> flag_replace;
+	      for (auto roi: rois_u){
+		flag_replace[roi.front()] = false;
+	      }
+
+	      for (auto roi: rois_u){
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+	      		  
+		double max_val=0;
+		
+		for (int i=bin0; i<=binf; i++){
+		  int time_bin = i-uplane_time_shift;
+		  if (time_bin <0) time_bin += nbin;
+		  if (time_bin >=nbin) time_bin -= nbin;
+		    
+		  if (i==bin0){
+		    max_val = fb->GetBinContent(time_bin+1);
+		  }else{
+		    if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
+		    
+		  }
+		}
+		  
+		if ( max_val > upper_decon_limit1)
+		  flag_replace[roi.front()] = true;
+	      }
+
+
+	      TH1F *h44_temp1 = (TH1F*)h44->Clone("h44_temp1");
+	      for (auto roi : rois_u) {
+		// original code used the bins just outside the ROI
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		if (flag_replace[roi.front()]){
+		  const double m0 = h44_temp1->GetBinContent(bin0+1);
+		  const double mf = h44_temp1->GetBinContent(binf+1);
+		  const double roi_run = binf - bin0;
+		  const double roi_rise = mf - m0;
+		  for (auto bin : roi) {
+		    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		    h44_temp1->SetBinContent(bin+1,m);
+		  }
+		}
+	      }
+	      
+
+	      for (int j=0;j!=nbin;j++){
+		if (fabs(hu[uplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		  hu[uplane_all.at(i).at(k)]->SetBinContent(j+1,hu[uplane_all.at(i).at(k)]->GetBinContent(j+1)-h44_temp1->GetBinContent(j+1) * scaling);
+	      }
+	      
+	      
+	      delete h44_temp;
+	      delete h44_temp1;
+	      delete hm;
+	      delete hp;
+	      delete fb;
+	      delete ifft;
+	    }
+
+	    
+	   
       	  }
 
 
@@ -2319,16 +2417,16 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  
 
 	  
-
+	  std::vector< std::vector<int> > rois_v;
 	  {
 	    // partition waveform indices into consecutive regions with
 	    // signalsBool true.
-	    std::vector< std::vector<int> > rois;
+	    
 	    bool inside = false;
 	    for (int ind=0; ind<nbin; ++ind) {
 	      if (inside) {
 		if (signalsBool[ind]) { // still inside
-		  rois.back().push_back(ind);
+		  rois_v.back().push_back(ind);
 		}else{
 		  inside = false;
 		}
@@ -2337,7 +2435,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		if (signalsBool[ind]) { // just entered ROI
 		  std::vector<int> roi;
                     roi.push_back(ind);
-                    rois.push_back(roi);
+                    rois_v.push_back(roi);
 		    inside = true;
 		}
 	      }
@@ -2345,94 +2443,15 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
 	    std::map<int, bool> flag_replace;
 	    
-	    for (auto roi: rois){
-	      flag_replace[roi.front()] = true;
+	    for (auto roi: rois_v){
+	      flag_replace[roi.front()] = false;
 	    }
 	    
-	    // new deconvolution ... 
-	    {
-	      // use ROI to get a new waveform ...
-	      TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
-	      h44_temp->Reset();
-	      for (auto roi: rois){
-		const int bin0 = std::max(roi.front()-1, 0);
-		const int binf = std::min(roi.back()+1, nbin-1);
-		const double m0 = h44->GetBinContent(bin0+1);
-		const double mf = h44->GetBinContent(binf+1);
-		const double roi_run = binf - bin0;
-		const double roi_rise = mf - m0;
-		for (auto bin : roi) {
-		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
-		  h44_temp->SetBinContent(bin+1,h44->GetBinContent(bin+1)- m);
-		}
-	      }
-	      // do the deconvolution with a very loose low-frequency filter
-	      TH1 *hm = h44_temp->FFT(0,"MAG");
-	      TH1 *hp = h44_temp->FFT(0,"PH");
-	      for (Int_t j=0;j!=nbin;j++){
-		double freq=0;
-		if (j < nbin/2.){
-		  freq = j/(1.*nbin)*2.;
-		}else{
-		  freq = (nbin - j)/(1.*nbin)*2.;
-		}
-		double rho = hm->GetBinContent(j+1)/hmr_v->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
-		double phi = hp->GetBinContent(j+1) - hpr_v->GetBinContent(j+1);
-		value_re[j] = rho*cos(phi)/nbin;
-		value_im[j] = rho*sin(phi)/nbin;
-	      }
-	      Int_t n = nbin;
-	      TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
-	      ifft->SetPointsComplex(value_re,value_im);
-	      ifft->Transform();
-	      TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
-	      
-	      for (auto roi: rois){
-		const int bin0 = std::max(roi.front()-1, 0);
-		const int binf = std::min(roi.back()+1, nbin-1);
-		flag_replace[roi.front()] = false;
-		
-		double max_val=0;
-		
-		
-		// to be modified ... 
-		for (int i=bin0; i<=binf; i++){
-		  int time_bin = i - vplane_time_shift;
-		  if (time_bin <0) time_bin += nbin;
-		  if (time_bin >=nbin) time_bin -= nbin;
-		  
-		  if (i==bin0){
-		    max_val = fb->GetBinContent(time_bin+1);
-		    // max_adc_val = medians.at(i);
-		    // min_adc_val = medians.at(i);
-		  }else{
-		    if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
-		    // if (medians.at(i) > max_adc_val) max_adc_val = medians.at(i);
-		    // if (medians.at(i) < min_adc_val) min_adc_val = medians.at(i);
-		  }
-		}
-		
-		//std::cout << "Xin: " << upper_decon_limit1 << std::endl;
-		
-		if ( max_val > upper_decon_limit1)
-		  flag_replace[roi.front()] = true;
-		
-	      }
-	      
-	      //judge if a roi is good or not, shrink things back properly ...
-	      delete h44_temp;
-	      delete hm;
-	      delete hp;
-	      delete fb;
-	      delete ifft;
-	    }
-	    
-
-
+	  
 	    
 	    // Replace medians for above regions with interpolation on values
 	    // just outside each region.
-	    for (auto roi : rois) {
+	    for (auto roi : rois_v) {
 	      // original code used the bins just outside the ROI
 	      const int bin0 = std::max(roi.front()-1, 0);
 	      const int binf = std::min(roi.back()+1, nbin-1);
@@ -2497,13 +2516,114 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      scaling = coef_all.at(k)/ave_coef;
 	    if (scaling < 0) scaling = 0;
 	    if (scaling > 1.5) scaling = 1.5;
-	    for (int j=0;j!=nbin;j++){
-      	      if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
-		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44->GetBinContent(j+1)* scaling);
-		//		hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,h44->GetBinContent(j+1)*scaling);
-      	    }
-      	  }
 
+
+
+	    // new protection ... 
+	    {
+	      TH1F *h44_temp = (TH1F*)h44->Clone("h44_temp");
+	      h44_temp->Reset();
+	      
+	      for (auto roi: rois_v){
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		const double m0 = hv[vplane_all.at(i).at(k)]->GetBinContent(bin0+1);
+		const double mf = hv[vplane_all.at(i).at(k)]->GetBinContent(binf+1);
+		const double roi_run = binf - bin0;
+		const double roi_rise = mf - m0;
+		for (auto bin : roi) {
+		  const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		  h44_temp->SetBinContent(bin+1,hv[vplane_all.at(i).at(k)]->GetBinContent(bin+1) - m);
+		}
+	      }
+	      // do the deconvolution ....
+	      TH1 *hm = h44_temp->FFT(0,"MAG");
+	      TH1 *hp = h44_temp->FFT(0,"PH");
+	      for (Int_t j=0;j!=nbin;j++){
+		double freq=0;
+		if (j < nbin/2.){
+		  freq = j/(1.*nbin)*2.;
+		}else{
+		  freq = (nbin - j)/(1.*nbin)*2.;
+		}
+		double rho = hm->GetBinContent(j+1)/hmr_v->GetBinContent(j+1) *filter_time->Eval(freq)*filter_low_loose->Eval(freq);
+		double phi = hp->GetBinContent(j+1) - hpr_v->GetBinContent(j+1);
+		value_re[j] = rho*cos(phi)/nbin;
+		value_im[j] = rho*sin(phi)/nbin;
+	      }
+	      Int_t n = nbin;
+	      TVirtualFFT *ifft = TVirtualFFT::FFT(1,&n,"C2R M K");
+	      ifft->SetPointsComplex(value_re,value_im);
+	      ifft->Transform();
+	      TH1 *fb = TH1::TransformHisto(ifft,0,"Re");
+
+	      std::map<int, bool> flag_replace;
+	      for (auto roi: rois_v){
+		flag_replace[roi.front()] = false;
+	      }
+
+	      for (auto roi: rois_v){
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+	      		  
+		double max_val=0;
+		
+		for (int i=bin0; i<=binf; i++){
+		  int time_bin = i-vplane_time_shift;
+		  if (time_bin <0) time_bin += nbin;
+		  if (time_bin >=nbin) time_bin -= nbin;
+		  
+		  if (i==bin0){
+		    max_val = fb->GetBinContent(time_bin+1);
+		  }else{
+		    if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
+		    
+		  }
+		}
+		
+		if ( max_val > upper_decon_limit1)
+		  flag_replace[roi.front()] = true;
+	      }
+
+	      
+	      TH1F *h44_temp1 = (TH1F*)h44->Clone("h44_temp1");
+	      for (auto roi : rois_v) {
+		// original code used the bins just outside the ROI
+		const int bin0 = std::max(roi.front()-1, 0);
+		const int binf = std::min(roi.back()+1, nbin-1);
+		if (flag_replace[roi.front()]){
+		  const double m0 = h44_temp1->GetBinContent(bin0+1);
+		  const double mf = h44_temp1->GetBinContent(binf+1);
+		  const double roi_run = binf - bin0;
+		  const double roi_rise = mf - m0;
+		  for (auto bin : roi) {
+		    const double m = m0 + (bin - bin0)/roi_run*roi_rise;
+		    h44_temp1->SetBinContent(bin+1,m);
+		  }
+		}
+	      }
+	      
+	      for (int j=0;j!=nbin;j++){
+		if (fabs(hv[vplane_all.at(i).at(k)]->GetBinContent(j+1))>0.001)
+		  hv[vplane_all.at(i).at(k)]->SetBinContent(j+1,hv[vplane_all.at(i).at(k)]->GetBinContent(j+1)-h44_temp1->GetBinContent(j+1)* scaling);
+	      }
+	      
+	      
+	      
+	      delete h44_temp;
+	      delete h44_temp1;
+	      delete hm;
+	      delete hp;
+	      delete fb;
+	      delete ifft;
+	    }
+
+	    
+	    
+
+
+	    
+	  }
       	}
 
       	delete h3;
@@ -2652,7 +2772,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       	  //   h44->SetBinContent(bin+1,content);
       	  // }
-	  	    {
+	  {
 	      // partition waveform indices into consecutive regions with
 	      // signalsBool true.
 	      std::vector< std::vector<int> > rois;
