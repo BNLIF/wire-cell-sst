@@ -2203,7 +2203,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		  }
 		}
 		  
-		if ( max_val > upper_decon_limit1 && fabs(min_val) < max_val*0.6)
+		if ( max_val > upper_decon_limit1 && fabs(min_val) < max_val*0.8)
 		  flag_replace[roi.front()] = true;
 	      }
 
@@ -2585,7 +2585,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		  }
 		}
 		
-		if ( max_val > upper_decon_limit1 && fabs(min_val) < 0.6*max_val)
+		if ( max_val > upper_decon_limit1 && fabs(min_val) < 0.8*max_val)
 		  flag_replace[roi.front()] = true;
 	      }
 
