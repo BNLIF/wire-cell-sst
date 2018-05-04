@@ -2187,6 +2187,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		const int binf = std::min(roi.back()+1, nbin-1);
 	      		  
 		double max_val=0;
+		double min_val=0;
 		
 		for (int i=bin0; i<=binf; i++){
 		  int time_bin = i-uplane_time_shift;
@@ -2195,13 +2196,14 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		    
 		  if (i==bin0){
 		    max_val = fb->GetBinContent(time_bin+1);
+		    min_val = fb->GetBinContent(time_bin+1);
 		  }else{
 		    if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
-		    
+		    if (fb->GetBinContent(time_bin+1) < min_val) min_val = fb->GetBinContent(time_bin+1);
 		  }
 		}
 		  
-		if ( max_val > upper_decon_limit1)
+		if ( max_val > upper_decon_limit1 && fabs(min_val) < max_val*0.6)
 		  flag_replace[roi.front()] = true;
 	      }
 
@@ -2567,7 +2569,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		const int binf = std::min(roi.back()+1, nbin-1);
 	      		  
 		double max_val=0;
-		
+		double min_val = 0;
 		for (int i=bin0; i<=binf; i++){
 		  int time_bin = i-vplane_time_shift;
 		  if (time_bin <0) time_bin += nbin;
@@ -2575,13 +2577,15 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 		  
 		  if (i==bin0){
 		    max_val = fb->GetBinContent(time_bin+1);
+		    min_val = fb->GetBinContent(time_bin+1);
 		  }else{
 		    if (fb->GetBinContent(time_bin+1) > max_val) max_val = fb->GetBinContent(time_bin+1);
+		    if (fb->GetBinContent(time_bin+1) < min_val) min_val = fb->GetBinContent(time_bin+1);
 		    
 		  }
 		}
 		
-		if ( max_val > upper_decon_limit1)
+		if ( max_val > upper_decon_limit1 && fabs(min_val) < 0.6*max_val)
 		  flag_replace[roi.front()] = true;
 	      }
 
