@@ -1297,6 +1297,10 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       
       for (size_t ind=0; ind < nchannels; ++ind) {
 	TH1F* signal = dynamic_cast<TH1F*>(esignal->At(ind));
+
+
+	//	std::cout << ind << " " << 0 << std::endl;
+	
 	if (!signal) continue;
 	// {
 	//     return -1;
@@ -1304,6 +1308,8 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	
 	WireCell::Trace trace;
 	trace.chid = channelid->at(ind);
+
+	//	std::cout << ind << " " << signal->GetNbinsX() << std::endl;
 	
 	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
 	//trace.charge.resize(bins_per_frame, 0.0);
