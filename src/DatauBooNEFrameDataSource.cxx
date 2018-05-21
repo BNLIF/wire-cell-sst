@@ -1297,7 +1297,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       
       for (size_t ind=0; ind < nchannels; ++ind) {
 	TH1F* signal = dynamic_cast<TH1F*>(esignal->At(ind));
-
+	// TH1S* temp_signal = dynamic_cast<TH1S*>(esignal->At(ind));
+	// TH1F* signal = new TH1F("signal","signal",temp_signal->GetNbinsX(),0,temp_signal->GetNbinsX());
+	// for (int i=0;i!=temp_signal->GetNbinsX();i++){
+	//   signal->SetBinContent(i+1,temp_signal->GetBinContent(i+1));
+	// }
 
 	//	std::cout << ind << " " << 0 << std::endl;
 	
@@ -1349,8 +1353,9 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
 	    htemp->SetBinContent(ibin+1,signal->GetBinContent(ibin+1)-threshold);
 	  }
-	}	
+	}
 	
+	//	delete signal;
       }
       delete hnoise;
       
