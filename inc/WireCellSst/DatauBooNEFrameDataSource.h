@@ -23,7 +23,7 @@ namespace WireCellSst {
       //WireCellSst::RootEvent event;
 
       public:
-      DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600, int flag_add_noise = 0);
+      DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600, int inactiveNF = 0, int flag_add_noise = 0);
 	DatauBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds);
 
 	virtual ~DatauBooNEFrameDataSource();
@@ -88,6 +88,7 @@ namespace WireCellSst {
 	std::vector<WireCell::PMTNoiseROI*> PMT_ROIs;
 	
 	int flag_add_noise;
+	int inactiveNF;
 
 	const WireCell::GeomDataSource& gds;
 	const char* root_file;

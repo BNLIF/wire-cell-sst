@@ -246,11 +246,12 @@ WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const TH2F *hu
 }
 
 
-WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1, int flag_add_noise)
+WireCellSst::DatauBooNEFrameDataSource::DatauBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1, int inactiveNF, int flag_add_noise)
     : WireCell::FrameDataSource()
     , root_file(root_file)
     , gds(gds)
     , load_results_from_file(false)
+    , inactiveNF(inactiveNF)
     , flag_add_noise(flag_add_noise)
     , nwire_u(0)
     , nwire_v(0)
@@ -1036,7 +1037,7 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
   }
 
   // std::cout << "Xin: " << planeNum << " " << channel_no << " " << rmsVal << std::endl;
-   
+if(!inactiveNF){
   if(rmsVal > maxRMSCut[planeNum] || rmsVal < minRMSCut[planeNum])
     //if(rmsVal > maxRMSCut[planeNum] )
     //if( rmsVal < minRMSCut[planeNum])
@@ -1046,7 +1047,7 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
 	{
 	  hist->SetBinContent(i+1,10000.0);
 	}         
-      
+     
       if (planeNum == 0){
 	//u-plane
 	if (uchirp_map.find(channel_no) == uchirp_map.end()){
@@ -1072,10 +1073,9 @@ void WireCellSst::DatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int plan
 	  wchirp_map[channel_no].first = 0;
 	  wchirp_map[channel_no].second = numBins-1;
 	}
-      }
-                 
+      }                 
     }
-  
+}  
   return;
 }
 
@@ -1220,6 +1220,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
     
     // default is misconfigued
     flag_mis_config = 1; 
+    if(inactiveNF) flag_mis_config = 0;
 
     //when is it configued correctly
     if (run_no>=5112 && run_no <= 5281 ){
@@ -1341,9 +1342,11 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	    Simu_Noise_uBooNE_Empirical(hnoise,2,trace.chid-nwire_u-nwire_v);
 	  }
 	}
-	
+
+    if(!inactiveNF){
 	fix_ADC_shift(trace.chid,signal);
-	
+    }
+
 	if (flag_add_noise){
 	  for (int ibin=0; ibin != bins_per_frame; ibin++) {
 	    // pure noise to be fixed
@@ -1417,6 +1420,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	  if (chan >=7136 - 4800 && chan <=7263 - 4800){
 	    if (chan != 7200- 4800 && chan!=7215 - 4800)
 	      isCut = 1;
+        if(inactiveNF) isCut = 0;
 	  }
 	  if( isCut){
 	    if (wchirp_map.find(i) == wchirp_map.end()){
@@ -1578,6 +1582,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 	      ((channel_no>=2240&&channel_no<=2255)&&run_no>=6700&&run_no<=6998) ||
 	      (channel_no>=2048&&channel_no<=2079||channel_no>=2240&&channel_no<=2255)&&run_no>6998){
 	    flag_restore = 1;
+        if(inactiveNF) flag_restore = 0;
 	  }
 
 	  //std::cout << run_no << " " << flag_mis_config << " " << channel_no << " " << flag_restore << std::endl;
