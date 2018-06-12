@@ -649,7 +649,7 @@ void WireCellSst::DatauBooNEFrameDataSource::chirp_id(TH1F *hist, int plane, int
       // 	}
 
       //How to save the chirp results ... 
-      
+if(!inactiveNF){ 
       if (plane == 0){
 	//u-plane
 	if (uchirp_map.find(channel_no) == uchirp_map.end()){
@@ -684,6 +684,7 @@ void WireCellSst::DatauBooNEFrameDataSource::chirp_id(TH1F *hist, int plane, int
 	    wchirp_map[channel_no].second = lastLowRMSBin-1;
 	}
       }
+}
     }
 }
 
@@ -1476,6 +1477,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
 
       std::cout << "Identify Chirping" << std::endl;
       // deal with the chirping ... set chirping part > 10000
+    if(!inactiveNF){
       for (int i=0;i!=nu;i++){
       	chirp_id(hu[i],0,i);
       }
@@ -1485,6 +1487,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       for (int i=0;i!=nw;i++){
       	chirp_id(hw[i],2,i);
       }
+    }
       // std::cout << "Before Chirp ID " << uchirp_map.size() << " " << 
       //  	vchirp_map.size() << " " << wchirp_map.size() << std::endl;
       
@@ -1532,7 +1535,6 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       std::cout << "ID RC channels!" << std::endl;
       
      
-
       for (int i=0;i!=nu;i++){
       	if (ID_RC(hu[i],0,i)){
 	  ided_rc_uplane.push_back(i);
@@ -1705,6 +1707,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       
       std::cout << "Noisy Channel " << std::endl;
       // deal with the noisy signal, and put them into chirping map 
+  if(!inactiveNF){
       for (int i=0;i!=nu;i++){
       	SignalFilter(hu[i]);
       	NoisyFilterAlg(hu[i],0,i);
@@ -1720,7 +1723,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       	NoisyFilterAlg(hw[i],2,i);
       	RemoveFilterFlags(hw[i]);
       }
-
+  }
 
       // for (int i=2016; i<2400;i++){
       // 	int channel_no = i;
