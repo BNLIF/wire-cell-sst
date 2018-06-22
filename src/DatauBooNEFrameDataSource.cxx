@@ -1754,7 +1754,7 @@ int WireCellSst::DatauBooNEFrameDataSource::jump(int frame_number)
       // }
 
 
-      if (1){
+      if (!inactiveNF){
 	// test for Brian ... 
 	int protection_factor = 5.0;
 	float min_adc_limit = 50;
