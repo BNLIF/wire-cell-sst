@@ -12,7 +12,8 @@ int main()
 {
 
     vector<string> geometry;
-    geometry.push_back("/home/xiaoyueli/BNLIF/wire-cell/geom_35t_v5.txt");
+    //geometry.push_back("/home/xiaoyueli/BNLIF/wire-cell/geom_35t_v5.txt");
+    geometry.push_back("input_data_files/WireGeometry_dune35t_v5_tpc1.txt");
 
     WireCellSst::DetectorGDS det_gds(geometry);
     
