@@ -4,9 +4,10 @@
 #include "TH1F.h"
 
 #include <iostream>		// debug
+#include <string>
 
 
-WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree)
+WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree, const char* br)
     : WireCell::FrameDataSource()
     , event_tree(&ttree)
     , sim_tree(0)
@@ -22,9 +23,18 @@ WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree)
     event_tree->SetBranchAddress("runNo"   , &event.run);
     event_tree->SetBranchAddress("subRunNo", &event.subrun);
 
-    event_tree->SetBranchAddress("calib_nChannel", &event.nchannels);
-    event_tree->SetBranchAddress("calib_channelId", &event.channelid);
-    event_tree->SetBranchAddress("calib_wf", &event.signal);
+    std::string br_nChannel(br);
+    std::string br_channelId(br);
+    std::string br_wf(br);
+    br_nChannel += "_nChannel";
+    br_channelId += "_channelId";
+    br_wf += "_wf";
+    // event_tree->SetBranchAddress("calib_nChannel", &event.nchannels);
+    // event_tree->SetBranchAddress("calib_channelId", &event.channelid);
+    // event_tree->SetBranchAddress("calib_wf", &event.signal);
+    event_tree->SetBranchAddress(br_nChannel.c_str(), &event.nchannels);
+    event_tree->SetBranchAddress(br_channelId.c_str(), &event.channelid);
+    event_tree->SetBranchAddress(br_wf.c_str(), &event.signal);
 
     
 }
@@ -80,6 +90,7 @@ int WireCellSst::FrameDataSource::jump(int frame_number)
 	    trace.charge.push_back(signal->GetBinContent(ibin));
 	    //std::cerr << ibin << " " << signal->GetBinContent(ibin) << std::endl;
 	}
+        trace.hCharge = signal;
 	frame.traces.push_back(trace);
     }
     frame.index = frame_number;

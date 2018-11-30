@@ -21,7 +21,7 @@ namespace WireCellSst {
 	mutable WireCell::SimTruthSet simtruth;
 
       public:
-	FrameDataSource(TTree& event_tree);
+	FrameDataSource(TTree& event_tree, const char* br="calib");
 	virtual ~FrameDataSource();
 
 	/// Return the number of frames this data source knows about.  Return -1 if unlimited.
