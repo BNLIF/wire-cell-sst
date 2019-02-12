@@ -1,2 +1,2 @@
 #!/usr/bin/env python
-bld.make_package('WireCellSst', use='WireCellNav WireCellData')
+bld.make_package('WireCellSst', use='WireCellNav WireCellData ROOTSYS')
