@@ -1,9 +1,9 @@
-#include "WireCellSst/RootEvent.h"
+#include "WCPSst/RootEvent.h"
 
 #include "TClonesArray.h"
 #include <vector>
 
-WireCellSst::RootEvent::RootEvent()
+WCPSst::RootEvent::RootEvent()
     : number(-1)
     , run(-1)
     , subrun(-1)
@@ -13,7 +13,7 @@ WireCellSst::RootEvent::RootEvent()
 {
 }
 
-WireCellSst::RootEvent::~RootEvent()
+WCPSst::RootEvent::~RootEvent()
 {
     delete channelid;
     signal->Delete();

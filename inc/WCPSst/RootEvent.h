@@ -4,7 +4,7 @@
 #include "TClonesArray.h"
 #include <vector>
 
-namespace WireCellSst{
+namespace WCPSst{
 
     struct RootEvent {
 	RootEvent();

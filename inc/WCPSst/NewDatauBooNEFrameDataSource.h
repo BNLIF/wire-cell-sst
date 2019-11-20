@@ -1,27 +1,27 @@
 #ifndef WIRECELLSST_NEWDATAUBOONEFRAMEDATASOURCE_H
 #define WIRECELLSST_NEWDATAUBOONEFRAMEDATASOURCE_H
 
-#include "WireCellNav/FrameDataSource.h"
-#include "WireCellSst/RootEvent.h"
-#include "WireCellNav/GeomDataSource.h"
-#include "WireCellData/GeomWire.h"
+#include "WCPNav/FrameDataSource.h"
+#include "WCPSst/RootEvent.h"
+#include "WCPNav/GeomDataSource.h"
+#include "WCPData/GeomWire.h"
 
 #include "TTree.h"
 #include "TH1F.h"
 
-namespace WireCellSst {
+namespace WCPSst {
 
  
 
     /**
        
      */
-    class NewDatauBooNEFrameDataSource : public WireCell::FrameDataSource {
+    class NewDatauBooNEFrameDataSource : public WCP::FrameDataSource {
 	mutable TTree* tree;	// or TChain
-	WireCellSst::RootEvent event;
+	WCPSst::RootEvent event;
 
       public:
-	NewDatauBooNEFrameDataSource(TTree& tree, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600);
+	NewDatauBooNEFrameDataSource(TTree& tree, const WCP::GeomDataSource& gds,int bins_per_frame1 = 9600);
 	virtual ~NewDatauBooNEFrameDataSource();
 
         Int_t fPlaneNum;
@@ -45,7 +45,7 @@ namespace WireCellSst {
 
 
     private:
-	const WireCell::GeomDataSource& gds;
+	const WCP::GeomDataSource& gds;
 	int nwire_u, nwire_v, nwire_w;
 
 	TH1F **hu;

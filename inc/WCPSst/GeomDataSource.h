@@ -1,19 +1,19 @@
 #ifndef WIRECELLSST_GEOMETRYDATASOURCE
 #define WIRECELLSST_GEOMETRYDATASOURCE
 
-#include "WireCellNav/GeomDataSource.h"
+#include "WCPNav/GeomDataSource.h"
 
 #include <istream>
 
-namespace WireCellSst {
+namespace WCPSst {
 
     /**
-       WireCellSst::GeomDataSource - read in a Channel Wire Geometry database.
+       WCPSst::GeomDataSource - read in a Channel Wire Geometry database.
 
        
      */
 
-    class GeomDataSource : public WireCell::GeomDataSource {
+    class GeomDataSource : public WCP::GeomDataSource {
     public:
 	/// Read from an input stream containing content from ChannelWireGeometry.txt
 	GeomDataSource(const char* filename=0);

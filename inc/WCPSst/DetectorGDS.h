@@ -1,22 +1,22 @@
 #ifndef WIRECELLSST_DETECTORGDS
 #define WIRECELLSST_DETECTORGDS
 
-#include "WireCellNav/DetectorGDS.h"
-#include "WireCellNav/GeomDataSource.h"
-#include "WireCellNav/WrappedGDS.h"
+#include "WCPNav/DetectorGDS.h"
+#include "WCPNav/GeomDataSource.h"
+#include "WCPNav/WrappedGDS.h"
 
 #include <istream>
 #include <string>
 #include <vector>
 
-namespace WireCellSst {
+namespace WCPSst {
 
     /**
-       WireCellSst::DetectorGDS - read in a Channel Wire Geometry database.
+       WCPSst::DetectorGDS - read in a Channel Wire Geometry database.
        
      */
 
-    class DetectorGDS : public WireCell::DetectorGDS {//WireCell::DetectorGDS {
+    class DetectorGDS : public WCP::DetectorGDS {//WCP::DetectorGDS {
     public:
 	/// Read from an input stream containing content from ChannelWireGeometry.txt
         DetectorGDS(std::vector<std::string> geometry);

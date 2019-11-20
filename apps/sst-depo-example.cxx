@@ -1,11 +1,11 @@
-#include "WireCellNav/FrameDataSource.h"
-#include "WireCellNav/SliceDataSource.h"
-#include "WireCellNav/SimDataSource.h"
-#include "WireCellNav/GenerativeFDS.h"
-#include "WireCellNav/SimTruthDepositor.h"
+#include "WCPNav/FrameDataSource.h"
+#include "WCPNav/SliceDataSource.h"
+#include "WCPNav/SimDataSource.h"
+#include "WCPNav/GenerativeFDS.h"
+#include "WCPNav/SimTruthDepositor.h"
 
-#include "WireCellSst/Util.h"
-#include "WireCellSst/GeomDataSource.h"
+#include "WCPSst/Util.h"
+#include "WCPSst/GeomDataSource.h"
 
 #include <iostream>
 
@@ -18,25 +18,25 @@ int main(int argc, char** argv)
 	return 1;
     }
     const char* geom_file_name = argv[1];
-    WireCellSst::GeomDataSource gds(geom_file_name);
+    WCPSst::GeomDataSource gds(geom_file_name);
 
     const char* root_file_name = argv[2];
-    WireCell::FrameDataSource* fds1 = WireCellSst::make_fds(root_file_name);
+    WCP::FrameDataSource* fds1 = WCPSst::make_fds(root_file_name);
     if (!fds1) {
 	std::cerr << "ERROR: failed to get FDS from " << root_file_name << std::endl;
 	return 1;
     }
-    WireCell::SimDataSource* sim = dynamic_cast<WireCell::SimDataSource*>(fds1);
+    WCP::SimDataSource* sim = dynamic_cast<WCP::SimDataSource*>(fds1);
     if (!sim) {
 	std::cerr << "ERROR: the FDS is not also an SDS " << std::endl;
 	return 2;
     }
 
-    WireCell::SimTruthDepositor std(*sim);
-    WireCell::GenerativeFDS *fds2 = new WireCell::GenerativeFDS(std, gds, 9600);
+    WCP::SimTruthDepositor std(*sim);
+    WCP::GenerativeFDS *fds2 = new WCP::GenerativeFDS(std, gds, 9600);
     
-    WireCell::SliceDataSource sds1(*fds1);
-    WireCell::SliceDataSource sds2(*fds2);
+    WCP::SliceDataSource sds1(*fds1);
+    WCP::SliceDataSource sds2(*fds2);
 
 
     fds1->jump(0);
@@ -59,8 +59,8 @@ int main(int argc, char** argv)
 	    return 2;
 	}
 
-	const WireCell::Slice& slice1 = sds1.get();
-	const WireCell::Slice& slice2 = sds2.get();
+	const WCP::Slice& slice1 = sds1.get();
+	const WCP::Slice& slice2 = sds2.get();
 
 	if (slice1.tbin() != slice2.tbin()) {
 	    cerr << "Slice time bin mismatch:" << endl
@@ -70,8 +70,8 @@ int main(int argc, char** argv)
 	}
 
 	// vector<pair<int,float>>
-	const WireCell::Channel::Group& cg1 = slice1.group();
-	const WireCell::Channel::Group& cg2 = slice2.group();
+	const WCP::Channel::Group& cg1 = slice1.group();
+	const WCP::Channel::Group& cg2 = slice2.group();
 
 	float qtot1=0;
 	for (int ich=0; ich<cg1.size(); ++ich) {

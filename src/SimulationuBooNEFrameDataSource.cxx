@@ -1,4 +1,4 @@
-#include "WireCellSst/SimulationuBooNEFrameDataSource.h"
+#include "WCPSst/SimulationuBooNEFrameDataSource.h"
 
 #include "TClonesArray.h"
 #include "TH1F.h"
@@ -6,11 +6,11 @@
 #include "TRandom.h"
 #include "TVirtualFFT.h"
 #include "TGraph.h"
-#include "WireCellData/GeomWire.h"
+#include "WCPData/GeomWire.h"
 #include "TF1.h"
 #include "TMath.h"
 
-using namespace WireCell;
+using namespace WCP;
 
 
 double response2(double *x, double *par){
@@ -38,7 +38,7 @@ Double_t PoissonReal2(const Double_t *k,  const Double_t *lambda) {
   return TMath::Exp(k[0]*TMath::Log(lambda[0])-lambda[0]) / TMath::Gamma(k[0]+1.);
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel){
+void WCPSst::SimulationuBooNEFrameDataSource::Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel){
   
   Double_t L = 0;
   if (plane == 2) L = 233; // cm
@@ -113,8 +113,8 @@ void WireCellSst::SimulationuBooNEFrameDataSource::Simu_Noise_uBooNE_Empirical(T
 }
 
 
-WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds)
-    : WireCell::FrameDataSource()
+WCPSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WCP::GeomDataSource& gds)
+    : WCP::FrameDataSource()
     , root_file(0)
     , gds(gds)
     , nwire_u(0)
@@ -197,7 +197,7 @@ WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(co
 
   // U plane
   for (size_t ind=0; ind < hu_raw->GetNbinsX(); ++ind) {
-    WireCell::Trace trace;
+    WCP::Trace trace;
     trace.chid = ind;
     trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
     trace.charge.resize(bins_per_frame, 0.0);
@@ -213,7 +213,7 @@ WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(co
   
   // V plane
   for (size_t ind=0; ind < hv_raw->GetNbinsX(); ++ind) {
-    WireCell::Trace trace;
+    WCP::Trace trace;
     trace.chid = ind + nwire_u;
     trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
     trace.charge.resize(bins_per_frame, 0.0);
@@ -228,7 +228,7 @@ WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(co
 
   // W plane
   for (size_t ind=0; ind < hw_raw->GetNbinsX(); ++ind) {
-    WireCell::Trace trace;
+    WCP::Trace trace;
     trace.chid = ind + nwire_u + nwire_v;
     trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
     trace.charge.resize(bins_per_frame, 0.0);
@@ -246,8 +246,8 @@ WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(co
 }
 
 
-WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1, int flag_add_noise)
-    : WireCell::FrameDataSource()
+WCPSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(const char* root_file, const WCP::GeomDataSource& gds,int bins_per_frame1, int flag_add_noise)
+    : WCP::FrameDataSource()
     , root_file(root_file)
     , gds(gds)
     , load_results_from_file(false)
@@ -323,11 +323,11 @@ WireCellSst::SimulationuBooNEFrameDataSource::SimulationuBooNEFrameDataSource(co
   delete f2;
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::Clear(){
+void WCPSst::SimulationuBooNEFrameDataSource::Clear(){
   frame.clear();
 }
 
-WireCellSst::SimulationuBooNEFrameDataSource::~SimulationuBooNEFrameDataSource()
+WCPSst::SimulationuBooNEFrameDataSource::~SimulationuBooNEFrameDataSource()
 {
   if (!load_results_from_file){
     delete h_rc;
@@ -344,18 +344,18 @@ WireCellSst::SimulationuBooNEFrameDataSource::~SimulationuBooNEFrameDataSource()
   }
 }
 
-int WireCellSst::SimulationuBooNEFrameDataSource::size() const
+int WCPSst::SimulationuBooNEFrameDataSource::size() const
 {
   //return tree->GetEntries();
   return nevents;
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::Save(){
+void WCPSst::SimulationuBooNEFrameDataSource::Save(){
 
 }
 
 
-void WireCellSst::SimulationuBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC, int flag_restore){
+void WCPSst::SimulationuBooNEFrameDataSource::zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC, int flag_restore){
   TVirtualFFT *ifft=0;
   double value_re[9600]={0.0},value_im[9600]={0.0};
   
@@ -527,13 +527,13 @@ void WireCellSst::SimulationuBooNEFrameDataSource::zigzag_removal(TH1F *h1, int 
 
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::chirp_raise_baseline(TH1F *hist, int bin1, int bin2){
+void WCPSst::SimulationuBooNEFrameDataSource::chirp_raise_baseline(TH1F *hist, int bin1, int bin2){
   for (int i=bin1;i<=bin2;i++){
     hist->SetBinContent(i+1,10000.0);
   }
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::chirp_id(TH1F *hist, int plane, int channel_no){
+void WCPSst::SimulationuBooNEFrameDataSource::chirp_id(TH1F *hist, int plane, int channel_no){
   const int windowSize = 20;
   const double chirpMinRMS = 0.9;
   const double maxNormalNeighborFrac = 0.20;
@@ -680,7 +680,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::chirp_id(TH1F *hist, int plan
     }
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::SignalFilter(TH1F *hist){
+void WCPSst::SimulationuBooNEFrameDataSource::SignalFilter(TH1F *hist){
   const double sigFactor = 4.0;
   const int padBins = 8;
   
@@ -722,7 +722,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::SignalFilter(TH1F *hist){
   
 }
 
-double WireCellSst::SimulationuBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist){
+double WCPSst::SimulationuBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist){
   double ADCval=0;
   double theMean = 0.0;
   double theRMS = 0.0;
@@ -791,7 +791,7 @@ double WireCellSst::SimulationuBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist
 
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::RemoveFilterFlags(TH1F *filtHist)
+void WCPSst::SimulationuBooNEFrameDataSource::RemoveFilterFlags(TH1F *filtHist)
 {
   double ADCval=0;
   int numBins = filtHist->GetNbinsX();
@@ -811,7 +811,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::RemoveFilterFlags(TH1F *filtH
   return;
 }
 
-void  WireCellSst::SimulationuBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F *filtHist)
+void  WCPSst::SimulationuBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F *filtHist)
 {
   const int windowSize = 20;
   
@@ -943,7 +943,7 @@ void  WireCellSst::SimulationuBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F 
     }
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int planeNum, int channel_no)
+void WCPSst::SimulationuBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int planeNum, int channel_no)
 {
   double rmsVal = CalcRMSWithFlags(hist);
   // const double maxRMSCut[3] = {10.0,10.0,5.0};
@@ -1073,7 +1073,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, in
   return;
 }
 
-bool WireCellSst::SimulationuBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
+bool WCPSst::SimulationuBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
   TH1F *h1_copy = (TH1F*)h1->Clone("h1_copy");
   Double_t min = h1->GetMinimum();
   Double_t max = h1->GetMaximum();
@@ -1125,7 +1125,7 @@ bool WireCellSst::SimulationuBooNEFrameDataSource::ID_lf_noisy(TH1F *h1){
   return false;
 }
 
-bool WireCellSst::SimulationuBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, int channel_no){
+bool WCPSst::SimulationuBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, int channel_no){
   bool flag = false;
   TH1 *htemp_m = h1->FFT(0,"MAG");
 
@@ -1160,7 +1160,7 @@ bool WireCellSst::SimulationuBooNEFrameDataSource::ID_RC(TH1F *h1, int plane, in
 }
 
 
-int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
+int WCPSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 {
   
   //  frame.clear();
@@ -1290,7 +1290,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 	//     return -1;
 	// }
 	
-	WireCell::Trace trace;
+	WCP::Trace trace;
 	trace.chid = channelid->at(ind);
 	
 	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
@@ -2683,7 +2683,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
       
       for (size_t ind=0; ind < nchannels; ++ind) {
 	TH1F* signal;
-	WireCell::Trace trace;
+	WCP::Trace trace;
 	trace.chid = channelid->at(ind);
 	
 	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
@@ -2774,7 +2774,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump(int frame_number)
 }
 
 
-void WireCellSst::SimulationuBooNEFrameDataSource::fix_ADC_shift(int chid, TH1F *h1){
+void WCPSst::SimulationuBooNEFrameDataSource::fix_ADC_shift(int chid, TH1F *h1){
   // judge if there is a shift
   //  std::cout << chid << std::endl;
   std::vector<int> counter(12,0);
@@ -2895,17 +2895,17 @@ void WireCellSst::SimulationuBooNEFrameDataSource::fix_ADC_shift(int chid, TH1F 
   }
 }
 
-int WireCellSst::SimulationuBooNEFrameDataSource::shift_right(int value, int n, int filling, int totalBit)
+int WCPSst::SimulationuBooNEFrameDataSource::shift_right(int value, int n, int filling, int totalBit)
 {
   return (value >> n) | (filling << (totalBit-n));
 }
 
-int  WireCellSst::SimulationuBooNEFrameDataSource::lowest_bits(int value, int n)
+int  WCPSst::SimulationuBooNEFrameDataSource::lowest_bits(int value, int n)
 {
   return ( value & ((1 << n) - 1) );
 }
 
-int WireCellSst::SimulationuBooNEFrameDataSource::jump_no_noise(int frame_number)
+int WCPSst::SimulationuBooNEFrameDataSource::jump_no_noise(int frame_number)
 {
   
   //  frame.clear();
@@ -3011,7 +3011,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump_no_noise(int frame_number
 	if (!signal) continue;
 	
 	
-	WireCell::Trace trace;
+	WCP::Trace trace;
 	trace.chid = channelid->at(ind);
 	
 	//	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
@@ -3098,7 +3098,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump_no_noise(int frame_number
       
       for (size_t ind=0; ind < nchannels; ++ind) {
 	TH1F* signal;
-	WireCell::Trace trace;
+	WCP::Trace trace;
 	trace.chid = channelid->at(ind);
 	
 	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
@@ -3188,7 +3188,7 @@ int WireCellSst::SimulationuBooNEFrameDataSource::jump_no_noise(int frame_number
     }
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, float rms, int plane, int channel){
+void WCPSst::SimulationuBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hist, float rms, int plane, int channel){
   float rms1 = 0;
   float rms2 = 0;
   
@@ -3202,7 +3202,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hi
   if (rms2 >0){
     rms1 = sqrt(rms1/rms2);
     for (int i=0;i!=PMT_ROIs.size();i++){
-      WireCell::PMTNoiseROI* ROI= PMT_ROIs.at(i);
+      WCP::PMTNoiseROI* ROI= PMT_ROIs.at(i);
       for (int j=0;j!= ROI->get_peaks().size();j++){
 	int peak = ROI->get_peaks().at(j);
 	int peak_m1 = peak - 1; if (peak_m1 <0) peak_m1 = 0;
@@ -3236,7 +3236,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::IDPMTSignalInduction(TH1F* hi
   }
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int start_bin, int end_bin){
+void WCPSst::SimulationuBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, int start_bin, int end_bin){
   int pad_window = 5;
   
   int flag_start = 0;
@@ -3266,7 +3266,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::RemovePMTSignal(TH1F* hist, i
 }
 
 
-void WireCellSst::SimulationuBooNEFrameDataSource::IDPMTSignalCollection(TH1F* hist, float rms, int channel){
+void WCPSst::SimulationuBooNEFrameDataSource::IDPMTSignalCollection(TH1F* hist, float rms, int channel){
 
   int pad_window = 5;
   int min_window_length = 4;
@@ -3308,7 +3308,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::IDPMTSignalCollection(TH1F* h
 		peak_bin = j;
 	    }
 	  	 
-	    WireCell::PMTNoiseROI *ROI = new WireCell::PMTNoiseROI(start_bin,end_bin,peak_bin,channel,hist->GetBinContent(peak_bin+1));
+	    WCP::PMTNoiseROI *ROI = new WCP::PMTNoiseROI(start_bin,end_bin,peak_bin,channel,hist->GetBinContent(peak_bin+1));
 	    
 	    //std::cout << start_bin << " " << end_bin << std::endl;
 	    if (PMT_ROIs.size()==0){
@@ -3365,7 +3365,7 @@ void WireCellSst::SimulationuBooNEFrameDataSource::IDPMTSignalCollection(TH1F* h
   
 }
 
-bool WireCellSst::SimulationuBooNEFrameDataSource::chirp_check(double rms, int plane, int channel){
+bool WCPSst::SimulationuBooNEFrameDataSource::chirp_check(double rms, int plane, int channel){
   if (plane == 0){
     if (channel < 100){
       if (rms >1 && rms < 5)
@@ -3396,7 +3396,7 @@ bool WireCellSst::SimulationuBooNEFrameDataSource::chirp_check(double rms, int p
 }
 
 
-double WireCellSst::SimulationuBooNEFrameDataSource::correlation1(TH1F *h1, TH1F *h2){
+double WCPSst::SimulationuBooNEFrameDataSource::correlation1(TH1F *h1, TH1F *h2){
  double sxx=0,syy=0,sxy=0;
   
   double mean1 = h1->GetSum()/h1->GetNbinsX();
@@ -3419,7 +3419,7 @@ double WireCellSst::SimulationuBooNEFrameDataSource::correlation1(TH1F *h1, TH1F
   return r;
 }
 
-void WireCellSst::SimulationuBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut){
+void WCPSst::SimulationuBooNEFrameDataSource::GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut){
 	//calculate mean
     	double mean = 0;
     	int count = 0;

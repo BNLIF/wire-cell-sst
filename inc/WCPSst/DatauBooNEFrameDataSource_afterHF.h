@@ -1,32 +1,34 @@
-#ifndef WIRECELLSST_SIMULATIONUBOONEFRAMEDATASOURCE_H
-#define  WIRECELLSST_SIMULATIONUBOONEFRAMEDATASOURCE_H
+#ifndef WIRECELLSST_DATAUBOONEFRAMEDATASOURCE_AFTERHF_H
+#define  WIRECELLSST_DATAUBOONEFRAMEDATASOURCE_AFTERHF_H
 
-#include "WireCellNav/FrameDataSource.h"
-#include "WireCellSst/RootEvent.h"
-#include "WireCellNav/GeomDataSource.h"
-#include "WireCellData/GeomWire.h"
-#include "WireCellData/PMTNoiseROI.h"
+#include "WCPNav/FrameDataSource.h"
+#include "WCPSst/RootEvent.h"
+#include "WCPNav/GeomDataSource.h"
+#include "WCPData/GeomWire.h"
+#include "WCPData/PMTNoiseROI.h"
 
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
 
-namespace WireCellSst {
+namespace WCPSst {
 
  
 
     /**
        
      */
-    class SimulationuBooNEFrameDataSource : public WireCell::FrameDataSource {
+    class DatauBooNEFrameDataSource_afterHF : public WCP::FrameDataSource {
       //mutable TTree* tree;	// or TChain
-      //WireCellSst::RootEvent event;
+      //WCPSst::RootEvent event;
 
       public:
-      SimulationuBooNEFrameDataSource(const char* root_file, const WireCell::GeomDataSource& gds,int bins_per_frame1 = 9600, int flag_add_noise = 0);
-	SimulationuBooNEFrameDataSource(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WireCell::GeomDataSource& gds);
 
-	virtual ~SimulationuBooNEFrameDataSource();
+
+      DatauBooNEFrameDataSource_afterHF(const char* root_file, const WCP::GeomDataSource& gds,int bins_per_frame1 = 9600, int flag_add_noise = 0);
+	DatauBooNEFrameDataSource_afterHF(const TH2F *hu_raw, const TH2F *hv_raw, const TH2F *hw_raw, TTree *T_bad, TTree *T_lf, TTree *Trun, const WCP::GeomDataSource& gds);
+
+	virtual ~DatauBooNEFrameDataSource_afterHF();
 
 	void Save();
 	void Clear();
@@ -37,19 +39,17 @@ namespace WireCellSst {
 	/// Explicitly set the "frame" (event) to process.  Frame number returned or -1 on error.
 	virtual int jump(int frame_number);
 
-    // Dummy noise filter for processing simulation w/o noise
-	virtual int jump_no_noise(int frame_number);
-
 	void fix_ADC_shift(int chid, TH1F *h1);
 	int shift_right(int value, int n, int filling, int totalBit);
 	int lowest_bits(int value, int n);
+
 
 
 	bool chirp_check(double rms, int plane, int channel);
 	double correlation1(TH1F *h1, TH1F *h2);
 	
  	void GetChannelStatus(TH1F *h1, int plane, int chan, bool& isCut, double &rmsOut);
-	void zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC = 1, int flag_restore=0);
+	void zigzag_removal(TH1F *h1, int plane, int channel_no, int flag_RC = 1);
 	bool ID_RC(TH1F *h1, int plane, int channel_no);
 
 	bool ID_lf_noisy(TH1F *h1);
@@ -63,33 +63,35 @@ namespace WireCellSst {
 	void RemoveFilterFlags(TH1F *hist);
 	void RawAdaptiveBaselineAlg(TH1F *hist);
 	void NoisyFilterAlg(TH1F *hist, int plane, int channel_no);
-	
-	void IDPMTSignalCollection(TH1F *hist, float rms, int channel);
+	void RemovePMTSignalCollection(TH1F *hist, float rms, int channel);
 	void IDPMTSignalInduction(TH1F *hist, float rms, int plane, int channel);
-	void RemovePMTSignal(TH1F *hist, int start_bin, int end_bin);
-    
+	void RemovePMTSignalInduction(TH1F *hist, int start_bin, int end_bin);
+
+
 	void Simu_Noise_uBooNE_Empirical(TH1F *h1, Int_t plane, Int_t channel);
 
 	int get_run_no(){return run_no;};
 	int get_subrun_no(){return subrun_no;};
 	int get_event_no(){return event_no;};
 
-	WireCell::WireMap& get_u_map(){return uplane_map;};
-	WireCell::WireMap& get_v_map(){return vplane_map;};
-	WireCell::WireMap& get_w_map(){return wplane_map;};
+	WCP::WireMap& get_u_map(){return uplane_map;};
+	WCP::WireMap& get_v_map(){return vplane_map;};
+	WCP::WireMap& get_w_map(){return wplane_map;};
 
-	WireCell::ChirpMap& get_u_cmap(){return uchirp_map;};
-	WireCell::ChirpMap& get_v_cmap(){return vchirp_map;};
-	WireCell::ChirpMap& get_w_cmap(){return wchirp_map;};
+	WCP::ChirpMap& get_u_cmap(){return uchirp_map;};
+	WCP::ChirpMap& get_v_cmap(){return vchirp_map;};
+	WCP::ChirpMap& get_w_cmap(){return wchirp_map;};
 
 	std::set<int>& get_lf_noisy_channels(){return lf_noisy_channels;};
 
+
+
     private:
-	std::vector<WireCell::PMTNoiseROI*> PMT_ROIs;
-	
+	std::vector<WCP::PMTNoiseROI*> PMT_ROIs;
+
 	int flag_add_noise;
 
-	const WireCell::GeomDataSource& gds;
+	const WCP::GeomDataSource& gds;
 	const char* root_file;
 	int nwire_u, nwire_v, nwire_w;
 
@@ -101,13 +103,13 @@ namespace WireCellSst {
 
 	int run_no, subrun_no, event_no;
 
-	WireCell::WireMap uplane_map;
-	WireCell::WireMap vplane_map;
-	WireCell::WireMap wplane_map;
+	WCP::WireMap uplane_map;
+	WCP::WireMap vplane_map;
+	WCP::WireMap wplane_map;
 
-	WireCell::ChirpMap uchirp_map;
-	WireCell::ChirpMap vchirp_map;
-	WireCell::ChirpMap wchirp_map;
+	WCP::ChirpMap uchirp_map;
+	WCP::ChirpMap vchirp_map;
+	WCP::ChirpMap wchirp_map;
 	
 	std::set<int> lf_noisy_channels;
 

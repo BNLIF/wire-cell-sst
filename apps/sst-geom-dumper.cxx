@@ -1,11 +1,11 @@
-#include "WireCellSst/GeomDataSource.h"
+#include "WCPSst/GeomDataSource.h"
 #include <iostream>
-using namespace WireCell;
+using namespace WCP;
 using namespace std;
 
 int main(int argc, char* argv[])
 {
-    WireCellSst::GeomDataSource gds(argv[1]);
+    WCPSst::GeomDataSource gds(argv[1]);
 
     std::vector<double> ex = gds.extent();
     cerr << "Extent: "

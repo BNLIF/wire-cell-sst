@@ -1,14 +1,14 @@
 #ifndef WIRECELLSST_UBOONESLICEDATASOURCE_H
 #define WIRECELLSST_UBOONESLICEDATASOURCE_H
 
-#include "WireCellNav/FrameDataSource.h"
-#include "WireCellNav/GeomDataSource.h"
-#include "WireCellNav/DetectorGDS.h"
-#include "WireCellData/Slice.h"
-#include "WireCellData/Frame.h"
-#include "WireCellData/GeomWire.h"
+#include "WCPNav/FrameDataSource.h"
+#include "WCPNav/GeomDataSource.h"
+#include "WCPNav/DetectorGDS.h"
+#include "WCPData/Slice.h"
+#include "WCPData/Frame.h"
+#include "WCPData/GeomWire.h"
 
-namespace WireCellSst {
+namespace WCPSst {
 
     /**
        SliceDataSource - deliver slices of frames from a FrameDataSource
@@ -16,7 +16,7 @@ namespace WireCellSst {
     class uBooNESliceDataSource {
     public:
 
-      uBooNESliceDataSource(WireCell::FrameDataSource& fds, WireCell::FrameDataSource& fds1, WireCell::FrameDataSource& fds1_error, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms = 0, std::vector<float>* vplane_rms = 0, std::vector<float>* wplane_rms = 0);
+      uBooNESliceDataSource(WCP::FrameDataSource& fds, WCP::FrameDataSource& fds1, WCP::FrameDataSource& fds1_error, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms = 0, std::vector<float>* vplane_rms = 0, std::vector<float>* wplane_rms = 0);
       
       virtual ~uBooNESliceDataSource();
       
@@ -29,23 +29,23 @@ namespace WireCellSst {
       virtual int next();
       
       /// Get the current slice
-      virtual WireCell::Slice&  get();
-      virtual const WireCell::Slice&  get() const;
+      virtual WCP::Slice&  get();
+      virtual const WCP::Slice&  get() const;
 
-      virtual WireCell::Slice& get_error();
-      virtual const WireCell::Slice&  get_error() const;
+      virtual WCP::Slice& get_error();
+      virtual const WCP::Slice&  get_error() const;
       
     private:
       
-      WireCell::FrameDataSource& _fds;
-      WireCell::FrameDataSource& _fds1;
-      WireCell::FrameDataSource& _fds2;
+      WCP::FrameDataSource& _fds;
+      WCP::FrameDataSource& _fds1;
+      WCP::FrameDataSource& _fds2;
       
      
       int nwire_u, nwire_v, nwire_w;
       
-      WireCell::Slice _slice;	// cache the current slice
-      WireCell::Slice _slice_error;	// cache the current slice
+      WCP::Slice _slice;	// cache the current slice
+      WCP::Slice _slice_error;	// cache the current slice
       
       int _frame_index;	// last frame we loaded
       int _slice_index;	// current slice, for caching

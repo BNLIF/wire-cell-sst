@@ -9,12 +9,12 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include "WireCellData/Point.h"
-#include "WireCellData/MCParticle.h"
+#include "WCPData/Point.h"
+#include "WCPData/MCParticle.h"
 
 #define MAX_TRACKS 10000
 
-namespace WireCellSst {
+namespace WCPSst {
 
   class MCTruth {
   public:
@@ -25,10 +25,10 @@ namespace WireCellSst {
     void GetEntry(int i);
     void Rotate_Shift(float x_center=0, float y_center=0, float z_center=0, float rotate_angle=0, float x_shift=0, float y_shift=0, float z_shift=0);
 
-    WireCell::Point find_primary_vertex(int event_no = 0);
-    WireCell::Point find_neutrino_vertex(int event_no = 0);
-    WireCell::MCParticle* find_primary_electron(int event_no = 0);
-    WireCell::MCParticleSelection find_primary_photons(int event_no = 0);
+    WCP::Point find_primary_vertex(int event_no = 0);
+    WCP::Point find_neutrino_vertex(int event_no = 0);
+    WCP::MCParticle* find_primary_electron(int event_no = 0);
+    WCP::MCParticleSelection find_primary_photons(int event_no = 0);
     float find_neutrino_true_energy(int event_no=0);
     float find_neutrino_visible_energy(int event_no = 0);
 

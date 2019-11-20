@@ -1,7 +1,7 @@
-#include "WireCellSst/RootSimTruth.h"
+#include "WCPSst/RootSimTruth.h"
 
 
-WireCellSst::RootSimTruth::RootSimTruth()
+WCPSst::RootSimTruth::RootSimTruth()
     : size(0)
     , channelIdY(new std::vector<int>)
     , trackId(new std::vector<int>)
@@ -14,7 +14,7 @@ WireCellSst::RootSimTruth::RootSimTruth()
 
 }
 
-WireCellSst::RootSimTruth::~RootSimTruth()
+WCPSst::RootSimTruth::~RootSimTruth()
 {
     delete channelIdY;
     delete trackId;
@@ -24,7 +24,7 @@ WireCellSst::RootSimTruth::~RootSimTruth()
     delete z;
     delete q;
 }
-void WireCellSst::RootSimTruth::clear()
+void WCPSst::RootSimTruth::clear()
 {
     channelIdY->clear();
     trackId->clear();

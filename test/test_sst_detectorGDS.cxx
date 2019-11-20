@@ -1,11 +1,11 @@
-#include "WireCellSst/DetectorGDS.h"
-#include "WireCellNav/WrappedGDS.h"
+#include "WCPSst/DetectorGDS.h"
+#include "WCPNav/WrappedGDS.h"
 
 #include <iostream>
 #include <vector>
 #include <string>
 
-using namespace WireCell;
+using namespace WCP;
 using namespace std;
 
 int main()
@@ -15,7 +15,7 @@ int main()
     //geometry.push_back("/home/xiaoyueli/BNLIF/wire-cell/geom_35t_v5.txt");
     geometry.push_back("input_data_files/WireGeometry_dune35t_v5_tpc1.txt");
 
-    WireCellSst::DetectorGDS det_gds(geometry);
+    WCPSst::DetectorGDS det_gds(geometry);
     
     int errors = 0;
 
@@ -87,7 +87,7 @@ int main()
 		}
 	      }	      	      
 
-	      std::vector<double> ex = gds->extent((WireCell::WirePlaneType_t)iplane);
+	      std::vector<double> ex = gds->extent((WCP::WirePlaneType_t)iplane);
 	      cerr << "Extent for plane "<<iplane<<": "
 		   << " x:" << ex[0]/units::mm << " mm,"
 		   << " y:" << ex[1]/units::mm << " mm,"
@@ -95,7 +95,7 @@ int main()
 		   << endl;
 	  }
 
-	  std::vector<double> ex = gds->extent(WireCell::kUnknownWirePlaneType);
+	  std::vector<double> ex = gds->extent(WCP::kUnknownWirePlaneType);
 	  cerr << "Extent: "
 	       << " x:" << ex[0]/units::mm << " mm,"
 	       << " y:" << ex[1]/units::mm << " mm,"

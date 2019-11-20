@@ -1,7 +1,7 @@
-#include "WireCellSst/MCTruth.h"
+#include "WCPSst/MCTruth.h"
 #include "TLorentzVector.h"
 
-WireCellSst::MCTruth::MCTruth(std::string rootfile)
+WCPSst::MCTruth::MCTruth(std::string rootfile)
   : mcTree(0)
 {
   TFile *file = new TFile(rootfile.c_str(), "read");
@@ -50,12 +50,12 @@ WireCellSst::MCTruth::MCTruth(std::string rootfile)
   mc_oldVertex[0] = -1;
 }
 
-float WireCellSst::MCTruth::find_neutrino_true_energy(int event_no){
+float WCPSst::MCTruth::find_neutrino_true_energy(int event_no){
   mcTree->GetEntry(event_no);
   return mc_nu_mom[3];
 }
 
-float WireCellSst::MCTruth::find_neutrino_visible_energy(int event_no){
+float WCPSst::MCTruth::find_neutrino_visible_energy(int event_no){
   mcTree->GetEntry(event_no);
   // Hack for now ... 
   float visE =0;
@@ -72,10 +72,10 @@ float WireCellSst::MCTruth::find_neutrino_visible_energy(int event_no){
 }
 
 
-WireCell::Point WireCellSst::MCTruth::find_neutrino_vertex(int event_no){
+WCP::Point WCPSst::MCTruth::find_neutrino_vertex(int event_no){
   mcTree->GetEntry(event_no);
   
-  WireCell::Point vertex(0,0,0);
+  WCP::Point vertex(0,0,0);
   
   vertex[0] = mc_nu_pos[0];
   vertex[1] = mc_nu_pos[1];
@@ -85,10 +85,10 @@ WireCell::Point WireCellSst::MCTruth::find_neutrino_vertex(int event_no){
   return vertex;
 }
 
-WireCell::MCParticleSelection WireCellSst::MCTruth::find_primary_photons(int event_no){
+WCP::MCParticleSelection WCPSst::MCTruth::find_primary_photons(int event_no){
   // mcTree->GetEntry(event_no);
-  WireCell::MCParticleSelection photons;
-  WireCell::Point primary_vertex = find_primary_vertex(event_no);
+  WCP::MCParticleSelection photons;
+  WCP::Point primary_vertex = find_primary_vertex(event_no);
   
   for (int i=0;i!=mc_Ntrack;i++){
     if (mc_pdg[i] != 22) continue;
@@ -99,7 +99,7 @@ WireCell::MCParticleSelection WireCellSst::MCTruth::find_primary_photons(int eve
 	       + pow(mc_startXYZT[i][2] - primary_vertex[2],2));
     //std::cout << dis << std::endl;
     if (dis < 0.5 ){ // cm
-      WireCell::MCParticle *photon = new WireCell::MCParticle();
+      WCP::MCParticle *photon = new WCP::MCParticle();
       photon->pdg = mc_pdg[i];
       
       // temporary fix 
@@ -117,12 +117,12 @@ WireCell::MCParticleSelection WireCellSst::MCTruth::find_primary_photons(int eve
   return photons;
 }
 
-WireCell::MCParticle* WireCellSst::MCTruth::find_primary_electron(int event_no){
+WCP::MCParticle* WCPSst::MCTruth::find_primary_electron(int event_no){
   mcTree->GetEntry(event_no);
   
   for (int i=0;i!=mc_Ntrack;i++){
     if (mc_mother[i] == 0 && fabs(mc_pdg[i])==11){
-      WireCell::MCParticle *electron = new WireCell::MCParticle();
+      WCP::MCParticle *electron = new WCP::MCParticle();
       electron->pdg = mc_pdg[i];
       
       // a fix to start_Momentum[3] due to a previous bug ...
@@ -143,7 +143,7 @@ WireCell::MCParticle* WireCellSst::MCTruth::find_primary_electron(int event_no){
       	int nPoints = trackPoints->GetEntries();
       	for (int j=0;j!=nPoints;j++){
       	  TLorentzVector *p = (TLorentzVector*)(*trackPoints)[j];
-      	  WireCell::Point point(p->X(),p->Y(),p->Z());
+      	  WCP::Point point(p->X(),p->Y(),p->Z());
       	  electron->trajectory.push_back(point);
       	  //   cout << p->X() << " " << p->Y() << " " << p->Z() << std::endl;
       	}
@@ -158,11 +158,11 @@ WireCell::MCParticle* WireCellSst::MCTruth::find_primary_electron(int event_no){
   
 }
 
-WireCell::Point WireCellSst::MCTruth::find_primary_vertex(int event_no){
+WCP::Point WCPSst::MCTruth::find_primary_vertex(int event_no){
   
   mcTree->GetEntry(event_no);
   
-  WireCell::Point vertex(0,0,0);
+  WCP::Point vertex(0,0,0);
   
   for (int i = 0; i!= mc_Ntrack;i++){
     if (mc_mother[i] == 0) { // mother is primary particle ...
@@ -178,7 +178,7 @@ WireCell::Point WireCellSst::MCTruth::find_primary_vertex(int event_no){
 }
 
 
-WireCellSst::MCTruth::MCTruth(TTree *TMC)
+WCPSst::MCTruth::MCTruth(TTree *TMC)
 {
   mcTree = TMC;
   if (!mcTree ) 
@@ -228,7 +228,7 @@ WireCellSst::MCTruth::MCTruth(TTree *TMC)
 }
 
 
-WireCellSst::MCTruth::~MCTruth()
+WCPSst::MCTruth::~MCTruth()
 {
   if (mc_daughters != NULL)
     delete mc_daughters;
@@ -236,7 +236,7 @@ WireCellSst::MCTruth::~MCTruth()
     delete mc_trackPosition;
 }
 
-void WireCellSst::MCTruth::GetEntry(int i)
+void WCPSst::MCTruth::GetEntry(int i)
 {
   if (i < mcTree->GetEntries()) {
     mcTree->GetEntry(i);
@@ -245,7 +245,7 @@ void WireCellSst::MCTruth::GetEntry(int i)
   }
 }
 
-void WireCellSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_center, float rotate_angle, float x_shift, float y_shift, float z_shift){
+void WCPSst::MCTruth::Rotate_Shift(float x_center, float y_center, float z_center, float rotate_angle, float x_shift, float y_shift, float z_shift){
 
   Double_t temp_x=0, temp_y=0, temp_z=0;
   for (int i=0;i!=mc_Ntrack;i++){

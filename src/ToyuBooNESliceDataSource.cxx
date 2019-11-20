@@ -1,8 +1,8 @@
-#include "WireCellSst/ToyuBooNESliceDataSource.h"
+#include "WCPSst/ToyuBooNESliceDataSource.h"
 
-using namespace WireCell;
+using namespace WCP;
 
-WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, float th)
+WCPSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, float th)
     : _fds(fds)
     , _fds1(fds)
     , _frame_index(-1)
@@ -26,11 +26,11 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
     update_slices_bounds();
 }
 
-void WireCellSst::ToyuBooNESliceDataSource::set_flag(int flag1){
+void WCPSst::ToyuBooNESliceDataSource::set_flag(int flag1){
   flag = flag1;
 }
 
-WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
+WCPSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
     : _fds(fds)
     , _fds1(fds1)
     , _frame_index(-1)
@@ -57,7 +57,7 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(FrameDataSource&
 }
 
 
-WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(const DetectorGDS& gds, FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
+WCPSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(const DetectorGDS& gds, FrameDataSource& fds, FrameDataSource& fds1, float th_u, float th_v, float th_w, float th_ug, float th_vg, float th_wg, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
     : _fds(fds)
     , _fds1(fds1)
     , _frame_index(-1)
@@ -84,18 +84,18 @@ WireCellSst::ToyuBooNESliceDataSource::ToyuBooNESliceDataSource(const DetectorGD
 }
 
 
-WireCellSst::ToyuBooNESliceDataSource::~ToyuBooNESliceDataSource()
+WCPSst::ToyuBooNESliceDataSource::~ToyuBooNESliceDataSource()
 {
 }
 
-void WireCellSst::ToyuBooNESliceDataSource::clear()
+void WCPSst::ToyuBooNESliceDataSource::clear()
 {
     _slice_index = _slices_begin = _slices_end = -1;
     _slice.clear();
 }
 
 // Update the bounds on the slice indices based on the current frame.
-void WireCellSst::ToyuBooNESliceDataSource::update_slices_bounds() const
+void WCPSst::ToyuBooNESliceDataSource::update_slices_bounds() const
 {
     const Frame& frame = _fds.get();
 
@@ -127,7 +127,7 @@ void WireCellSst::ToyuBooNESliceDataSource::update_slices_bounds() const
     return;
 }
 
-int WireCellSst::ToyuBooNESliceDataSource::size() const
+int WCPSst::ToyuBooNESliceDataSource::size() const
 {
     this->update_slices_bounds();
     if (_slices_begin < 0 || _slices_end < 0) {
@@ -136,7 +136,7 @@ int WireCellSst::ToyuBooNESliceDataSource::size() const
     return _slices_end - _slices_begin;
 }
 
-int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
+int WCPSst::ToyuBooNESliceDataSource::jump(int index)
 {
     if (index < 0) {		// underflow
 	this->clear();
@@ -444,17 +444,17 @@ int WireCellSst::ToyuBooNESliceDataSource::jump(int index)
     return index;
 }
 
-int WireCellSst::ToyuBooNESliceDataSource::next()
+int WCPSst::ToyuBooNESliceDataSource::next()
 {
     this->jump(_slice_index+1);
 }
 
-Slice& WireCellSst::ToyuBooNESliceDataSource::get()
+Slice& WCPSst::ToyuBooNESliceDataSource::get()
 {
     return _slice;
 }
 
-const Slice& WireCellSst::ToyuBooNESliceDataSource::get() const
+const Slice& WCPSst::ToyuBooNESliceDataSource::get() const
 {
     return _slice;
 }

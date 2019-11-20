@@ -1,5 +1,5 @@
-#include "WireCellSst/GeomDataSource.h"
-#include "WireCellData/Units.h"
+#include "WCPSst/GeomDataSource.h"
+#include "WCPData/Units.h"
 
 #include <string>
 #include <sstream>
@@ -9,8 +9,8 @@
 using namespace units;
 
 
-WireCellSst::GeomDataSource::GeomDataSource(const char* filename)
-    : WireCell::GeomDataSource()
+WCPSst::GeomDataSource::GeomDataSource(const char* filename)
+    : WCP::GeomDataSource()
 {
     if (filename) {
 	std::ifstream geotext(filename);
@@ -18,7 +18,7 @@ WireCellSst::GeomDataSource::GeomDataSource(const char* filename)
     }
 }
 
-void WireCellSst::GeomDataSource::load(std::istream& geo)
+void WCPSst::GeomDataSource::load(std::istream& geo)
 {
 
     std::string line;
@@ -40,15 +40,15 @@ void WireCellSst::GeomDataSource::load(std::istream& geo)
 	assert (index >= 0);
 
 	int ident = (iplane+1)*10000 + index;
-	WireCell::WirePlaneType_t plane = static_cast<WireCell::WirePlaneType_t>(iplane);
+	WCP::WirePlaneType_t plane = static_cast<WCP::WirePlaneType_t>(iplane);
 
-	this->add_wire(WireCell::GeomWire(ident, plane, index, channel,
-					  WireCell::Point(sx*cm,sy*cm,sz*cm),
-					  WireCell::Point(ex*cm,ey*cm,ez*cm)));
+	this->add_wire(WCP::GeomWire(ident, plane, index, channel,
+					  WCP::Point(sx*cm,sy*cm,sz*cm),
+					  WCP::Point(ex*cm,ey*cm,ez*cm)));
     }
 }
 	
-WireCellSst::GeomDataSource::~GeomDataSource()
+WCPSst::GeomDataSource::~GeomDataSource()
 {
 }
 

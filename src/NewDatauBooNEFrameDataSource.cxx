@@ -1,16 +1,16 @@
-#include "WireCellSst/NewDatauBooNEFrameDataSource.h"
+#include "WCPSst/NewDatauBooNEFrameDataSource.h"
 
 #include "TClonesArray.h"
 #include "TH1F.h"
 #include "TFile.h"
 #include "TVirtualFFT.h"
-#include "WireCellData/GeomWire.h"
+#include "WCPData/GeomWire.h"
 #include "TF1.h"
 #include "TStopwatch.h"
 #include "TMath.h"
 #include <vector>
 
-using namespace WireCell;
+using namespace WCP;
 
 const Bool_t runChirpFilterAlg = true;
 const Bool_t runZigzagFilterAlg = true;
@@ -25,8 +25,8 @@ const Int_t waveNoiseGroupNum = 48;
 
 const Int_t maxTicks = 9594;
 
-WireCellSst::NewDatauBooNEFrameDataSource::NewDatauBooNEFrameDataSource(TTree& ttree, const WireCell::GeomDataSource& gds,int bins_per_frame1)
-    : WireCell::FrameDataSource()
+WCPSst::NewDatauBooNEFrameDataSource::NewDatauBooNEFrameDataSource(TTree& ttree, const WCP::GeomDataSource& gds,int bins_per_frame1)
+    : WCP::FrameDataSource()
     , tree(&ttree)
     , gds(gds)
     , event()
@@ -71,7 +71,7 @@ WireCellSst::NewDatauBooNEFrameDataSource::NewDatauBooNEFrameDataSource(TTree& t
     }
 }
 
-WireCellSst::NewDatauBooNEFrameDataSource::~NewDatauBooNEFrameDataSource()
+WCPSst::NewDatauBooNEFrameDataSource::~NewDatauBooNEFrameDataSource()
 {
   for (int i=0;i!=nwire_u;i++){
     delete hu[i];
@@ -87,12 +87,12 @@ WireCellSst::NewDatauBooNEFrameDataSource::~NewDatauBooNEFrameDataSource()
   delete hw;
 }
 
-int WireCellSst::NewDatauBooNEFrameDataSource::size() const
+int WCPSst::NewDatauBooNEFrameDataSource::size() const
 {
     return tree->GetEntries();
 }
 
-void WireCellSst::NewDatauBooNEFrameDataSource::Save(){
+void WCPSst::NewDatauBooNEFrameDataSource::Save(){
   TFile *file = new TFile("temp_data_new.root","RECREATE");
   for (int i=0;i!=nwire_u;i++){
     TH1F *huu = (TH1F*)hu[i]->Clone(Form("U1_%d",i));
@@ -107,7 +107,7 @@ void WireCellSst::NewDatauBooNEFrameDataSource::Save(){
   file->Close();
 }
 
-int WireCellSst::NewDatauBooNEFrameDataSource::jump(int frame_number)
+int WCPSst::NewDatauBooNEFrameDataSource::jump(int frame_number)
 {
   
   if (frame.index == frame_number) {
@@ -150,7 +150,7 @@ int WireCellSst::NewDatauBooNEFrameDataSource::jump(int frame_number)
       return -1;
     }
 
-    WireCell::Trace trace;
+    WCP::Trace trace;
     trace.chid = event.channelid->at(ind);
     
     //trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
@@ -427,7 +427,7 @@ int WireCellSst::NewDatauBooNEFrameDataSource::jump(int frame_number)
   for(Int_t ind=0; ind < nchannels; ++ind)
     {
       TH1F *signal;
-      WireCell::Trace trace;
+      WCP::Trace trace;
       trace.chid = event.channelid->at(ind);
       
       trace.tbin = 0;  //full readout, if zero suppress this would be non-zero
@@ -468,7 +468,7 @@ int WireCellSst::NewDatauBooNEFrameDataSource::jump(int frame_number)
 }
 
 
-Double_t WireCellSst::NewDatauBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist)
+Double_t WCPSst::NewDatauBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist)
 {
   Double_t ADCval;
   Double_t theMean = 0.0;
@@ -504,7 +504,7 @@ Double_t WireCellSst::NewDatauBooNEFrameDataSource::CalcRMSWithFlags(TH1F *hist)
 }
 
 
-void WireCellSst::NewDatauBooNEFrameDataSource::ChirpFilterAlg(TH1F *hist)
+void WCPSst::NewDatauBooNEFrameDataSource::ChirpFilterAlg(TH1F *hist)
 {
   const Int_t windowSize = 20;
   const Double_t chirpMinRMS = 0.9;
@@ -626,7 +626,7 @@ void WireCellSst::NewDatauBooNEFrameDataSource::ChirpFilterAlg(TH1F *hist)
 }
 
 
-void WireCellSst::NewDatauBooNEFrameDataSource::ZigzagFilterAlg(TH1F *hist)
+void WCPSst::NewDatauBooNEFrameDataSource::ZigzagFilterAlg(TH1F *hist)
 {
   const Int_t startFiltBin = -1;
   const Int_t endFiltBin = 3700;
@@ -724,7 +724,7 @@ void WireCellSst::NewDatauBooNEFrameDataSource::ZigzagFilterAlg(TH1F *hist)
 }
 
 
-void WireCellSst::NewDatauBooNEFrameDataSource::SignalFilterAlg(TH1F *hist)
+void WCPSst::NewDatauBooNEFrameDataSource::SignalFilterAlg(TH1F *hist)
 {
   const Double_t sigFactor = 4.0;
   const Int_t padBins = 8;
@@ -769,7 +769,7 @@ void WireCellSst::NewDatauBooNEFrameDataSource::SignalFilterAlg(TH1F *hist)
 }
 
 
-void WireCellSst::NewDatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int planeNum)
+void WCPSst::NewDatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int planeNum)
 {
   Double_t rmsVal = CalcRMSWithFlags(hist);
   const Double_t maxRMSCut[3] = {10.0,10.0,5.0};
@@ -789,7 +789,7 @@ void WireCellSst::NewDatauBooNEFrameDataSource::NoisyFilterAlg(TH1F *hist, int p
 }
 
 
-void WireCellSst::NewDatauBooNEFrameDataSource::WaveFilterAlg(TH1F **filtHists)
+void WCPSst::NewDatauBooNEFrameDataSource::WaveFilterAlg(TH1F **filtHists)
 {
   Int_t numBins = filtHists[0]->GetNbinsX();
   Double_t ADCval;
@@ -840,7 +840,7 @@ void WireCellSst::NewDatauBooNEFrameDataSource::WaveFilterAlg(TH1F **filtHists)
 }
 
 
-void  WireCellSst::NewDatauBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F *filtHist)
+void  WCPSst::NewDatauBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F *filtHist)
 {
   const Int_t windowSize = 20;
   
@@ -969,7 +969,7 @@ void  WireCellSst::NewDatauBooNEFrameDataSource::RawAdaptiveBaselineAlg(TH1F *fi
 }
 
 
-void WireCellSst::NewDatauBooNEFrameDataSource::RemoveFilterFlags(TH1F *filtHist)
+void WCPSst::NewDatauBooNEFrameDataSource::RemoveFilterFlags(TH1F *filtHist)
 {
   Double_t ADCval;
   Int_t numBins = filtHist->GetNbinsX();

@@ -1,4 +1,4 @@
-#include "WireCellSst/FrameDataSource.h"
+#include "WCPSst/FrameDataSource.h"
 
 #include "TClonesArray.h"
 #include "TH1F.h"
@@ -7,8 +7,8 @@
 #include <string>
 
 
-WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree, const char* br)
-    : WireCell::FrameDataSource()
+WCPSst::FrameDataSource::FrameDataSource(TTree& ttree, const char* br)
+    : WCP::FrameDataSource()
     , event_tree(&ttree)
     , sim_tree(0)
     , event()
@@ -39,7 +39,7 @@ WireCellSst::FrameDataSource::FrameDataSource(TTree& ttree, const char* br)
     
 }
 
-WireCellSst::FrameDataSource::~FrameDataSource()
+WCPSst::FrameDataSource::~FrameDataSource()
 {
   // event_tree->SetDirectory(0);
   // sim_tree->SetDirectory(0);
@@ -48,12 +48,12 @@ WireCellSst::FrameDataSource::~FrameDataSource()
   frame.clear();
 }
 
-int WireCellSst::FrameDataSource::size() const
+int WCPSst::FrameDataSource::size() const
 {
     return event_tree->GetEntries();
 }
 
-int WireCellSst::FrameDataSource::jump(int frame_number)
+int WCPSst::FrameDataSource::jump(int frame_number)
 {
     if (frame.index == frame_number) {
 	return frame_number;
@@ -82,7 +82,7 @@ int WireCellSst::FrameDataSource::jump(int frame_number)
 	    return -1;
 	}
 
-	WireCell::Trace trace;
+	WCP::Trace trace;
 	trace.chid = event.channelid->at(ind);
 
 	trace.tbin = 0;		// full readout, if zero suppress this would be non-zero
@@ -97,7 +97,7 @@ int WireCellSst::FrameDataSource::jump(int frame_number)
     return frame.index;
 }
 
-void WireCellSst::FrameDataSource::set_sim_tree(TTree& tree)
+void WCPSst::FrameDataSource::set_sim_tree(TTree& tree)
 {
     sim_tree = &tree;
 
@@ -111,9 +111,9 @@ void WireCellSst::FrameDataSource::set_sim_tree(TTree& tree)
     tree.SetBranchAddress("simide_numElectrons", &rootsimtruth.q);
 }
 
-WireCell::SimTruthSelection WireCellSst::FrameDataSource::truth() const
+WCP::SimTruthSelection WCPSst::FrameDataSource::truth() const
 {
-    WireCell::SimTruthSelection ret;
+    WCP::SimTruthSelection ret;
     if (! sim_tree) {
 	return ret;
     }
@@ -131,7 +131,7 @@ WireCell::SimTruthSelection WireCellSst::FrameDataSource::truth() const
 
 
     for (int ind=0; ind < rootsimtruth.size; ++ind) {
-	WireCell::SimTruth st((*rootsimtruth.x)[ind],
+	WCP::SimTruth st((*rootsimtruth.x)[ind],
 			      (*rootsimtruth.y)[ind],
 			      (*rootsimtruth.z)[ind],
 			      (*rootsimtruth.q)[ind],

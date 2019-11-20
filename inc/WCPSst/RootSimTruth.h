@@ -4,7 +4,7 @@
 #include "TClonesArray.h"
 #include <vector>
 
-namespace WireCellSst{
+namespace WCPSst{
 
     /// Match structure of the SST sim truth
     struct RootSimTruth {

@@ -1,4 +1,4 @@
-#include "WireCellSst/Util.h"
+#include "WCPSst/Util.h"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -6,7 +6,7 @@
 #include <string>
 
 
-WireCellSst::FrameDataSource* WireCellSst::make_fds(const char* filename, const char* tpath)
+WCPSst::FrameDataSource* WCPSst::make_fds(const char* filename, const char* tpath)
 {
     TFile* tfile = TFile::Open(filename, "READONLY");
     if (!tfile) {
@@ -15,7 +15,7 @@ WireCellSst::FrameDataSource* WireCellSst::make_fds(const char* filename, const 
     return make_fds(*tfile, tpath);
 }
 
-WireCellSst::FrameDataSource* WireCellSst::make_fds(TFile& tfile, const char* tpath)
+WCPSst::FrameDataSource* WCPSst::make_fds(TFile& tfile, const char* tpath)
 {
     TTree* sst = dynamic_cast<TTree*>(tfile.Get(tpath));
     if (!sst) {
@@ -24,7 +24,7 @@ WireCellSst::FrameDataSource* WireCellSst::make_fds(TFile& tfile, const char* tp
 
     //sst->SetDirectory(0);
 
-    WireCellSst::FrameDataSource* fds = new WireCellSst::FrameDataSource(*sst);
+    WCPSst::FrameDataSource* fds = new WCPSst::FrameDataSource(*sst);
 
     // now try to handle file schema version
 

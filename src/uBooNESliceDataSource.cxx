@@ -1,10 +1,10 @@
-#include "WireCellSst/uBooNESliceDataSource.h"
+#include "WCPSst/uBooNESliceDataSource.h"
 
-using namespace WireCell;
+using namespace WCP;
 
 
 
-WireCellSst::uBooNESliceDataSource::uBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1,  FrameDataSource& fds2, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
+WCPSst::uBooNESliceDataSource::uBooNESliceDataSource(FrameDataSource& fds, FrameDataSource& fds1,  FrameDataSource& fds2, float th_u, float th_v, float th_w, int nwire_u, int nwire_v, int nwire_w, std::vector<float>* uplane_rms, std::vector<float>* vplane_rms, std::vector<float>* wplane_rms)
     : _fds(fds)
     , _fds1(fds1)
     , _fds2(fds2)
@@ -26,18 +26,18 @@ WireCellSst::uBooNESliceDataSource::uBooNESliceDataSource(FrameDataSource& fds, 
 }
 
 
-WireCellSst::uBooNESliceDataSource::~uBooNESliceDataSource()
+WCPSst::uBooNESliceDataSource::~uBooNESliceDataSource()
 {
 }
 
-void WireCellSst::uBooNESliceDataSource::clear()
+void WCPSst::uBooNESliceDataSource::clear()
 {
     _slice_index = _slices_begin = _slices_end = -1;
     _slice.clear();
 }
 
 // Update the bounds on the slice indices based on the current frame.
-void WireCellSst::uBooNESliceDataSource::update_slices_bounds() const
+void WCPSst::uBooNESliceDataSource::update_slices_bounds() const
 {
     const Frame& frame = _fds.get();
 
@@ -69,7 +69,7 @@ void WireCellSst::uBooNESliceDataSource::update_slices_bounds() const
     return;
 }
 
-int WireCellSst::uBooNESliceDataSource::size() const
+int WCPSst::uBooNESliceDataSource::size() const
 {
     this->update_slices_bounds();
     if (_slices_begin < 0 || _slices_end < 0) {
@@ -78,7 +78,7 @@ int WireCellSst::uBooNESliceDataSource::size() const
     return _slices_end - _slices_begin;
 }
 
-int WireCellSst::uBooNESliceDataSource::jump(int index)
+int WCPSst::uBooNESliceDataSource::jump(int index)
 {
     if (index < 0) {		// underflow
 	this->clear();
@@ -184,28 +184,28 @@ int WireCellSst::uBooNESliceDataSource::jump(int index)
     return index;
 }
 
-int WireCellSst::uBooNESliceDataSource::next()
+int WCPSst::uBooNESliceDataSource::next()
 {
     this->jump(_slice_index+1);
 }
 
-Slice& WireCellSst::uBooNESliceDataSource::get()
+Slice& WCPSst::uBooNESliceDataSource::get()
 {
     return _slice;
 }
 
-const Slice& WireCellSst::uBooNESliceDataSource::get() const
+const Slice& WCPSst::uBooNESliceDataSource::get() const
 {
     return _slice;
 }
 
 
-Slice& WireCellSst::uBooNESliceDataSource::get_error()
+Slice& WCPSst::uBooNESliceDataSource::get_error()
 {
     return _slice_error;
 }
 
-const Slice& WireCellSst::uBooNESliceDataSource::get_error() const
+const Slice& WCPSst::uBooNESliceDataSource::get_error() const
 {
     return _slice_error;
 }
