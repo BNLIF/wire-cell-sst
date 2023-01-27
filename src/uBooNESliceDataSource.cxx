@@ -119,9 +119,9 @@ int WCPSst::uBooNESliceDataSource::jump(int index)
     
     size_t ntraces = frame.traces.size();
     for (size_t ind=0; ind<ntraces; ++ind) {
-      const Trace& trace = frame.traces[ind];
-      const Trace& trace1 = frame1.traces[ind];
-      const Trace& trace2 = frame2.traces[ind];
+      const Trace& trace = frame.traces[ind];    // Wiener ..
+      const Trace& trace1 = frame1.traces[ind];  //Gaussian
+      const Trace& trace2 = frame2.traces[ind];  // Gaussian Error
       
       int tbin = trace.tbin;
       int nbins = trace.charge.size();
@@ -175,6 +175,9 @@ int WCPSst::uBooNESliceDataSource::jump(int index)
 	  fired_channels.insert(trace.chid);
 	}
       }
+
+      // if (slice_tbin ==9 && q > 0)
+      // 	std::cout << slice_tbin << " " << trace.chid << " " << q/4 << " " << threshold << " " << " " << q1/4 << " " << q1_error/4 << std::endl;
       
     }
 
