@@ -447,6 +447,7 @@ int WCPSst::ToyuBooNESliceDataSource::jump(int index)
 int WCPSst::ToyuBooNESliceDataSource::next()
 {
     this->jump(_slice_index+1);
+	return _slice_index+1;
 }
 
 Slice& WCPSst::ToyuBooNESliceDataSource::get()

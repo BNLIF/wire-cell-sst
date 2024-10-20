@@ -190,6 +190,7 @@ int WCPSst::uBooNESliceDataSource::jump(int index)
 int WCPSst::uBooNESliceDataSource::next()
 {
     this->jump(_slice_index+1);
+    return _slice_index+1;
 }
 
 Slice& WCPSst::uBooNESliceDataSource::get()
